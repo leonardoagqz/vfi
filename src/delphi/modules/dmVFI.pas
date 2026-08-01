@@ -3,36 +3,18 @@ unit dmVFI;
 interface
 
 uses
-  System.SysUtils, System.Classes, FireDAC.Stan.Intf, FireDAC.Stan.Option,
-  FireDAC.Stan.Error, FireDAC.UI.Intf, FireDAC.Phys.Intf, FireDAC.Stan.Def,
-  FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MSSQL,
-  FireDAC.Phys.MSSQLDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
-  FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet, Vcl.Dialogs;
+  System.SysUtils, System.Classes, Data.DB, Data.Win.ADODB, Vcl.Dialogs;
 
 type
   TDataModuleVFI = class(TDataModule)
-    Connection: TFDConnection;
-    qryDocumentos: TFDQuery;
-    qryItens: TFDQuery;
-    qryImpostos: TFDQuery;
+    Connection: TADOConnection;
+    qryDocumentos: TADOQuery;
+    qryItens: TADOQuery;
+    qryImpostos: TADOQuery;
     dsDocumentos: TDataSource;
     dsItens: TDataSource;
     dsImpostos: TDataSource;
-    FDPhysMSSQLDriverLink: TFDPhysMSSQLDriverLink;
-    qryDocumentosId: TIntegerField;
-    qryDocumentosDocumentType: TStringField;
-    qryDocumentosDocumentKey: TStringField;
-    qryDocumentosDocumentNumber: TStringField;
-    qryDocumentosIssueDate: TDateTimeField;
-    qryDocumentosIssuerCNPJ: TStringField;
-    qryDocumentosIssuerName: TStringField;
-    qryDocumentosRecipientCNPJ: TStringField;
-    qryDocumentosRecipientName: TStringField;
-    qryDocumentosTotalValue: TFloatField;
-    qryDocumentosStatus: TStringField;
     procedure DataModuleCreate(Sender: TObject);
-  private
   public
     procedure CarregarDocumentos;
     procedure ValidarDocumento(const DocumentId: Integer);
@@ -45,8 +27,6 @@ var
 
 implementation
 
-{%CLASSGROUP 'Vcl.Controls.TControl'}
-
 {$R *.dfm}
 
 uses
@@ -54,13 +34,14 @@ uses
 
 procedure TDataModuleVFI.DataModuleCreate(Sender: TObject);
 begin
-  Connection.Params.Clear;
-  Connection.Params.Add('DriverID=MSSQL');
-  Connection.Params.Add('Server=localhost');
-  Connection.Params.Add('Database=VFI_DB');
-  Connection.Params.Add('User_Name=vfi_app');
-  Connection.Params.Add('Password=Vfi@2024#Dev');
-  Connection.Params.Add('MARS=Yes');
+  Connection.ConnectionString :=
+    'Provider=MSOLEDBSQL;' +
+    'Server=localhost;' +
+    'Database=VFI_DB;' +
+    'User ID=vfi_app;' +
+    'Password=Vfi@2024#Dev;' +
+    'Persist Security Info=False;';
+  Connection.LoginPrompt := False;
   Connection.Connected := True;
 end;
 
@@ -79,11 +60,11 @@ var
   Validator: TFiscalValidator;
   Resultado: TValidationResult;
 begin
-  Validator := TFiscalValidator.Create(Self);
+  Validator := TFiscalValidator.Create(nil);
   try
     qryItens.Close;
     qryItens.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = :Id';
-    qryItens.ParamByName('Id').AsInteger := DocumentId;
+    qryItens.Parameters.ParamByName('Id').Value := DocumentId;
     qryItens.Open;
 
     Resultado := Validator.ValidarDocumento(DocumentId);
@@ -106,7 +87,7 @@ begin
   try
     qryItens.Close;
     qryItens.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = :Id';
-    qryItens.ParamByName('Id').AsInteger := DocumentId;
+    qryItens.Parameters.ParamByName('Id').Value := DocumentId;
     qryItens.Open;
 
     qryItens.First;
@@ -114,15 +95,14 @@ begin
     begin
       ItemValor := qryItens.FieldByName('TotalValue').AsFloat;
 
-      { Chamada a DLL VB6 via COM para calculo de ICMS }
       Engine.CalcularICMS(
         ItemValor,
-        18.0,  { Aliquota ICMS 18% }
-        0,     { Sem reducao }
-        0,     { Frete }
-        0,     { Seguro }
-        0,     { Outras Despesas }
-        0,     { Desconto }
+        18.0,
+        0,
+        0,
+        0,
+        0,
+        0,
         omNacional,
         trLucroReal
       );
@@ -131,19 +111,18 @@ begin
       qryImpostos.SQL.Text :=
         'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
         'VALUES (:DocId, :ItemId, :TaxType, :Base, :Rate, :Value, :Engine)';
-      qryImpostos.ParamByName('DocId').AsInteger := DocumentId;
-      qryImpostos.ParamByName('ItemId').AsInteger := qryItens.FieldByName('Id').AsInteger;
-      qryImpostos.ParamByName('TaxType').AsString := 'ICMS';
-      qryImpostos.ParamByName('Base').AsFloat := Engine.Resultado.BaseCalculo;
-      qryImpostos.ParamByName('Rate').AsFloat := Engine.Resultado.Aliquota;
-      qryImpostos.ParamByName('Value').AsFloat := Engine.Resultado.ValorImposto;
-      qryImpostos.ParamByName('Engine').AsString := 'VB6';
+      qryImpostos.Parameters.ParamByName('DocId').Value := DocumentId;
+      qryImpostos.Parameters.ParamByName('ItemId').Value := qryItens.FieldByName('Id').AsInteger;
+      qryImpostos.Parameters.ParamByName('TaxType').Value := 'ICMS';
+      qryImpostos.Parameters.ParamByName('Base').Value := Engine.Resultado.BaseCalculo;
+      qryImpostos.Parameters.ParamByName('Rate').Value := Engine.Resultado.Aliquota;
+      qryImpostos.Parameters.ParamByName('Value').Value := Engine.Resultado.ValorImposto;
+      qryImpostos.Parameters.ParamByName('Engine').Value := 'VB6';
       qryImpostos.ExecSQL;
 
       qryItens.Next;
     end;
 
-    Connection.Commit;
     ShowMessage('Impostos calculados com sucesso via DLL VB6!');
   finally
     Engine.Free;
@@ -155,7 +134,7 @@ var
   Analisador: TIAIntegration;
   Log: TAIResult;
 begin
-  Analisador := TIAIntegration.Create(Self);
+  Analisador := TIAIntegration.Create(nil);
   try
     Log := Analisador.AnalisarDocumento(DocumentId);
 
@@ -163,15 +142,14 @@ begin
     qryImpostos.SQL.Text :=
       'INSERT INTO AIAnalysisLog (DocumentId, Model, Prompt, Response, AnomaliesFound, ConfidenceScore) ' +
       'VALUES (:DocId, :Model, :Prompt, :Response, :Anomalies, :Score)';
-    qryImpostos.ParamByName('DocId').AsInteger := DocumentId;
-    qryImpostos.ParamByName('Model').AsString := Log.Model;
-    qryImpostos.ParamByName('Prompt').AsString := Log.Prompt;
-    qryImpostos.ParamByName('Response').AsString := Log.Response;
-    qryImpostos.ParamByName('Anomalies').AsInteger := Log.AnomaliesFound;
-    qryImpostos.ParamByName('Score').AsFloat := Log.ConfidenceScore;
+    qryImpostos.Parameters.ParamByName('DocId').Value := DocumentId;
+    qryImpostos.Parameters.ParamByName('Model').Value := Log.Model;
+    qryImpostos.Parameters.ParamByName('Prompt').Value := Log.Prompt;
+    qryImpostos.Parameters.ParamByName('Response').Value := Log.Response;
+    qryImpostos.Parameters.ParamByName('Anomalies').Value := Log.AnomaliesFound;
+    qryImpostos.Parameters.ParamByName('Score').Value := Log.ConfidenceScore;
     qryImpostos.ExecSQL;
 
-    Connection.Commit;
     ShowMessage(Format('Analise IA concluida! %d anomalias encontradas.', [Log.AnomaliesFound]));
   finally
     Analisador.Free;

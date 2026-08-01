@@ -87,14 +87,6 @@ object FormMain: TFormMain
           Style = csDropDownList
           TabOrder = 0
         end
-        object SearchBox: TSearchBox
-          Left = 160
-          Top = 12
-          Width = 250
-          Height = 23
-          TabOrder = 1
-          TextHint = 'Buscar por chave, CNPJ, numero...'
-        end
       end
       object dbgDocumentos: TDBGrid
         Left = 0

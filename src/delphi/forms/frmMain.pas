@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Grids, Vcl.DBGrids, Data.DB,
-  Vcl.Buttons, Vcl.WinXCtrls, dmVFI;
+  Vcl.Buttons, dmVFI;
 
 type
   TFormMain = class(TForm)
@@ -33,7 +33,6 @@ type
     btnAnalisar: TButton;
     pnlHeader: TPanel;
     Shape1: TShape;
-    SearchBox: TSearchBox;
     cbFiltroTipo: TComboBox;
     lblFiltro: TLabel;
     procedure FormCreate(Sender: TObject);
@@ -90,7 +89,7 @@ begin
     Exit;
   end;
 
-  DataModuleVFI.ValidarDocumento(DataModuleVFI.qryDocumentosId.AsInteger);
+  DataModuleVFI.ValidarDocumento(DataModuleVFI.qryDocumentos.FieldByName('Id').AsInteger);
   AtualizarStatus('Validacao concluida.');
   btnRefreshClick(Self);
 end;
@@ -103,7 +102,7 @@ begin
     Exit;
   end;
 
-  DataModuleVFI.CalcularImpostos(DataModuleVFI.qryDocumentosId.AsInteger);
+  DataModuleVFI.CalcularImpostos(DataModuleVFI.qryDocumentos.FieldByName('Id').AsInteger);
   AtualizarStatus('Calculo de impostos concluido via DLL VB6 (COM).');
 end;
 
@@ -116,9 +115,9 @@ begin
   end;
 
   pcMain.ActivePage := tsIA;
-  DataModuleVFI.AnalisarComIA(DataModuleVFI.qryDocumentosId.AsInteger);
+  DataModuleVFI.AnalisarComIA(DataModuleVFI.qryDocumentos.FieldByName('Id').AsInteger);
   memResultadoIA.Lines.Add('Analise IA concluida para o documento #' +
-    DataModuleVFI.qryDocumentosId.AsString);
+    DataModuleVFI.qryDocumentos.FieldByName('Id').AsString);
   AtualizarStatus('Analise IA concluida.');
 end;
 
@@ -146,7 +145,7 @@ procedure TFormMain.dbgDocumentosDblClick(Sender: TObject);
 begin
   pcMain.ActivePage := tsDocumentos;
   AtualizarStatus(Format('Documento #%d selecionado.',
-    [DataModuleVFI.qryDocumentosId.AsInteger]));
+    [DataModuleVFI.qryDocumentos.FieldByName('Id').AsInteger]));
 end;
 
 end.
