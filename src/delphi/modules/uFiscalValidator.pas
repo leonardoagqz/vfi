@@ -39,11 +39,12 @@ begin
 end;
 
 function TFiscalValidator.ValidarCNPJ(const CNPJ: string): Boolean;
+const
+  Multiplicador1: array[0..11] of Integer = (5,4,3,2,9,8,7,6,5,4,3,2);
+  Multiplicador2: array[0..12] of Integer = (6,5,4,3,2,9,8,7,6,5,4,3,2);
 var
   Digits: string;
   i, Soma, Digito1, Digito2, Resto: Integer;
-  Multiplicador1: array[0..11] of Integer = (5,4,3,2,9,8,7,6,5,4,3,2);
-  Multiplicador2: array[0..12] of Integer = (6,5,4,3,2,9,8,7,6,5,4,3,2);
 begin
   Result := False;
   Digits := TRegEx.Replace(CNPJ, '\D', '');

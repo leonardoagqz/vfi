@@ -8,7 +8,7 @@ uses
   FireDAC.Stan.Pool, FireDAC.Stan.Async, FireDAC.Phys, FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLDef, FireDAC.VCLUI.Wait, Data.DB, FireDAC.Comp.Client,
   FireDAC.Stan.Param, FireDAC.DatS, FireDAC.DApt.Intf, FireDAC.DApt,
-  FireDAC.Comp.DataSet;
+  FireDAC.Comp.DataSet, Vcl.Dialogs;
 
 type
   TDataModuleVFI = class(TDataModule)
@@ -155,7 +155,7 @@ var
   Analisador: TIAIntegration;
   Log: TAIResult;
 begin
-  Analisador := TIAIntegration.Create;
+  Analisador := TIAIntegration.Create(Self);
   try
     Log := Analisador.AnalisarDocumento(DocumentId);
 
