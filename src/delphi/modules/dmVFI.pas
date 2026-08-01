@@ -61,7 +61,7 @@ end;
 
 function TDataModuleVFI.GetConnectionString: string;
 begin
-  Result := 'Server=localhost;Database=VFI_DB;Trusted_Connection=True;TrustServerCertificate=True;';
+  Result := 'Server=localhost;Database=VFI_DB;OSAuthent=Yes;Trusted_Connection=Yes;MARS=Yes;';
 end;
 
 procedure TDataModuleVFI.CarregarDocumentos;

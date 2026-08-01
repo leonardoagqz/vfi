@@ -6,7 +6,8 @@ object DataModuleVFI: TDataModuleVFI
     Params.Strings = (
       'Database=VFI_DB'
       'Server=localhost'
-      'DriverID=MSSQL')
+      'DriverID=MSSQL'
+      'OSAuthent=Yes')
     LoginPrompt = False
     Left = 48
     Top = 24
