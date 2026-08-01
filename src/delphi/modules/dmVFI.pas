@@ -32,7 +32,6 @@ type
     qryDocumentosStatus: TStringField;
     procedure DataModuleCreate(Sender: TObject);
   private
-    function GetConnectionString: string;
   public
     procedure CarregarDocumentos;
     procedure ValidarDocumento(const DocumentId: Integer);
@@ -54,13 +53,14 @@ uses
 
 procedure TDataModuleVFI.DataModuleCreate(Sender: TObject);
 begin
-  Connection.ConnectionString := GetConnectionString;
+  Connection.Params.Clear;
+  Connection.Params.Add('DriverID=MSSQL');
+  Connection.Params.Add('Server=localhost');
+  Connection.Params.Add('Database=VFI_DB');
+  Connection.Params.Add('User_Name=vfi_app');
+  Connection.Params.Add('Password=Vfi@2024#Dev');
+  Connection.Params.Add('MARS=Yes');
   Connection.Connected := True;
-end;
-
-function TDataModuleVFI.GetConnectionString: string;
-begin
-  Result := 'Server=localhost;Database=VFI_DB;User_Name=vfi_app;Password=Vfi@2024#Dev;MARS=Yes;';
 end;
 
 procedure TDataModuleVFI.CarregarDocumentos;
