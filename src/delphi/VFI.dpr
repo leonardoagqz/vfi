@@ -22,19 +22,21 @@ begin
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
 
+  TAppModule.Inicializar;
+
   frmMain := TfrmMain.Create(Application);
   try
-    TAppModule.Create;
-
     frmMain.Controller := TMainController.Create(
       TAppModule.Repository,
       TAppModule.Validator,
       TAppModule.TaxCalculator,
       TAppModule.AIAnalyzer);
     frmMain.Controller.SetOnStatus(frmMain.AtualizarStatus);
+    frmMain.Controller.Inicializar;
 
     Application.Run;
   finally
     frmMain.Free;
+    TAppModule.Finalizar;
   end;
 end.

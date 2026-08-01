@@ -18,8 +18,8 @@ type
     class var FTaxCalc: ITaxCalculator;
     class var FAIAnalyzer: IAIAnalyzer;
   public
-    class constructor Create;
-    class destructor Destroy;
+    class procedure Inicializar;
+    class procedure Finalizar;
 
     class property Config: TAppConfig read FConfig;
     class property Repository: IFiscalDocumentRepository read FRepository;
@@ -30,7 +30,7 @@ type
 
 implementation
 
-class constructor TAppModule.Create;
+class procedure TAppModule.Inicializar;
 begin
   FConfig := TAppConfig.Create;
 
@@ -50,7 +50,7 @@ begin
     FConfig.LeString('AI', 'Model', 'deepseek-chat'));
 end;
 
-class destructor TAppModule.Destroy;
+class procedure TAppModule.Finalizar;
 begin
   FConfig.Free;
 end;
