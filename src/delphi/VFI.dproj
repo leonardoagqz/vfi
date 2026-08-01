@@ -6,10 +6,8 @@
         <MainSource>VFI.dpr</MainSource>
         <Base>True</Base>
         <Config Condition="'$(Config)'==''">Debug</Config>
-        <DCC_DCCCompiler>dcc32</DCC_DCCCompiler>
         <TargetedPlatform>Win32</TargetedPlatform>
         <SanitizedProjectName>VFI</SanitizedProjectName>
-        <ProductVersion>12.0</ProductVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Config)'=='Base'">
@@ -17,15 +15,7 @@
         <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
         <DCC_Optimize>false</DCC_Optimize>
         <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
-        <DCC_StackFrames>true</DCC_StackFrames>
-        <DCC_OutputDir>.\$(Config)</DCC_OutputDir>
         <VerInfo_Locale>1046</VerInfo_Locale>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Config)'=='Release'">
-        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
-        <DCC_Optimize>true</DCC_Optimize>
-        <DCC_OutputDir>.\$(Config)</DCC_OutputDir>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -37,18 +27,6 @@
         <DCC_DcuOutputDir>.\$(Config)\dcu</DCC_DcuOutputDir>
         <DCC_ExeOutputDir>.\$(Config)</DCC_ExeOutputDir>
     </PropertyGroup>
-
-    <ItemGroup>
-        <DelphiCompile Include="forms\frmMain.pas">
-            <Form>frmMain.dfm</Form>
-        </DelphiCompile>
-        <DelphiCompile Include="modules\dmVFI.pas">
-            <Form>dmVFI.dfm</Form>
-        </DelphiCompile>
-        <DelphiCompile Include="modules\uFiscalValidator.pas"/>
-        <DelphiCompile Include="modules\uVB6Integration.pas"/>
-        <DelphiCompile Include="modules\uIAIntegration.pas"/>
-    </ItemGroup>
 
     <ItemGroup>
         <DCCReference Include="forms\frmMain.pas">
