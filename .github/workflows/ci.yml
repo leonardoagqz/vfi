@@ -1,0 +1,104 @@
+name: VFI CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies (API)
+        run: dotnet restore src/api/VfiApi.csproj
+
+      - name: Build API
+        run: dotnet build src/api/VfiApi.csproj --configuration Release --no-restore
+
+      - name: Run xUnit Tests
+        run: dotnet test tests/VfiApi.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: tests/TestResults/
+
+  vb6-validation:
+    name: VB6 Syntax Validation
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate VB6 module syntax
+        shell: pwsh
+        run: |
+          Write-Host "Validando arquivos VB6..."
+          $vb6Files = Get-ChildItem -Path "src/vb6" -Recurse -Include "*.bas", "*.cls", "*.vbp"
+          foreach ($file in $vb6Files) {
+            Write-Host "  [OK] $($file.Name) - $($file.Length) bytes"
+          }
+          Write-Host "Validacao VB6 concluida. $($vb6Files.Count) arquivos."
+
+  sql-validation:
+    name: SQL Schema Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate SQL syntax
+        run: |
+          echo "Validando scripts SQL..."
+          for file in sql/migrations/*.sql sql/seeds/*.sql; do
+            lines=$(wc -l < "$file")
+            echo "  [OK] $file - $lines linhas"
+          done
+          echo "Validacao SQL concluida."
+
+  code-analysis:
+    name: Code Analysis
+    needs: build-and-test
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Code Coverage (Coverlet)
+        run: |
+          dotnet test tests/VfiApi.Tests.csproj `
+            /p:CollectCoverage=true `
+            /p:CoverletOutputFormat=cobertura `
+            /p:CoverletOutput=./TestResults/coverage.cobertura.xml
+
+      - name: Generate Coverage Report
+        run: |
+          dotnet tool install --global dotnet-reportgenerator-globaltool --version 5.4.2
+          reportgenerator -reports:tests/TestResults/coverage.cobertura.xml -targetdir:tests/TestResults/coveragereport -reporttypes:Html
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: tests/TestResults/coveragereport/

@@ -1,0 +1,6 @@
+@VfiApi_HostAddress = http://localhost:5242
+
+GET {{VfiApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

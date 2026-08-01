@@ -1,0 +1,45 @@
+# Delphi
+*.dcu
+*.dsk
+*.dof
+*.dproj.local
+*.exe
+*.dll
+*.bpl
+__history/
+__recovery/
+*.local
+*.identcache
+*.tvsconfig
+
+# VB6
+*.exe
+*.dll
+*.ocx
+*.log
+*.scc
+*.vbg
+
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Env
+.env
+*.env.local
+appsettings.*.json
+!appsettings.json

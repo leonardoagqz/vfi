@@ -1,0 +1,16 @@
+VERSION 5.00
+Begin VB.ActiveXDLL FiscalEngine 
+   Caption         =   "FiscalEngine"
+   ClientHeight    =   3195
+   ClientLeft      =   60
+   ClientTop       =   345
+   ClientWidth     =   4680
+   StartUpPosition =   2  'CenterScreen
+   TypeInfoExe    =   "VFI_VB6_FiscalEngine.dll"
+End
+Attribute VB_Name = "FiscalEngine"
+Attribute VB_GlobalNameSpace = False
+Attribute VB_Creatable = True
+Attribute VB_PredeclaredId = False
+Attribute VB_Exposed = True
+Attribute VB_Description = "VFI - Mecanismo de Calculo Fiscal (ICMS, ST, IPI, PIS, COFINS)"
