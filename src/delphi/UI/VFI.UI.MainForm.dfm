@@ -1,4 +1,4 @@
-object FormMain: TFormMain
+object frmMain: TfrmMain
   Left = 0
   Top = 0
   Caption = 'VFI - Validador Fiscal Inteligente'
@@ -12,19 +12,7 @@ object FormMain: TFormMain
   Font.Style = []
   Position = poScreenCenter
   OnCreate = FormCreate
-  DesignSize = (
-    1100
-    700)
-  TextHeight = 15
-  object Shape1: TShape
-    Left = 0
-    Top = 657
-    Width = 1100
-    Height = 3
-    Anchors = [akLeft, akRight, akBottom]
-    Brush.Color = clNavy
-    Pen.Style = psClear
-  end
+  OnDestroy = FormDestroy
   object pnlTop: TPanel
     Left = 0
     Top = 0
@@ -38,8 +26,6 @@ object FormMain: TFormMain
     object lblTitle: TLabel
       Left = 24
       Top = 12
-      Width = 305
-      Height = 28
       Caption = 'VFI - Validador Fiscal Inteligente'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
@@ -51,13 +37,9 @@ object FormMain: TFormMain
     object lblSubtitle: TLabel
       Left = 24
       Top = 44
-      Width = 398
-      Height = 17
-      Caption = 
-        'Sistema de validacao fiscal com DLL VB6, API C# .NET e IA integr' +
-        'ada'
+      Caption = 'Clean Architecture | Repository Pattern | SOLID | DeepSeek IA'
       Font.Charset = DEFAULT_CHARSET
-      Font.Color = 16771797
+      Font.Color = clSilver
       Font.Height = -13
       Font.Name = 'Segoe UI'
       Font.Style = []
@@ -70,7 +52,6 @@ object FormMain: TFormMain
     Width = 1084
     Height = 569
     ActivePage = tsDocumentos
-    Anchors = [akLeft, akTop, akRight, akBottom]
     TabOrder = 1
     object tsDocumentos: TTabSheet
       Caption = 'Documentos Fiscais'
@@ -85,8 +66,6 @@ object FormMain: TFormMain
         object lblFiltro: TLabel
           Left = 8
           Top = 16
-          Width = 30
-          Height = 15
           Caption = 'Filtro:'
         end
         object cbFiltroTipo: TComboBox
@@ -98,63 +77,56 @@ object FormMain: TFormMain
           TabOrder = 0
         end
       end
-      object dbgDocumentos: TDBGrid
+      object StringGridDocs: TStringGrid
         Left = 0
         Top = 48
         Width = 1076
-        Height = 491
+        Height = 493
         Align = alClient
-        DataSource = DataModuleVFI.dsDocumentos
-        ReadOnly = True
+        DefaultRowHeight = 22
+        FixedCols = 0
+        RowCount = 2
+        Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect]
         TabOrder = 1
-        TitleFont.Charset = DEFAULT_CHARSET
-        TitleFont.Color = clWindowText
-        TitleFont.Height = -12
-        TitleFont.Name = 'Segoe UI'
-        TitleFont.Style = []
-        OnDblClick = dbgDocumentosDblClick
+        OnDblClick = StringGridDocsDblClick
       end
     end
     object tsValidacao: TTabSheet
-      Caption = 'Validacao'
+      Caption = 'Log Validacao'
       object lblLog: TLabel
         Left = 8
         Top = 8
-        Width = 80
-        Height = 15
         Caption = 'Log de eventos'
       end
       object memLog: TMemo
         Left = 8
         Top = 32
-        Width = 1053
-        Height = 497
+        Width = 1060
+        Height = 500
         ReadOnly = True
         ScrollBars = ssBoth
         TabOrder = 0
       end
     end
     object tsIA: TTabSheet
-      Caption = 'Analise IA'
+      Caption = 'Analise IA (DeepSeek)'
       object lblResultadoIA: TLabel
         Left = 8
         Top = 8
-        Width = 123
-        Height = 15
-        Caption = 'Resultado da Analise IA'
+        Caption = 'Resultado da Analise IA (DeepSeek)'
       end
       object memResultadoIA: TMemo
         Left = 8
         Top = 32
-        Width = 1053
-        Height = 457
+        Width = 1060
+        Height = 460
         ReadOnly = True
         ScrollBars = ssBoth
         TabOrder = 0
       end
       object btnAnalisar: TButton
         Left = 8
-        Top = 496
+        Top = 500
         Width = 120
         Height = 32
         Caption = 'Analisar com IA'
@@ -219,20 +191,25 @@ object FormMain: TFormMain
   end
   object pnlStatus: TPanel
     Left = 0
-    Top = 636
+    Top = 700
     Width = 1100
     Height = 24
     Align = alBottom
     Alignment = taLeftJustify
     BevelOuter = bvLowered
     TabOrder = 3
-    ExplicitTop = 660
     object lblStatus: TLabel
       Left = 8
-      Top = 3
-      Width = 36
-      Height = 15
+      Top = 2
       Caption = 'Pronto'
     end
+  end
+  object Shape1: TShape
+    Left = 0
+    Top = 660
+    Width = 1100
+    Height = 3
+    Brush.Color = clNavy
+    Pen.Style = psClear
   end
 end
