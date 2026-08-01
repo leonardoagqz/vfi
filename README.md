@@ -1,6 +1,11 @@
 # VFI - Validador Fiscal Inteligente
 
 [![CI/CD Pipeline](https://github.com/leonardoagqz/vfi/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardoagqz/vfi/actions/workflows/ci.yml)
+![.NET Version](https://img.shields.io/badge/.NET-9.0-blue)
+![Delphi](https://img.shields.io/badge/Delphi-Alexandria%2036.0-red)
+![VB6](https://img.shields.io/badge/VB6-ActiveX%20DLL-purple)
+![Tests](https://img.shields.io/badge/tests-10%2F10-brightgreen)
+![Cobertura](https://img.shields.io/badge/cobertura%20linhas-18.2%25-yellow)
 
 **Sistema de validacao fiscal multi-tecnologia com DLL VB6, API C# .NET, app Delphi VCL e IA integrada.**
 
