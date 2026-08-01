@@ -43,4 +43,8 @@ object DataModuleVFI: TDataModuleVFI
     Left = 160
     Top = 240
   end
+  object FDPhysMSSQLDriverLink: TFDPhysMSSQLDriverLink
+    Left = 48
+    Top = 304
+  end
 end

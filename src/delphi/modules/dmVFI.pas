@@ -19,6 +19,7 @@ type
     dsDocumentos: TDataSource;
     dsItens: TDataSource;
     dsImpostos: TDataSource;
+    FDPhysMSSQLDriverLink: TFDPhysMSSQLDriverLink;
     qryDocumentosId: TIntegerField;
     qryDocumentosDocumentType: TStringField;
     qryDocumentosDocumentKey: TStringField;
