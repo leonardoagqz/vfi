@@ -35,12 +35,11 @@ uses
 procedure TDataModuleVFI.DataModuleCreate(Sender: TObject);
 begin
   Connection.ConnectionString :=
-    'Provider=MSOLEDBSQL;' +
-    'Server=localhost;' +
-    'Database=VFI_DB;' +
+    'Provider=MSDASQL.1;' +
+    'Persist Security Info=False;' +
+    'Data Source=VFI_DSN;' +
     'User ID=vfi_app;' +
-    'Password=Vfi@2024#Dev;' +
-    'Persist Security Info=False;';
+    'Password=Vfi@2024#Dev;';
   Connection.LoginPrompt := False;
   Connection.Connected := True;
 end;

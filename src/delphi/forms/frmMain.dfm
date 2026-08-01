@@ -15,7 +15,16 @@ object FormMain: TFormMain
   DesignSize = (
     1100
     700)
-  
+  TextHeight = 15
+  object Shape1: TShape
+    Left = 0
+    Top = 657
+    Width = 1100
+    Height = 3
+    Anchors = [akLeft, akRight, akBottom]
+    Brush.Color = clNavy
+    Pen.Style = psClear
+  end
   object pnlTop: TPanel
     Left = 0
     Top = 0
@@ -29,7 +38,7 @@ object FormMain: TFormMain
     object lblTitle: TLabel
       Left = 24
       Top = 12
-      Width = 400
+      Width = 305
       Height = 28
       Caption = 'VFI - Validador Fiscal Inteligente'
       Font.Charset = DEFAULT_CHARSET
@@ -42,9 +51,11 @@ object FormMain: TFormMain
     object lblSubtitle: TLabel
       Left = 24
       Top = 44
-      Width = 500
+      Width = 398
       Height = 17
-      Caption = 'Sistema de validacao fiscal com DLL VB6, API C# .NET e IA integrada'
+      Caption = 
+        'Sistema de validacao fiscal com DLL VB6, API C# .NET e IA integr' +
+        'ada'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 16771797
       Font.Height = -13
@@ -53,7 +64,6 @@ object FormMain: TFormMain
       ParentFont = False
     end
   end
-  
   object pcMain: TPageControl
     Left = 8
     Top = 88
@@ -92,11 +102,16 @@ object FormMain: TFormMain
         Left = 0
         Top = 48
         Width = 1076
-        Height = 453
+        Height = 491
         Align = alClient
         DataSource = DataModuleVFI.dsDocumentos
         ReadOnly = True
         TabOrder = 1
+        TitleFont.Charset = DEFAULT_CHARSET
+        TitleFont.Color = clWindowText
+        TitleFont.Height = -12
+        TitleFont.Name = 'Segoe UI'
+        TitleFont.Style = []
         OnDblClick = dbgDocumentosDblClick
       end
     end
@@ -105,7 +120,7 @@ object FormMain: TFormMain
       object lblLog: TLabel
         Left = 8
         Top = 8
-        Width = 66
+        Width = 80
         Height = 15
         Caption = 'Log de eventos'
       end
@@ -124,7 +139,7 @@ object FormMain: TFormMain
       object lblResultadoIA: TLabel
         Left = 8
         Top = 8
-        Width = 129
+        Width = 123
         Height = 15
         Caption = 'Resultado da Analise IA'
       end
@@ -148,7 +163,6 @@ object FormMain: TFormMain
       end
     end
   end
-  
   object pnlActions: TPanel
     Left = 0
     Top = 660
@@ -203,32 +217,22 @@ object FormMain: TFormMain
       OnClick = btnRefreshClick
     end
   end
-  
   object pnlStatus: TPanel
     Left = 0
-    Top = 660
+    Top = 636
     Width = 1100
     Height = 24
     Align = alBottom
     Alignment = taLeftJustify
     BevelOuter = bvLowered
     TabOrder = 3
+    ExplicitTop = 660
     object lblStatus: TLabel
       Left = 8
       Top = 3
-      Width = 200
-      Height = 17
+      Width = 36
+      Height = 15
       Caption = 'Pronto'
     end
-  end
-  
-  object Shape1: TShape
-    Left = 0
-    Top = 657
-    Width = 1100
-    Height = 3
-    Anchors = [akLeft, akRight, akBottom]
-    Brush.Color = clNavy
-    Pen.Style = psClear
   end
 end
