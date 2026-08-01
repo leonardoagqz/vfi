@@ -19,6 +19,7 @@ public class VfiDbContext : DbContext
 
         modelBuilder.Entity<FiscalDocument>(entity =>
         {
+            entity.ToTable("FiscalDocument");
             entity.HasIndex(e => e.DocumentType);
             entity.HasIndex(e => e.IssuerCNPJ);
             entity.HasIndex(e => e.Status);
@@ -27,6 +28,7 @@ public class VfiDbContext : DbContext
 
         modelBuilder.Entity<DocumentItem>(entity =>
         {
+            entity.ToTable("DocumentItem");
             entity.HasIndex(e => e.DocumentId);
             entity.HasOne(e => e.Document)
                   .WithMany(d => d.Items)
@@ -36,6 +38,7 @@ public class VfiDbContext : DbContext
 
         modelBuilder.Entity<TaxCalculation>(entity =>
         {
+            entity.ToTable("TaxCalculation");
             entity.HasIndex(e => e.DocumentId);
             entity.HasOne(e => e.Document)
                   .WithMany(d => d.TaxCalculations)
@@ -45,6 +48,7 @@ public class VfiDbContext : DbContext
 
         modelBuilder.Entity<ValidationLog>(entity =>
         {
+            entity.ToTable("ValidationLog");
             entity.HasOne(e => e.Document)
                   .WithMany(d => d.ValidationLogs)
                   .HasForeignKey(e => e.DocumentId)
@@ -53,6 +57,7 @@ public class VfiDbContext : DbContext
 
         modelBuilder.Entity<AIAnalysisLog>(entity =>
         {
+            entity.ToTable("AIAnalysisLog");
             entity.HasOne(e => e.Document)
                   .WithMany(d => d.AIAnalysisLogs)
                   .HasForeignKey(e => e.DocumentId)

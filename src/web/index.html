@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VFI - Cliente Web</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
+        .header { background: linear-gradient(135deg, #1e293b, #0f172a); padding: 24px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #334155; }
+        .header h1 { color: #38bdf8; font-size: 24px; }
+        .header p { color: #94a3b8; margin-top: 4px; }
+        .grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+        .card h2 { color: #e2e8f0; font-size: 16px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #64748b; font-size: 12px; text-transform: uppercase; padding: 8px; border-bottom: 1px solid #334155; }
+        td { padding: 8px; font-size: 13px; border-bottom: 1px solid #1e293b; }
+        tr:hover { background: #273548; }
+        .badge { padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+        .badge-pendente { background: #422006; color: #fbbf24; }
+        .badge-validado { background: #052e16; color: #4ade80; }
+        .badge-rejeitado { background: #450a0a; color: #f87171; }
+        button { background: #2563eb; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; margin: 4px; }
+        button:hover { background: #1d4ed8; }
+        button.danger { background: #dc2626; }
+        button.danger:hover { background: #b91c1c; }
+        button.success { background: #16a34a; }
+        button.success:hover { background: #15803d; }
+        .log { background: #0f172a; padding: 12px; border-radius: 8px; margin-top: 12px; font-family: 'Cascadia Code', monospace; font-size: 12px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; color: #a5b4fc; }
+        .status-bar { display: flex; gap: 16px; margin-bottom: 12px; }
+        .stat { background: #273548; padding: 12px 16px; border-radius: 8px; text-align: center; }
+        .stat .value { font-size: 24px; font-weight: 700; color: #38bdf8; }
+        .stat .label { font-size: 11px; color: #64748b; text-transform: uppercase; }
+        .loading { color: #64748b; font-style: italic; }
+        .alert { background: #422006; color: #fbbf24; padding: 8px 12px; border-radius: 6px; margin: 8px 0; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VFI - Validador Fiscal Inteligente</h1>
+        <p>Cliente Web | API: http://localhost:5000</p>
+        <p style="font-size:12px;color:#64748b;margin-top:8px">
+            Delphi VCL + VB6 ActiveX DLL + C# .NET 9 API + IA (OpenAI/Azure)
+        </p>
+        <div class="status-bar" id="stats"></div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Documentos Fiscais <button onclick="loadDocuments()" style="float:right">Atualizar</button></h2>
+            <table>
+                <thead><tr><th>ID</th><th>Tipo</th><th>Número</th><th>Emitente</th><th>Valor</th><th>Status</th><th>Ações</th></tr></thead>
+                <tbody id="docs-table"><tr><td colspan="7" class="loading">Carregando...</td></tr></tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Log de Operações</h2>
+            <div class="log" id="log">Aguardando operações...</div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:20px">
+        <h2>Criar Novo Documento</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+            <input id="f-type" placeholder="Tipo (NFe/CTe)" value="NFe" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-number" placeholder="Número" value="000999" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-value" placeholder="Valor Total" value="25000" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-emitente-cnpj" placeholder="CNPJ Emitente" value="11222333000181" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-emitente" placeholder="Nome Emitente" value="Empresa Teste Ltda" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-dest-cnpj" placeholder="CNPJ Destinatário" value="11222333000181" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-destino" placeholder="Nome Destinatário" value="Cliente Exemplo" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <input id="f-prod-name" placeholder="Produto" value="Notebook Dell" style="padding:8px;border-radius:6px;border:1px solid #334155;background:#0f172a;color:#e2e8f0">
+            <div style="grid-column:span 2;display:flex;gap:8px">
+                <button onclick="createDocument()">Criar Documento</button>
+                <button class="success" onclick="testAll()">Testar Tudo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:5000/api';
+        
+        function log(msg) {
+            const el = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            el.textContent = `[${time}] ${msg}\n` + el.textContent;
+        }
+
+        async function loadDocuments() {
+            try {
+                const res = await fetch(`${API}/FiscalDocuments`);
+                const docs = await res.json();
+                const tbody = document.getElementById('docs-table');
+                const stats = document.getElementById('stats');
+                
+                const pendente = docs.filter(d => d.status === 'PENDENTE').length;
+                stats.innerHTML = `
+                    <div class="stat"><div class="value">${docs.length}</div><div class="label">Total</div></div>
+                    <div class="stat"><div class="value">${pendente}</div><div class="label">Pendentes</div></div>
+                    <div class="stat"><div class="value">${docs.filter(d => d.status !== 'PENDENTE').length}</div><div class="label">Processados</div></div>
+                `;
+
+                if (docs.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7">Nenhum documento</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = docs.map(d => `
+                    <tr>
+                        <td>#${d.id}</td>
+                        <td><strong>${d.documentType}</strong></td>
+                        <td>${d.documentNumber}</td>
+                        <td>${d.issuerName.substring(0,20)}</td>
+                        <td>R$ ${d.totalValue.toLocaleString('pt-BR', {minimumFractionDigits:2})}</td>
+                        <td><span class="badge badge-${d.status.toLowerCase()}">${d.status}</span></td>
+                        <td>
+                            <button onclick="validateDoc(${d.id})" style="font-size:11px;padding:4px 8px">Validar</button>
+                            <button onclick="calcTax(${d.id})" style="font-size:11px;padding:4px 8px">ICMS</button>
+                            <button onclick="analyzeAI(${d.id})" style="font-size:11px;padding:4px 8px;background:#7c3aed">IA</button>
+                        </td>
+                    </tr>
+                `).join('');
+                
+                log(`Documentos carregados: ${docs.length}`);
+            } catch (e) {
+                log(`ERRO ao carregar: ${e.message}`);
+            }
+        }
+
+        async function validateDoc(id) {
+            log(`Validando documento #${id}...`);
+            try {
+                const res = await fetch(`${API}/FiscalDocuments/${id}/validate`, { method: 'POST' });
+                const r = await res.json();
+                if (r.isValid) {
+                    log(`Documento #${id}: VÁLIDO`);
+                } else {
+                    log(`Documento #${id}: REJEITADO - ${r.errors.length} erro(s)`);
+                    r.errors.forEach(e => log(`  [${e.code}] ${e.field}: ${e.message}`));
+                }
+                loadDocuments();
+            } catch (e) { log(`ERRO: ${e.message}`); }
+        }
+
+        async function calcTax(id) {
+            log(`Calculando ICMS para documento #${id}...`);
+            try {
+                const body = JSON.stringify({ documentId: id, taxType: 'ICMS', productValue: 1000, taxRate: 18, freight: 0, insurance: 0, otherExpenses: 0, discount: 0 });
+                const res = await fetch(`${API}/FiscalDocuments/${id}/calculate-tax`, { method: 'POST', headers: {'Content-Type':'application/json'}, body });
+                const r = await res.json();
+                log(`ICMS: Base R$${r.taxBase} × ${r.taxRate}% = R$${r.taxValue} [${r.calculationEngine}]`);
+            } catch (e) { log(`ERRO: ${e.message}`); }
+        }
+
+        async function analyzeAI(id) {
+            log(`Analisando documento #${id} com IA...`);
+            try {
+                const body = JSON.stringify({ documentId: id });
+                const res = await fetch(`${API}/FiscalDocuments/${id}/analyze-ai`, { method: 'POST', headers: {'Content-Type':'application/json'}, body });
+                const r = await res.json();
+                log(`IA/${r.model}: ${r.anomaliesFound} anomalia(s), confiança ${(r.confidenceScore*100).toFixed(0)}%`);
+            } catch (e) { log(`ERRO: ${e.message}`); }
+        }
+
+        async function createDocument() {
+            const doc = {
+                documentType: document.getElementById('f-type').value,
+                documentKey: '352401' + Date.now().toString().padStart(38, '0'),
+                documentNumber: document.getElementById('f-number').value,
+                issueDate: new Date().toISOString(),
+                issuerCNPJ: document.getElementById('f-emitente-cnpj').value,
+                issuerName: document.getElementById('f-emitente').value,
+                recipientCNPJ: document.getElementById('f-dest-cnpj').value,
+                recipientName: document.getElementById('f-destino').value,
+                totalValue: parseFloat(document.getElementById('f-value').value),
+                items: [{
+                    productCode: 'P001',
+                    productName: document.getElementById('f-prod-name').value,
+                    ncm: '84714900',
+                    cfop: '5101',
+                    quantity: 1,
+                    unitValue: parseFloat(document.getElementById('f-value').value),
+                    totalValue: parseFloat(document.getElementById('f-value').value)
+                }]
+            };
+            
+            log('Criando documento...');
+            try {
+                const res = await fetch(`${API}/FiscalDocuments`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(doc)
+                });
+                const r = await res.json();
+                log(`Documento #${r.id} criado: ${r.documentType} ${r.documentNumber} | R$ ${r.totalValue}`);
+                loadDocuments();
+            } catch (e) { log(`ERRO: ${e.message}`); }
+        }
+
+        async function testAll() {
+            log('=== TESTE COMPLETO ===');
+            await loadDocuments();
+            await validateDoc(1);
+            await calcTax(1);
+            await analyzeAI(1);
+            await createDocument();
+            log('=== TESTE CONCLUIDO ===');
+        }
+
+        loadDocuments();
+    </script>
+</body>
+</html>

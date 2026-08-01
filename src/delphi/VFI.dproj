@@ -1,0 +1,66 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+        <ProjectVersion>19.0</ProjectVersion>
+        <FrameworkType>VCL</FrameworkType>
+        <MainSource>VFI.dpr</MainSource>
+        <Base>True</Base>
+        <Config Condition="'$(Config)'==''">Debug</Config>
+        <DCC_DCCCompiler>dcc32</DCC_DCCCompiler>
+        <TargetedPlatform>Win32</TargetedPlatform>
+        <SanitizedProjectName>VFI</SanitizedProjectName>
+        <ProductVersion>12.0</ProductVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Config)'=='Base'">
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+        <DCC_DebugInfoInExe>true</DCC_DebugInfoInExe>
+        <DCC_Optimize>false</DCC_Optimize>
+        <DCC_LocalDebugSymbols>true</DCC_LocalDebugSymbols>
+        <DCC_StackFrames>true</DCC_StackFrames>
+        <DCC_OutputDir>.\$(Config)</DCC_OutputDir>
+        <VerInfo_Locale>1046</VerInfo_Locale>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Config)'=='Release'">
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+        <DCC_Optimize>true</DCC_Optimize>
+        <DCC_OutputDir>.\$(Config)</DCC_OutputDir>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <DCC_UnitSearchPath>forms;modules;tests;$(DCC_UnitSearchPath)</DCC_UnitSearchPath>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;System.Win;Bde;IBX;FireDAC</DCC_Namespace>
+        <DCC_UsePackage>false</DCC_UsePackage>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <BT_BuildType>Debug</BT_BuildType>
+        <DCC_DcuOutputDir>.\$(Config)\dcu</DCC_DcuOutputDir>
+        <DCC_ExeOutputDir>.\$(Config)</DCC_ExeOutputDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <DelphiCompile Include="forms\frmMain.pas">
+            <Form>frmMain.dfm</Form>
+        </DelphiCompile>
+        <DelphiCompile Include="modules\dmVFI.pas">
+            <Form>dmVFI.dfm</Form>
+        </DelphiCompile>
+        <DelphiCompile Include="modules\uFiscalValidator.pas"/>
+        <DelphiCompile Include="modules\uVB6Integration.pas"/>
+        <DelphiCompile Include="modules\uIAIntegration.pas"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <DCCReference Include="forms\frmMain.pas">
+            <Form>frmMain.dfm</Form>
+        </DCCReference>
+        <DCCReference Include="modules\dmVFI.pas">
+            <Form>dmVFI.dfm</Form>
+        </DCCReference>
+        <DCCReference Include="modules\uFiscalValidator.pas"/>
+        <DCCReference Include="modules\uVB6Integration.pas"/>
+        <DCCReference Include="modules\uIAIntegration.pas"/>
+    </ItemGroup>
+
+    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+</Project>
