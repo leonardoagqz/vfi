@@ -54,14 +54,13 @@ uses
 
 procedure TDataModuleVFI.DataModuleCreate(Sender: TObject);
 begin
-  Connection.DriverName := 'MSSQL';
   Connection.ConnectionString := GetConnectionString;
   Connection.Connected := True;
 end;
 
 function TDataModuleVFI.GetConnectionString: string;
 begin
-  Result := 'Server=localhost;Database=VFI_DB;OSAuthent=Yes;Trusted_Connection=Yes;MARS=Yes;';
+  Result := 'Server=localhost;Database=VFI_DB;User_Name=vfi_app;Password=Vfi@2024#Dev;MARS=Yes;';
 end;
 
 procedure TDataModuleVFI.CarregarDocumentos;

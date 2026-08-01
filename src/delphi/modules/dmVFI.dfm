@@ -7,7 +7,8 @@ object DataModuleVFI: TDataModuleVFI
       'Database=VFI_DB'
       'Server=localhost'
       'DriverID=MSSQL'
-      'OSAuthent=Yes')
+      'User_Name=vfi_app'
+      'Password=Vfi@2024#Dev')
     LoginPrompt = False
     Left = 48
     Top = 24
