@@ -36,6 +36,16 @@ begin
   Result := '''' + StringReplace(S, '''', '''''', [rfReplaceAll]) + '''';
 end;
 
+function FloatToSql(const V: Double): string;
+begin
+  Result := StringReplace(FloatToStr(V), ',', '.', []);
+end;
+
+function CurrToSql(const V: Currency): string;
+begin
+  Result := StringReplace(CurrToStr(V), ',', '.', []);
+end;
+
 function TFiscalDocumentRepository.CriarQuery: TADOQuery;
 begin
   Result := TADOQuery.Create(nil);
@@ -234,7 +244,7 @@ begin
        QuotedStrSafe(ADocument.NomeEmitente),
        QuotedStrSafe(ADocument.CnpjDestinatario),
        QuotedStrSafe(ADocument.NomeDestinatario),
-       CurrToStr(ADocument.ValorTotal),
+       CurrToSql(ADocument.ValorTotal),
        QuotedStrSafe(ADocument.XmlContent),
        QuotedStrSafe(StatusToStr(ADocument.Status))]);
 
@@ -275,9 +285,9 @@ begin
       [ACalculo.DocumentId,
        ACalculo.ItemId,
        QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
-       CurrToStr(ACalculo.BaseCalculo),
-       FloatToStr(ACalculo.Aliquota),
-       CurrToStr(ACalculo.ValorImposto),
+       CurrToSql(ACalculo.BaseCalculo),
+       FloatToSql(ACalculo.Aliquota),
+       CurrToSql(ACalculo.ValorImposto),
        QuotedStrSafe('Internal')]);
     Qry.ExecSQL;
   finally
@@ -301,7 +311,7 @@ begin
        QuotedStrSafe(APrompt),
        QuotedStrSafe(AResposta),
        AAnomalias,
-       FloatToStr(AConfianca)]);
+       FloatToSql(AConfianca)]);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
