@@ -6,8 +6,7 @@ uses
   System.SysUtils,
   VFI.Domain.Interfaces,
   VFI.Data.Config, VFI.Data.Connection, VFI.Data.Repository,
-  VFI.Services.FiscalValidator, VFI.Services.TaxCalculator,
-  VFI.Services.AIAnalyzer, VFI.Services.VB6Bridge;
+  VFI.Services.FiscalValidator, VFI.Services.AIAnalyzer;
 
 type
   TAppModule = class
@@ -15,7 +14,6 @@ type
     class var FConfig: TAppConfig;
     class var FRepository: IFiscalDocumentRepository;
     class var FValidator: IFiscalValidator;
-    class var FTaxCalc: ITaxCalculator;
     class var FAIAnalyzer: IAIAnalyzer;
   public
     class procedure Inicializar;
@@ -24,7 +22,6 @@ type
     class property Config: TAppConfig read FConfig;
     class property Repository: IFiscalDocumentRepository read FRepository;
     class property Validator: IFiscalValidator read FValidator;
-    class property TaxCalculator: ITaxCalculator read FTaxCalc;
     class property AIAnalyzer: IAIAnalyzer read FAIAnalyzer;
   end;
 
@@ -40,7 +37,6 @@ begin
 
   FRepository := TFiscalDocumentRepository.Create;
   FValidator := TFiscalValidator.Create;
-  FTaxCalc := TVB6Bridge.Create;
 
   FAIAnalyzer := TAIAnalyzer.Create(
     FConfig.LeString('AI', 'ApiKey', ''),

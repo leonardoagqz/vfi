@@ -12,9 +12,7 @@ uses
   VFI.Data.Connection in 'Data\VFI.Data.Connection.pas',
   VFI.Data.Repository in 'Data\VFI.Data.Repository.pas',
   VFI.Services.FiscalValidator in 'Services\VFI.Services.FiscalValidator.pas',
-  VFI.Services.TaxCalculator in 'Services\VFI.Services.TaxCalculator.pas',
   VFI.Services.AIAnalyzer in 'Services\VFI.Services.AIAnalyzer.pas',
-  VFI.Services.VB6Bridge in 'Services\VFI.Services.VB6Bridge.pas',
   VFI.Services.XmlImporter in 'Services\VFI.Services.XmlImporter.pas';
 
 {$R *.res}
@@ -30,7 +28,6 @@ begin
     frmMain.Controller := TMainController.Create(
       TAppModule.Repository,
       TAppModule.Validator,
-      TAppModule.TaxCalculator,
       TAppModule.AIAnalyzer);
     frmMain.Controller.SetOnStatus(frmMain.AtualizarStatus);
     frmMain.Controller.Inicializar;
@@ -38,6 +35,6 @@ begin
     Application.Run;
   except
     on E: Exception do
-      ShowMessage('Erro na inicializacao: ' + E.Message);
+      ShowMessage('Erro ao iniciar: ' + E.Message);
   end;
 end.
