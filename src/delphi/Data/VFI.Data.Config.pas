@@ -3,13 +3,13 @@ unit VFI.Data.Config;
 interface
 
 uses
-  System.SysUtils, System.IniFiles;
+  System.SysUtils, System.IniFiles, System.IOUtils;
 
 type
   TAppConfig = class
   private
     FIniFile: TMemIniFile;
-    function GetIniPath: string;
+    function FindIniPath: string;
   public
     constructor Create;
     destructor Destroy; override;
@@ -22,28 +22,38 @@ type
 implementation
 
 constructor TAppConfig.Create;
+var
+  Path: string;
 begin
   inherited;
-  FIniFile := TMemIniFile.Create(GetIniPath, TEncoding.UTF8);
+  Path := FindIniPath;
+  if (Path <> '') and TFile.Exists(Path) then
+    FIniFile := TMemIniFile.Create(Path, TEncoding.UTF8)
+  else
+    FIniFile := TMemIniFile.Create('');
 end;
 
 destructor TAppConfig.Destroy;
 begin
-  FIniFile.UpdateFile;
   FIniFile.Free;
   inherited;
 end;
 
-function TAppConfig.GetIniPath: string;
+function TAppConfig.FindIniPath: string;
+var
+  ExeDir: string;
 begin
-  Result := ExtractFilePath(ParamStr(0)) + 'vfi.ini';
-  if not FileExists(Result) then
-    Result := ExtractFilePath(ParamStr(0)) + '..\..\Resources\vfi.ini';
+  ExeDir := ExtractFilePath(ParamStr(0));
+  ExeDir := ExcludeTrailingPathDelimiter(ExeDir);
+  ExeDir := ExtractFilePath(ExeDir);
+  Result := TPath.Combine(ExeDir, 'Resources\vfi.ini');
 end;
 
 function TAppConfig.LeString(const ASecao, AChave, ADefault: string): string;
 begin
   Result := FIniFile.ReadString(ASecao, AChave, ADefault);
+  if Result = '' then
+    Result := ADefault;
 end;
 
 function TAppConfig.LeInteger(const ASecao, AChave: string; ADefault: Integer): Integer;
