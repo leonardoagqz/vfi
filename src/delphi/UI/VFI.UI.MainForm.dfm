@@ -355,50 +355,21 @@ object frmMain: TfrmMain
     TabOrder = 0
         end
       end
-            object tsRegras: TTabSheet
+      object tsRegras: TTabSheet
         Caption = 'Regras Fiscais'
-        object sgRegras: TStringGrid
+        object memRegrasFiscais: TMemo
           Left = 0
-          Top = 0
-          Width = 396
-          Height = 425
-          Align = alClient
-          ColCount = 3
-          DefaultColWidth = 130
-          DefaultRowHeight = 20
-          FixedCols = 0
-          FixedRows = 1
-          Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRowSelect, goEditing]
-          TabOrder = 0
+    Top = 0
+    Width = 396
+    Height = 461
+    Align = alClient
+          Font.Name = 'Consolas'
+    Font.Size = 10
+    ParentFont = False
+          ScrollBars = ssBoth
+    TabOrder = 0
         end
-        object pnlRegras: TPanel
-          Left = 0
-          Top = 425
-          Width = 396
-          Height = 34
-          Align = alBottom
-          BevelOuter = bvNone
-          TabOrder = 1
-          object btnAddRegra: TButton
-            Left = 4
-            Top = 4
-            Width = 80
-            Height = 26
-            Caption = 'Adicionar'
-            TabOrder = 0
-            OnClick = btnAddRegraClick
-          end
-          object btnDelRegra: TButton
-            Left = 88
-            Top = 4
-            Width = 80
-            Height = 26
-            Caption = 'Remover'
-            TabOrder = 1
-            OnClick = btnDelRegraClick
-          end
-        end
-      end      end
+      end
     end
   end
   object PopupExcluir: TPopupMenu
