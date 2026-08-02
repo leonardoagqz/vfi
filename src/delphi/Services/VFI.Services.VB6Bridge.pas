@@ -3,7 +3,7 @@ unit VFI.Services.VB6Bridge;
 interface
 
 uses
-  System.SysUtils, System.Win.ComObj, Winapi.ActiveX,
+  System.SysUtils, System.Win.ComObj, System.Win.ComConst, Winapi.ActiveX,
   VFI.Domain.Entities, VFI.Domain.Enums, VFI.Domain.Interfaces;
 
 type
@@ -47,9 +47,14 @@ var
 begin
   try
     ComObj := CreateOleObject('FiscalEngine.FiscalCalculator');
-    Result := Assigned(ComObj);
+    Result := ComObj <> nil;
   except
-    Result := False;
+    on EOleSysError do
+      Result := False;
+    on EOleError do
+      Result := False;
+    else
+      Result := False;
   end;
 end;
 
