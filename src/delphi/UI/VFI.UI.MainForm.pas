@@ -320,7 +320,10 @@ begin
         LI.Caption := IntToStr(Regras[i].Id);
         LI.SubItems.Add(Regras[i].Description);
         LI.SubItems.Add(Regras[i].Severity);
-        LI.SubItems.Add(Regras[i].UpdatedAt);
+        if Regras[i].UpdatedAt <> '' then
+          LI.SubItems.Add(FormatDateTime('dd/mm/yyyy hh:nn:ss', ISO8601ToDate(Regras[i].UpdatedAt)))
+        else
+          LI.SubItems.Add('-');
         RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
           [i + 1, Regras[i].Severity, Regras[i].Description]);
       end;
