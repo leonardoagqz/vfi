@@ -96,11 +96,6 @@ begin
   lvItens.Columns.Add.Caption:='NCM'; lvItens.Columns[5].Width:=70;
   lvItens.Columns.Add.Caption:='CFOP'; lvItens.Columns[6].Width:=55;
   memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
-  sgRegras.ColCount := 2;
-  sgRegras.Cells[0,0] := 'Codigo';
-  sgRegras.Cells[1,0] := 'Regra Fiscal';
-  sgRegras.ColWidths[0] := 85;
-  sgRegras.ColWidths[1] := 305;
   CarregarRegrasPadrao;
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
@@ -144,7 +139,9 @@ begin
 end;
 
 procedure TfrmMain.AtualizarStatus(const AMsg: string); 
-begin lblStatusMsg.Caption:=AMsg; memLog.Lines.Add(FormatDateTime('hh:nn:ss',Now)+'  '+AMsg); end;
+begin
+
+lblStatusMsg.Caption:=AMsg; memLog.Lines.Add(FormatDateTime('hh:nn:ss',Now)+'  '+AMsg); end;
 
 procedure TfrmMain.LimparDetalhes;
 begin
@@ -380,7 +377,13 @@ begin
       Linhas.Add('LIM-R03: Documento > 1 ano: verificar prescricao (5 anos)');
     end;
 
+    sgRegras.ColCount := 2;
+    sgRegras.FixedRows := 1;
     sgRegras.RowCount := Linhas.Count + 1;
+    sgRegras.Cells[0, 0] := 'Codigo';
+    sgRegras.Cells[1, 0] := 'Regra Fiscal';
+    sgRegras.ColWidths[0] := 85;
+    sgRegras.ColWidths[1] := 305;
     for i := 0 to Linhas.Count - 1 do
     begin
       p := Pos(': ', Linhas[i]);
