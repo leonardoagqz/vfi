@@ -312,15 +312,55 @@ end;
 
 procedure TfrmMain.CarregarRegrasPadrao;
 var
-  Path: string;
+  Caminho: string;
 begin
-    Path := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
-  if FileExists(Path) then
-    memRegrasFiscais.Lines.LoadFromFile(Path)
+  Caminho := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
+  if FileExists(Caminho) then
+  begin
+    memRegrasFiscais.Lines.LoadFromFile(Caminho);
+    AtualizarStatus(Format('Regras fiscais carregadas: %s (%d linhas)', [ExtractFileName(Caminho), memRegrasFiscais.Lines.Count]));
+  end
   else
   begin
+    memRegrasFiscais.Lines.Clear;
     memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA ---');
-    memRegrasFiscais.Lines.Add('Adicione regras fiscais para a IA usar como base de analise.');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('ICMS-R01: Aliquota interestadual: 7% (Sul/Sudeste) ou 12% (demais)');
+    memRegrasFiscais.Lines.Add('ICMS-R02: Aliquota interna SP/RJ/MG: 18%, RS: 17%');
+    memRegrasFiscais.Lines.Add('ICMS-R03: ST obrigatoria para NCM 8528 (monitores) e 8471 (notebooks)');
+    memRegrasFiscais.Lines.Add('ICMS-R04: MVA padrao ST: 40% (interno), 50% (interestadual)');
+    memRegrasFiscais.Lines.Add('ICMS-R05: NF-e > R$100k exige MDF-e vinculado');
+    memRegrasFiscais.Lines.Add('ICMS-R06: Prazo cancelamento NF-e: 24h apos autorizacao');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('CFOP-R01: 5101/6101 = venda interestadual, 5405/6405 = venda com ST');
+    memRegrasFiscais.Lines.Add('CFOP-R02: 6102 = compra interestadual, 5910/6910 = remessa industrializacao');
+    memRegrasFiscais.Lines.Add('CFOP-R03: 5351 = transporte interestadual (CT-e)');
+    memRegrasFiscais.Lines.Add('CFOP-R04: 7xxx = exportacao (isento ICMS)');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('IPI-R01: NCM 8471 (computadores): IPI 0% (Lei do Bem)');
+    memRegrasFiscais.Lines.Add('IPI-R02: NCM 8528 (monitores): IPI variavel conforme TIPI');
+    memRegrasFiscais.Lines.Add('IPI-R03: CST IPI: 50=tributado, 51=suspenso, 52=isento, 53=nao tributado');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('PCO-R01: Lucro Real: PIS 1.65%, COFINS 7.6% (nao-cumulativo)');
+    memRegrasFiscais.Lines.Add('PCO-R02: Lucro Presumido: PIS 0.65%, COFINS 3.0% (cumulativo)');
+    memRegrasFiscais.Lines.Add('PCO-R03: Simples Nacional: aliquotas unificadas, nao gera credito');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('VAL-R01: Soma itens deve coincidir com valor total da NF-e');
+    memRegrasFiscais.Lines.Add('VAL-R02: CNPJ: 14 digitos com DV modulo 11');
+    memRegrasFiscais.Lines.Add('VAL-R03: NCM: 8 digitos obrigatorios, nao aceitar 00000000');
+    memRegrasFiscais.Lines.Add('VAL-R04: CFOP: 4 digitos entre 1000 e 7999');
+    memRegrasFiscais.Lines.Add('VAL-R05: Chave NFe: 44 digitos com DV');
+    memRegrasFiscais.Lines.Add('VAL-R06: CST 00: vBC>0 e vICMS>0 obrigatoriamente');
+    memRegrasFiscais.Lines.Add('VAL-R07: CST 40/41/50: vICMS=0 obrigatoriamente');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('LIM-R01: NF-e > R$50k: verificar MDF-e');
+    memRegrasFiscais.Lines.Add('LIM-R02: Valor unitario > R$10k: verificar NCM e aliquota');
+    memRegrasFiscais.Lines.Add('LIM-R03: Documento com +1 ano: verificar prescricao (5 anos)');
+    memRegrasFiscais.Lines.Add('LIM-R04: DIFAL partilha 2024: 60% destino, 40% origem');
+    memRegrasFiscais.Lines.Add('');
+    memRegrasFiscais.Lines.Add('Editaveis - adicione ou modifique regras conforme necessario.');
+    memRegrasFiscais.Lines.Add('A IA usara estas regras como referencia na analise fiscal.');
+    AtualizarStatus('Regras fiscais carregadas inline (arquivo nao encontrado).');
   end;
 end;
 
