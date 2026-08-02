@@ -32,6 +32,7 @@ function TipoDocumentoToStr(const ATipo: TTipoDocumento): string;
 function StrToTipoDocumento(const AStr: string): TTipoDocumento;
 function StatusToStr(const AStatus: TStatusDocumento): string;
 function ImpostoToStr(const AImposto: TTipoImposto): string;
+function StrToImposto(const AStr: string): TTipoImposto;
 
 implementation
 
@@ -77,6 +78,20 @@ begin
     tiCOFINS: Result := 'COFINS';
     tiDIFAL:  Result := 'DIFAL';
   end;
+end;
+
+function StrToImposto(const AStr: string): TTipoImposto;
+var
+  S: string;
+begin
+  S := UpperCase(Trim(AStr));
+  if S = 'ICMS' then Result := tiICMS
+  else if S = 'ICMS-ST' then Result := tiICMSST
+  else if S = 'IPI' then Result := tiIPI
+  else if S = 'PIS' then Result := tiPIS
+  else if S = 'COFINS' then Result := tiCOFINS
+  else if S = 'DIFAL' then Result := tiDIFAL
+  else Result := tiICMS;
 end;
 
 end.

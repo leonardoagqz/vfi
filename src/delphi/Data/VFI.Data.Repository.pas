@@ -106,11 +106,11 @@ begin
       Calc.Id := Qry.FieldByName('Id').AsInteger;
       Calc.DocumentId := ADocId;
       Calc.ItemId := Qry.FieldByName('ItemId').AsInteger;
-      Calc.TipoImposto := TTipoImposto(Qry.FieldByName('TaxType').AsInteger);
+      Calc.TipoImposto := StrToImposto(Qry.FieldByName('TaxType').AsString);
       Calc.BaseCalculo := Qry.FieldByName('TaxBase').AsCurrency;
       Calc.Aliquota := Qry.FieldByName('TaxRate').AsFloat;
       Calc.ValorImposto := Qry.FieldByName('TaxValue').AsCurrency;
-      Calc.Engine := TEngineCalculo(Qry.FieldByName('CalculationEngine').AsInteger);
+      Calc.Engine := ecInternal;
       ADoc.Calculos.Add(Calc);
       Qry.Next;
     end;
