@@ -99,45 +99,41 @@ begin
     Exit;
   end;
 
-  try
-    FRepository.Inserir(Doc);
-
-    for Calc in Doc.Calculos do
-    begin
-      Calc.DocumentId := Doc.Id;
-      if (Calc.ItemId >= 0) and (Calc.ItemId < Doc.Itens.Count) then
-        Calc.ItemId := Doc.Itens[Calc.ItemId].Id
-      else
-        Calc.ItemId := -1;
-      FRepository.InserirCalculo(Calc);
-    end;
-
-    FUltimaValidacao := FValidator.ValidarDocumento(Doc);
-    if FUltimaValidacao.IsValid then
-    begin
-      FRepository.AtualizarStatus(Doc.Id, stValidado);
-      ValResumo := 'VALIDO';
-    end
-    else
-    begin
-      FRepository.AtualizarStatus(Doc.Id, stRejeitado);
-      ValResumo := Format('REJEITADO (%d erros)', [FUltimaValidacao.Erros.Count]);
-    end;
-
-    Status(Format('OK: %s #%s | %s | %d itens | %d impostos | R$ %s | %s',
-      [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 25),
-       Doc.Itens.Count, Doc.Calculos.Count,
-       FormatFloat('#,##0.00', Doc.ValorTotal), ValResumo]));
-  except
-    on E: Exception do
-    begin
-      if Pos('UNIQUE KEY', UpperCase(E.Message)) > 0 then
-        Status(Format('JA EXISTE: %s #%s - documento ja foi importado anteriormente.',
-          [TipoDocumentoToStr(Doc.Tipo), Doc.Numero]))
-      else
-        Status('ERRO ao importar: ' + ExtractFileName(AArquivo) + ' - ' + E.Message);
-    end;
+  if FRepository.ExisteChave(Doc.Chave) then
+  begin
+    Status(Format('JA EXISTE: %s #%s - chave ja importada.', [TipoDocumentoToStr(Doc.Tipo), Doc.Numero]));
+    Doc.Free;
+    Exit;
   end;
+
+  FRepository.Inserir(Doc);
+
+  for Calc in Doc.Calculos do
+  begin
+    Calc.DocumentId := Doc.Id;
+    if (Calc.ItemId >= 0) and (Calc.ItemId < Doc.Itens.Count) then
+      Calc.ItemId := Doc.Itens[Calc.ItemId].Id
+    else
+      Calc.ItemId := -1;
+    FRepository.InserirCalculo(Calc);
+  end;
+
+  FUltimaValidacao := FValidator.ValidarDocumento(Doc);
+  if FUltimaValidacao.IsValid then
+  begin
+    FRepository.AtualizarStatus(Doc.Id, stValidado);
+    ValResumo := 'VALIDO';
+  end
+  else
+  begin
+    FRepository.AtualizarStatus(Doc.Id, stRejeitado);
+    ValResumo := Format('REJEITADO (%d erros)', [FUltimaValidacao.Erros.Count]);
+  end;
+
+  Status(Format('OK: %s #%s | %s | %d itens | %d impostos | R$ %s | %s',
+    [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 25),
+     Doc.Itens.Count, Doc.Calculos.Count,
+     FormatFloat('#,##0.00', Doc.ValorTotal), ValResumo]));
 
   Doc.Free;
   CarregarDocumentos;

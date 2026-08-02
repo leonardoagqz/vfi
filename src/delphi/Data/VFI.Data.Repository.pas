@@ -23,6 +23,7 @@ type
     procedure Inserir(const ADocument: TFiscalDocument);
     procedure AtualizarStatus(const AId: Integer; const AStatus: TStatusDocumento);
     procedure Excluir(const AId: Integer);
+    function ExisteChave(const AChave: string): Boolean;
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
@@ -289,6 +290,21 @@ begin
       'UPDATE FiscalDocument SET Status = %s, UpdatedAt = GETDATE() WHERE Id = %d',
       [QuotedStrSafe(StatusToStr(AStatus)), AId]);
     Qry.ExecSQL;
+  finally
+    Qry.Connection.Free;
+    Qry.Free;
+  end;
+end;
+
+function TFiscalDocumentRepository.ExisteChave(const AChave: string): Boolean;
+var
+  Qry: TADOQuery;
+begin
+  Qry := CriarQuery;
+  try
+    Qry.SQL.Text := 'SELECT COUNT(*) FROM FiscalDocument WHERE DocumentKey = ' + QuotedStrSafe(AChave);
+    Qry.Open;
+    Result := Qry.Fields[0].AsInteger > 0;
   finally
     Qry.Connection.Free;
     Qry.Free;

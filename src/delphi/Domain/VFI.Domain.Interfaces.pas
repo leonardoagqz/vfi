@@ -16,6 +16,7 @@ type
     procedure Inserir(const ADocument: TFiscalDocument);
     procedure AtualizarStatus(const AId: Integer; const AStatus: TStatusDocumento);
     procedure Excluir(const AId: Integer);
+    function ExisteChave(const AChave: string): Boolean;
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
