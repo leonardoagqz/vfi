@@ -33,7 +33,7 @@ type
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
-    pnlStatus: TPanel; lblStatusMsg: TLabel;
+    pnlStatus: TPanel; lblStatusMsg: TLabel; pbProgresso: TProgressBar;
     PopupExcluir: TPopupMenu; miExcluirSelecionado: TMenuItem; miLimparTudo: TMenuItem;
     procedure FormCreate(Sender: TObject); procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -59,6 +59,9 @@ type
     procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
     procedure CarregarRegrasPadrao;
+    procedure MostrarProgresso(const AMax: Integer);
+    procedure AtualizarProgresso(const APos: Integer);
+    procedure OcultarProgresso;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
   public
     procedure AtualizarStatus(const AMsg: string); procedure AtualizarTela;
@@ -557,6 +560,26 @@ begin
     'CONFIGURE CHAVE DEEPSEEK:' + sLineBreak +
     'Clique em Configurar API (platform.deepseek.com).' + sLineBreak +
     'Sem chave = analise local offline.');
+end;
+
+procedure TfrmMain.MostrarProgresso(const AMax: Integer);
+begin
+  pbProgresso.Max := AMax;
+  pbProgresso.Position := 0;
+  pbProgresso.Visible := True;
+  Application.ProcessMessages;
+end;
+
+procedure TfrmMain.AtualizarProgresso(const APos: Integer);
+begin
+  pbProgresso.Position := APos;
+  lblStatusMsg.Caption := Format('Processando... %d/%d', [APos, pbProgresso.Max]);
+  Application.ProcessMessages;
+end;
+
+procedure TfrmMain.OcultarProgresso;
+begin
+  pbProgresso.Visible := False;
 end;
 
 end.
