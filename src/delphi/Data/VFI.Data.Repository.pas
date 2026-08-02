@@ -33,23 +33,15 @@ implementation
 uses
   VFI.Data.Connection;
 
-procedure AdicionarParametro(const AQuery: TADOQuery; const ANome: string;
-  ATipo: TFieldType; const AValor: Variant);
-var
-  Param: TParameter;
+procedure DefinirParametro(const AConsulta: TADOQuery; const ANome: string; const AValor: Variant);
 begin
-  Param := AQuery.Parameters.AddParameter;
-  Param.Name := ANome;
-  Param.DataType := ATipo;
-  Param.Direction := pdInput;
-  Param.Value := AValor;
+  AConsulta.Parameters.ParamByName(ANome).Value := AValor;
 end;
 
 function CriarConsulta: TADOQuery;
 begin
   Result := TADOQuery.Create(nil);
   Result.Connection := TConnectionFactory.CriarConexao;
-  Result.ParamCheck := False;
 end;
 
 procedure TFiscalDocumentRepository.PopularDocumento(const AQuery: TADOQuery; const ADoc: TFiscalDocument);
@@ -88,7 +80,7 @@ begin
   Qry := CriarConsulta;
   try
     Qry.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = :id';
-    AdicionarParametro(Qry, 'id', ftInteger, ADocId);
+    DefinirParametro(Qry, 'id', ADocId);
     Qry.Open;
     while not Qry.Eof do begin
       Item := TDocumentItem.Create; PopularItem(Qry, Item);
@@ -103,7 +95,7 @@ begin
   Qry := CriarConsulta;
   try
     Qry.SQL.Text := 'SELECT * FROM TaxCalculation WHERE DocumentId = :id';
-    AdicionarParametro(Qry, 'id', ftInteger, ADocId);
+    DefinirParametro(Qry, 'id', ADocId);
     Qry.Open;
     while not Qry.Eof do begin
       Calc := TTaxCalculation.Create;
@@ -142,7 +134,7 @@ begin
     Qry.SQL.Text := 'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status ' +
       'FROM FiscalDocument WHERE Id = :id';
-    AdicionarParametro(Qry, 'id', ftInteger, AId);
+    DefinirParametro(Qry, 'id', AId);
     Qry.Open;
     if not Qry.IsEmpty then begin
       Result := TFiscalDocument.Create; PopularDocumento(Qry, Result);
@@ -164,11 +156,11 @@ begin
   try
     Qry.SQL.Text := 'INSERT INTO DocumentItem (DocumentId, ProductCode, ProductName, NCM, CFOP, ' +
       'Quantity, UnitValue, TotalValue, CST) VALUES (:docid,:cod,:nome,:ncm,:cfop,:qtd,:vu,:vt,:cst); SELECT SCOPE_IDENTITY()';
-    AdicionarParametro(Qry,'docid',ftInteger,AItem.DocumentId); AdicionarParametro(Qry,'cod',ftString,AItem.CodigoProduto);
-    AdicionarParametro(Qry,'nome',ftString,AItem.NomeProduto); AdicionarParametro(Qry,'ncm',ftString,AItem.NCM);
-    AdicionarParametro(Qry,'cfop',ftString,AItem.CFOP); AdicionarParametro(Qry,'qtd',ftFloat,AItem.Quantidade);
-    AdicionarParametro(Qry,'vu',ftCurrency,AItem.ValorUnitario); AdicionarParametro(Qry,'vt',ftCurrency,AItem.ValorTotal);
-    AdicionarParametro(Qry,'cst',ftString,AItem.CST);
+    DefinirParametro(Qry,'docid',AItem.DocumentId); DefinirParametro(Qry,'cod',AItem.CodigoProduto);
+    DefinirParametro(Qry,'nome',AItem.NomeProduto); DefinirParametro(Qry,'ncm',AItem.NCM);
+    DefinirParametro(Qry,'cfop',AItem.CFOP); DefinirParametro(Qry,'qtd',AItem.Quantidade);
+    DefinirParametro(Qry,'vu',AItem.ValorUnitario); DefinirParametro(Qry,'vt',AItem.ValorTotal);
+    DefinirParametro(Qry,'cst',AItem.CST);
     Qry.Open; Result := Qry.Fields[0].AsInteger;
   finally Qry.Connection.Free; Qry.Free; end;
 end;
@@ -181,12 +173,12 @@ begin
     Qry.SQL.Text := 'INSERT INTO FiscalDocument (DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status) ' +
       'VALUES (:tp,:ch,:num,:dt,:ce,:ne,:cd,:nd,:vl,:xml,:st); SELECT SCOPE_IDENTITY()';
-    AdicionarParametro(Qry,'tp',ftString,TipoDocumentoToStr(ADocument.Tipo)); AdicionarParametro(Qry,'ch',ftString,ADocument.Chave);
-    AdicionarParametro(Qry,'num',ftString,ADocument.Numero); AdicionarParametro(Qry,'dt',ftDateTime,ADocument.DataEmissao);
-    AdicionarParametro(Qry,'ce',ftString,ADocument.CnpjEmitente); AdicionarParametro(Qry,'ne',ftString,ADocument.NomeEmitente);
-    AdicionarParametro(Qry,'cd',ftString,ADocument.CnpjDestinatario); AdicionarParametro(Qry,'nd',ftString,ADocument.NomeDestinatario);
-    AdicionarParametro(Qry,'vl',ftCurrency,ADocument.ValorTotal); AdicionarParametro(Qry,'xml',ftString,ADocument.XmlContent);
-    AdicionarParametro(Qry,'st',ftString,StatusToStr(ADocument.Status));
+    DefinirParametro(Qry,'tp',TipoDocumentoToStr(ADocument.Tipo)); DefinirParametro(Qry,'ch',ADocument.Chave);
+    DefinirParametro(Qry,'num',ADocument.Numero); DefinirParametro(Qry,'dt',ADocument.DataEmissao);
+    DefinirParametro(Qry,'ce',ADocument.CnpjEmitente); DefinirParametro(Qry,'ne',ADocument.NomeEmitente);
+    DefinirParametro(Qry,'cd',ADocument.CnpjDestinatario); DefinirParametro(Qry,'nd',ADocument.NomeDestinatario);
+    DefinirParametro(Qry,'vl',ADocument.ValorTotal); DefinirParametro(Qry,'xml',ADocument.XmlContent);
+    DefinirParametro(Qry,'st',StatusToStr(ADocument.Status));
     Qry.Open; ADocument.Id := Qry.Fields[0].AsInteger;
   finally Qry.Connection.Free; Qry.Free; end;
   for Item in ADocument.Itens do begin Item.DocumentId := ADocument.Id; Item.Id := InserirItem(Item); end;
@@ -198,7 +190,7 @@ begin
   Qry := CriarConsulta;
   try
     Qry.SQL.Text := 'UPDATE FiscalDocument SET Status = :st, UpdatedAt = GETDATE() WHERE Id = :id';
-    AdicionarParametro(Qry,'st',ftString,StatusToStr(AStatus)); AdicionarParametro(Qry,'id',ftInteger,AId);
+    DefinirParametro(Qry,'st',StatusToStr(AStatus)); DefinirParametro(Qry,'id',AId);
     Qry.ExecSQL;
   finally Qry.Connection.Free; Qry.Free; end;
 end;
@@ -209,7 +201,7 @@ begin
   Qry := CriarConsulta;
   try
     Qry.SQL.Text := 'SELECT COUNT(*) FROM FiscalDocument WHERE DocumentKey = :ch';
-    AdicionarParametro(Qry,'ch',ftString,AChave); Qry.Open;
+    DefinirParametro(Qry,'ch',AChave); Qry.Open;
     Result := Qry.Fields[0].AsInteger > 0;
   finally Qry.Connection.Free; Qry.Free; end;
 end;
@@ -220,10 +212,10 @@ begin
   Consulta := CriarConsulta;
   try
     Consulta.Connection.BeginTrans;
-    Consulta.SQL.Text := 'DELETE FROM AIAnalysisLog WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
-    Consulta.SQL.Text := 'DELETE FROM TaxCalculation WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
-    Consulta.SQL.Text := 'DELETE FROM DocumentItem WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
-    Consulta.SQL.Text := 'DELETE FROM FiscalDocument WHERE Id = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM AIAnalysisLog WHERE DocumentId = :id'; DefinirParametro(Consulta,'id',AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM TaxCalculation WHERE DocumentId = :id'; DefinirParametro(Consulta,'id',AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM DocumentItem WHERE DocumentId = :id'; DefinirParametro(Consulta,'id',AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM FiscalDocument WHERE Id = :id'; DefinirParametro(Consulta,'id',AId); Consulta.ExecSQL;
     Consulta.Connection.CommitTrans;
   except
     Consulta.Connection.RollbackTrans;
@@ -239,10 +231,10 @@ begin
   try
     Qry.SQL.Text := 'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
       'VALUES (:di,:ii,:tt,:bc,:rt,:vl,:eg)';
-    AdicionarParametro(Qry,'di',ftInteger,ACalculo.DocumentId); AdicionarParametro(Qry,'ii',ftInteger,ACalculo.ItemId);
-    AdicionarParametro(Qry,'tt',ftString,ImpostoToStr(ACalculo.TipoImposto)); AdicionarParametro(Qry,'bc',ftCurrency,ACalculo.BaseCalculo);
-    AdicionarParametro(Qry,'rt',ftFloat,ACalculo.Aliquota); AdicionarParametro(Qry,'vl',ftCurrency,ACalculo.ValorImposto);
-    AdicionarParametro(Qry,'eg',ftString,'Internal');
+    DefinirParametro(Qry,'di',ACalculo.DocumentId); DefinirParametro(Qry,'ii',ACalculo.ItemId);
+    DefinirParametro(Qry,'tt',ImpostoToStr(ACalculo.TipoImposto)); DefinirParametro(Qry,'bc',ACalculo.BaseCalculo);
+    DefinirParametro(Qry,'rt',ACalculo.Aliquota); DefinirParametro(Qry,'vl',ACalculo.ValorImposto);
+    DefinirParametro(Qry,'eg','Internal');
     Qry.ExecSQL;
   finally Qry.Connection.Free; Qry.Free; end;
 end;
@@ -255,9 +247,9 @@ begin
   try
     Qry.SQL.Text := 'INSERT INTO AIAnalysisLog (DocumentId, Model, Prompt, Response, AnomaliesFound, ConfidenceScore) ' +
       'VALUES (:di,:md,:pr,:rs,:an,:sc)';
-    AdicionarParametro(Qry,'di',ftInteger,ADocId); AdicionarParametro(Qry,'md',ftString,AModelo);
-    AdicionarParametro(Qry,'pr',ftString,APrompt); AdicionarParametro(Qry,'rs',ftString,AResposta);
-    AdicionarParametro(Qry,'an',ftInteger,AAnomalias); AdicionarParametro(Qry,'sc',ftFloat,AConfianca);
+    DefinirParametro(Qry,'di',ADocId); DefinirParametro(Qry,'md',AModelo);
+    DefinirParametro(Qry,'pr',APrompt); DefinirParametro(Qry,'rs',AResposta);
+    DefinirParametro(Qry,'an',AAnomalias); DefinirParametro(Qry,'sc',AConfianca);
     Qry.ExecSQL;
   finally Qry.Connection.Free; Qry.Free; end;
 end;
