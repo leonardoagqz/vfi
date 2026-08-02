@@ -1,0 +1,126 @@
+--- REGRAS FISCAIS DE REFERENCIA (ICMS) ---
+ICMS-R01: Aliquota ICMS interestadual: 7% (Sul/Sudeste para Sul/Sudeste), 12% (demais casos)
+ICMS-R02: Aliquota ICMS interna padrao SP: 18%, RJ: 18%, MG: 18%, PR: 18%, RS: 17%
+ICMS-R03: Aliquota ICMS interna reduzida: 12% (SP para alguns produtos), 7% (ES para alguns)
+ICMS-R04: NCM 8528 (monitores/projetores): ST obrigatoria em SP (Protocolo ICMS)
+ICMS-R05: NCM 8471 (computadores/notebooks): ST obrigatoria em SP, MG, PR
+ICMS-R06: MVA original padrao para ST: 40% (operações internas), 50% (interestadual)
+ICMS-R07: MVA ajustado = [(1+MVA original)*(1-ALQ inter)/(1-ALQ intra)] - 1
+ICMS-R08: CFOP 5101: Venda de mercadoria interestadual - ICMS interestadual (7% ou 12%)
+ICMS-R09: CFOP 5405: Venda com ST interestadual - retencao na origem
+ICMS-R10: CFOP 6102: Compra interestadual para comercializacao
+ICMS-R11: ICMS sobre frete CIF: base de calculo inclui valor do frete
+ICMS-R12: ICMS sobre frete FOB: frete destacado separadamente, ICMS proprio do transportador
+ICMS-R13: Reducao de base de calculo: permitida para produtos da cesta basica (Conv. ICMS)
+ICMS-R14: Diferimento ICMS: comum para produtos agricolas, sucatas, materias-primas
+ICMS-R15: Isencao ICMS: exportacao (CFOP 7xxx), livros, jornais, periodicos
+ICMS-R16: Nao incidencia ICMS: operações interestaduais com petroleo e energia eletrica
+ICMS-R17: Creditos de ICMS: permitidos para insumos, ativo fixo (48 meses), energia eletrica
+ICMS-R18: Estorno de credito: saida com isencao/nao incidencia exige estorno proporcional
+ICMS-R19: CIAP: credito de ICMS sobre ativo imobilizado - 1/48 por mes
+ICMS-R20: GIA: declaracao mensal obrigatoria para contribuintes do ICMS (regime periodico)
+ICMS-R21: SPED Fiscal: obrigatorio para contribuintes do Lucro Real e Presumido
+ICMS-R22: NF-e com valor acima de R$ 100.000: obrigatoria emissao de MDF-e vinculado
+ICMS-R23: Prazo de cancelamento NF-e: 24 horas apos autorizacao de uso (SP: 480h para alguns)
+ICMS-R24: Carta de Correcao Eletronica (CC-e): permitida para corrigir dados nao fiscais
+ICMS-R25: Inutilizacao de numeracao NF-e: prazo maximo 30 dias apos concessao
+ICMS-R26: CFOP 5910: Remessa para industrializacao interestadual - suspensao ICMS
+ICMS-R27: CFOP 6910: Retorno de industrializacao interestadual - complemento ICMS
+ICMS-R28: Simples Nacional: aliquotas unificadas conforme anexos da LC 123/2006
+ICMS-R29: Simples Nacional: ICMS incluso na aliquota unica, nao gera credito para destinatario
+ICMS-R30: MEI: isento de ICMS proprio, exceto operacoes interestaduais com ST
+
+--- REGRAS FISCAIS DE REFERENCIA (IPI) ---
+IPI-R01: Aliquota IPI varia conforme TIPI (Tabela de Incidencia do IPI)
+IPI-R02: NCM 8471 (computadores): IPI 0% (Lei do Bem - desoneracao)
+IPI-R03: NCM 8528 (monitores): IPI 0-10% conforme resolucao
+IPI-R04: NCM 8443 (impressoras/toners): IPI 0-5%
+IPI-R05: NCM 8534 (circuitos impressos): IPI 0% (componentes eletronicos)
+IPI-R06: IPI nao cumulativo: creditos permitidos para insumos e materiais intermediarios
+IPI-R07: IPI sobre produtos industrializados nacionais e importados
+IPI-R08: Estabelecimento industrial: obrigatorio destaque IPI na NF-e
+IPI-R09: Estabelecimento comercial: nao destaca IPI (exceto equiparado a industrial)
+IPI-R10: Suspensao IPI: comum para insumos destinados a exportacao
+IPI-R11: NCM 4802 (papel): IPI 0% para papel de imprensa, 5% para outros
+IPI-R12: CST IPI: 50 (tributado), 51 (suspensao), 52 (isento), 53 (nao tributado), 54 (imune)
+
+--- REGRAS FISCAIS DE REFERENCIA (PIS/COFINS) ---
+PCO-R01: Regime cumulativo: PIS 0.65%, COFINS 3.0% (Lucro Presumido)
+PCO-R02: Regime nao-cumulativo: PIS 1.65%, COFINS 7.6% (Lucro Real)
+PCO-R03: Creditos PIS/COFINS no Lucro Real: insumos, energia, alugueis, depreciacao
+PCO-R04: Conceito de insumo (REsp 1.221.170/PR): essencial e relevante para atividade
+PCO-R05: PIS/COFINS monofasico: combustiveis, medicamentos, cosmeticos, aguas
+PCO-R06: PIS/COFINS importacao: devido na entrada de bens estrangeiros
+PCO-R07: CST PIS/COFINS: 01 (tributado), 04 (monofasico), 06 (aliquota zero), 49 (outras)
+PCO-R08: Empresas do Simples Nacional: recolhem PIS/COFINS na aliquota unificada
+PCO-R09: Retencao na fonte PIS/COFINS/CSLL: 4.65% sobre servicos (IN SRF 459/2004)
+PCO-R10: Exclusao ICMS da base PIS/COFINS: tese do seculo (RE 574.706/PR)
+
+--- REGRAS FISCAIS DE REFERENCIA (CFOP) ---
+CFOP-R01: Serie 1xxx: Entradas estaduais (1101=compra, 1201=devolucao, 1401=transferencia)
+CFOP-R02: Serie 2xxx: Entradas interestaduais
+CFOP-R03: Serie 3xxx: Entradas do exterior
+CFOP-R04: Serie 5xxx: Saidas estaduais (5101=venda, 5405=venda ST, 5910=remessa indust.)
+CFOP-R05: Serie 6xxx: Saidas interestaduais (6101=venda, 6401=venda ST, 6910=retorno indust.)
+CFOP-R06: Serie 7xxx: Saidas para exterior
+CFOP-R07: CFOP 5101/6101: Venda de producao propria ou mercadoria adquirida
+CFOP-R08: CFOP 5351/6351: Prestacao servico transporte interestadual (CT-e)
+CFOP-R09: CFOP 5405/6405: Venda com ST - usar quando ha protocolo ICMS-ST
+CFOP-R10: CFOP 5949/6949: Outras saidas - nao usar para operacoes comuns
+CFOP-R11: CFOP 5929/6929: Remessa para demonstracao - nao gera ICMS (suspensao)
+CFOP-R12: CFOP 5910/6910: Remessa para industrializacao - suspensao ICMS
+
+--- REGRAS FISCAIS DE REFERENCIA (NCM) ---
+NCM-R01: NCM 00000000: invalido - deve ter 8 digitos validos
+NCM-R02: NCM iniciando com 85: maquinas, aparelhos e materiais eletricos
+NCM-R03: NCM iniciando com 84: reatores nucleares, caldeiras, maquinas e aparelhos mecanicos
+NCM-R04: NCM iniciando com 48: papel e cartao - possivel incidencia adicional
+NCM-R05: NCM 8528.52.20: monitores de video - ST em SP, MG
+NCM-R06: NCM 8471.30.12: notebooks - ST em varios estados, IPI 0% (Lei do Bem)
+NCM-R07: NCM 8443.99.33: toners - ST em SP
+NCM-R08: NCM 8534.00.00: circuitos impressos - IPI 0%, ICMS 12% SP
+NCM-R09: NCM com EX (destaque): aliquota especifica de IPI diferente da TIPI geral
+NCM-R10: NCM com codigo generico (00 no final): verificar classificacao especifica
+
+--- REGRAS FISCAIS DE REFERENCIA (DOCUMENTOS) ---
+DOC-R01: Chave NF-e: 44 digitos com DV calculado modulo 11
+DOC-R02: CNPJ: 14 digitos com DV calculado modulo 11
+DOC-R03: IE (Inscricao Estadual): formato varia por estado, validar conforme UF
+DOC-R04: CPF: 11 digitos com DV, nao aceitar CNPJ onde CPF e obrigatorio
+DOC-R05: NF-e com data futura: rejeitada pela SEFAZ (erro 233)
+DOC-R06: NF-e com data muito antiga: verificar se ha Carta de Correcao para reemissao
+DOC-R07: Prazo de prescricao credito tributario: 5 anos (CTN art. 174)
+DOC-R08: Prazo decadencial: 5 anos a partir do fato gerador (CTN art. 173)
+DOC-R09: CT-e: obrigatorio para todo transporte rodoviario de cargas remunerado
+DCO-R10: CT-e sem ICMS destacado: transportador do Simples Nacional
+
+--- REGRAS FISCAIS DE REFERENCIA (VALIDADORES) ---
+VAL-R01: Soma dos itens da NF-e deve coincidir com valor total declarado (vNF)
+VAL-R02: Base de calculo ICMS total (vBC) deve ser <= valor dos produtos (vProd)
+VAL-R03: Valor ICMS (vICMS) = vBC * pICMS / 100 (com tolerancia de R$ 0.01)
+VAL-R04: Valor IPI total (vIPI) deve ser <= vProd * aliquota maxima TIPI
+VAL-R05: NF-e sem tag <imposto>: documento incompleto ou nao tributado
+VAL-R06: NF-e com mais de 990 itens: obrigatorio uso de grupo de tributacao
+VAL-R07: CST 00 (tributado integralmente): vBC > 0 e vICMS > 0 obrigatoriamente
+VAL-R08: CST 40/41/50 (isento/nao tributado/suspenso): vICMS = 0 obrigatoriamente
+VAL-R09: CFOP deve ser compativel com tipo de operacao (entrada/saida, estadual/interestadual)
+VAL-R10: NCM deve existir na TIPI vigente e ter 8 digitos
+
+--- REGRAS FISCAIS DE REFERENCIA (LIMIARES) ---
+LIM-R01: NF-e acima de R$ 50.000: verificar obrigatoriedade de MDF-e
+LIM-R02: NF-e acima de R$ 100.000: possivel enquadramento em acompanhamento fiscal especial
+LIM-R03: NF-e com valor zero: permitido apenas para brindes, amostras gratis ou remessa
+LIM-R04: CT-e sem valor: pode indicar transporte proprio ou nao remunerado
+LIM-R05: Valor unitario acima de R$ 10.000: verificar NCM e aliquota aplicavel
+LIM-R06: Quantidade acima de 10.000 unidades: verificar NF-e de exportacao ou atacado
+LIM-R07: Mesmo emitente com NF-es acima de R$ 200.000/mes: verificar obrigatoriedade EFD
+
+--- REGRAS FISCAIS DE REFERENCIA (REGIMES ESPECIAIS) ---
+REG-R01: Simples Nacional: proibido creditamento de ICMS/IPI para destinatario
+REG-R02: MEI: limite R$ 81.000/ano, nao emite NF-e para contribuinte (apenas consumidor final)
+REG-R03: Lucro Presumido: PIS/COFINS cumulativo (0.65% + 3.0%)
+REG-R04: Lucro Real: PIS/COFINS nao-cumulativo (1.65% + 7.6%) com creditos
+REG-R05: Substituicao Tributaria (ST): retencao na origem, recolhimento pelo substituto
+REG-R06: DIFAL: diferencial de aliquota interestadual para consumidor final nao contribuinte
+REG-R07: DIFAL partilha: 60% destino, 40% origem em 2024 (transicao ate 100% destino em 2029)
+REG-R08: FCP (Fundo Combate a Pobreza): adicional 2% sobre ICMS em alguns estados (RJ, PR)

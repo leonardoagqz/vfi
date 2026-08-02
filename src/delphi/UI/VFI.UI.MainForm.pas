@@ -48,6 +48,7 @@ type
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
     procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
+    procedure CarregarRegrasPadrao;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
     function ObterRegrasFiscais: string;
   public
@@ -96,15 +97,7 @@ begin
   lvItens.Columns.Add.Caption:='CFOP'; lvItens.Columns[6].Width:=55;
   memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
   memRegrasFiscais.Font.Name:='Consolas'; memRegrasFiscais.Font.Size:=10;
-  memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA ---');
-  memRegrasFiscais.Lines.Add('Adicione aqui regras fiscais que a IA deve considerar na analise.');
-  memRegrasFiscais.Lines.Add('');
-  memRegrasFiscais.Lines.Add('Exemplo:');
-  memRegrasFiscais.Lines.Add('- NCM 8528 (monitores): ST obrigatoria para SP');
-  memRegrasFiscais.Lines.Add('- CFOP 5101/6101: venda/aquisicao interestadual');
-  memRegrasFiscais.Lines.Add('- NF-e acima de R$ 100.000: obrigatorio MDF-e');
-  memRegrasFiscais.Lines.Add('- CTe sem ICMS destacado: verificar regime do transportador');
-  memRegrasFiscais.Lines.Add('');
+  CarregarRegrasPadrao;
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
@@ -314,6 +307,20 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   memResultadoIA.Lines.Add('');
   if R.Resposta<>'' then memResultadoIA.Lines.Add(R.Resposta)
   else memResultadoIA.Lines.Add('[Chave API nao configurada - usando analise local]');
+end;
+
+procedure TfrmMain.CarregarRegrasPadrao;
+var
+  Path: string;
+begin
+  Path := ExtractFilePath(ParamStr(0)) + '..\..\..\..\src\delphi\Resources\regras_fiscais.txt';
+  if FileExists(Path) then
+    memRegrasFiscais.Lines.LoadFromFile(Path)
+  else
+  begin
+    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA ---');
+    memRegrasFiscais.Lines.Add('Adicione regras fiscais para a IA usar como base de analise.');
+  end;
 end;
 
 end.
