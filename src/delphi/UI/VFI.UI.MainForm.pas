@@ -239,9 +239,13 @@ begin
 
   Val := TAppModule.Validator.ValidarDocumento(Doc);
   if Val.IsValid then
-    lblValidacao.Caption := Format('Validacao: OK - CNPJ, NCM, CFOP e chave corretos (%d itens verificados)', [Doc.Itens.Count])
+    lblValidacao.Caption := 'Validacao: APROVADO - CNPJ, NCM, CFOP e chave corretos.'
   else
-    lblValidacao.Caption := Format('Validacao: REJEITADO - %d erro(s) encontrado(s)', [Val.Erros.Count]);
+  begin
+    lblValidacao.Caption := Format('Validacao: REPROVADO - %d problema(s):', [Val.Erros.Count]);
+    for i := 0 to Val.Erros.Count - 1 do
+      lblValidacao.Caption := lblValidacao.Caption + '  |  ' + Val.Erros[i];
+  end;
 
   tsImpostos.Caption := Format('Impostos (%d)', [Doc.Calculos.Count]);
   lvImpostos.Items.BeginUpdate;

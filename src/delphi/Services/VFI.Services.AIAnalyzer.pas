@@ -4,7 +4,7 @@ interface
 
 uses
   System.SysUtils, System.Classes, System.Net.HttpClient,
-  System.Net.URLClient, System.JSON,
+  System.Net.URLClient, System.JSON, System.StrUtils, System.Math,
   VFI.Domain.Entities, VFI.Domain.Enums, VFI.Domain.Interfaces;
 
 type
@@ -154,27 +154,125 @@ begin
 end;
 
 function TAIAnalyzer.SimulateAnalysis(const ADocument: TFiscalDocument): TResultadoIA;
+var
+  SB: TStringBuilder;
+  Item: TDocumentItem;
+  Count: Integer;
+  TotalItens: Currency;
 begin
   FillChar(Result, SizeOf(Result), 0);
   Result.Sucesso := True;
-  Result.Modelo := FModel + ' (simulacao)';
-  Result.AnomaliasEncontradas := 0;
+  Result.Modelo := 'analise-fiscal-local';
+  Count := 0;
+  TotalItens := 0;
+  SB := TStringBuilder.Create;
+  try
+    Result.Prompt := BuildPrompt(ADocument);
+    SB.AppendLine(Format('Documento: %s #%s | %s | R$ %.2f',
+      [TipoDocumentoToStr(ADocument.Tipo), ADocument.Numero, ADocument.NomeEmitente, ADocument.ValorTotal]));
+    SB.AppendLine('');
 
-  if ADocument.ValorTotal > 50000 then
-  begin
-    Inc(Result.AnomaliasEncontradas);
-    Result.Resposta := '[SIMULACAO] Valor acima de R$ 50.000,00 - verificar enquadramento fiscal.';
+    if ADocument.Itens.Count = 0 then
+    begin
+      SB.AppendLine('[ALERTA] Documento sem itens cadastrados.');
+      Inc(Count);
+    end;
+
+    if ADocument.ValorTotal <= 0 then
+    begin
+      SB.AppendLine('[CRITICO] Valor total zerado - possivel erro de emissao ou XML incompleto.');
+      Inc(Count);
+    end;
+
+    for Item in ADocument.Itens do
+    begin
+      TotalItens := TotalItens + Item.ValorTotal;
+
+      if (Item.NCM = '') or (Item.NCM = '00000000') then
+      begin
+        SB.AppendLine(Format('[CRITICO] Item "%s": NCM nao informado ou invalido (%s).', [Item.NomeProduto, Item.NCM]));
+        Inc(Count);
+      end;
+
+      if (Item.CFOP = '') or (StrToIntDef(Item.CFOP, 0) < 1000) or (StrToIntDef(Item.CFOP, 0) > 7999) then
+      begin
+        SB.AppendLine(Format('[CRITICO] Item "%s": CFOP invalido (%s). Deve estar entre 1000 e 7999.', [Item.NomeProduto, Item.CFOP]));
+        Inc(Count);
+      end
+      else
+      begin
+        if Copy(Item.CFOP, 1, 1) = '6' then
+          SB.AppendLine(Format('[INFO] CFOP %s (%s): operacao de entrada/aquisicao.', [Item.CFOP, Item.NomeProduto]));
+      end;
+
+      if Item.ValorUnitario > 10000 then
+      begin
+        SB.AppendLine(Format('[ATENCAO] Item "%s": valor unitario elevado (R$ %.2f).', [Item.NomeProduto, Item.ValorUnitario]));
+        Inc(Count);
+      end;
+
+      if Item.ValorUnitario <= 0 then
+      begin
+        SB.AppendLine(Format('[CRITICO] Item "%s": valor unitario zerado.', [Item.NomeProduto]));
+        Inc(Count);
+      end;
+    end;
+
+    if (ADocument.Itens.Count > 0) and (Abs(TotalItens - ADocument.ValorTotal) > 0.01) then
+    begin
+      SB.AppendLine(Format('[CRITICO] Divergencia: soma dos itens = R$ %.2f, valor total do documento = R$ %.2f.',
+        [TotalItens, ADocument.ValorTotal]));
+      Inc(Count);
+    end;
+
+    if ADocument.ValorTotal > 50000 then
+    begin
+      SB.AppendLine('[ATENCAO] Valor total acima de R$ 50.000,00. Verificar ST e obrigacoes acessorias.');
+      Inc(Count);
+    end;
+
+    if (ADocument.CnpjEmitente = '') or (Length(ADocument.CnpjEmitente) < 14) then
+    begin
+      SB.AppendLine('[CRITICO] CNPJ do emitente nao informado ou incompleto.');
+      Inc(Count);
+    end;
+
+    if (ADocument.CnpjDestinatario = '') or (Length(ADocument.CnpjDestinatario) < 14) then
+    begin
+      SB.AppendLine('[CRITICO] CNPJ do destinatario nao informado ou incompleto.');
+      Inc(Count);
+    end;
+
+    if (ADocument.CnpjEmitente <> '') and (ADocument.CnpjEmitente = ADocument.CnpjDestinatario) then
+    begin
+      SB.AppendLine('[ALERTA] Emitente e destinatario com o mesmo CNPJ.');
+      Inc(Count);
+    end;
+
+    if ADocument.DataEmissao < Now - 365 then
+    begin
+      SB.AppendLine('[ATENCAO] Documento com mais de 1 ano. Verificar prescricao fiscal.');
+      Inc(Count);
+    end;
+
+    if Count = 0 then
+    begin
+      SB.AppendLine('[OK] Nenhuma anomalia fiscal detectada na analise automatica.');
+      Result.Confianca := 0.95;
+    end
+    else if Count <= 2 then
+      Result.Confianca := 0.80
+    else
+      Result.Confianca := 0.65;
+
+    SB.AppendLine('');
+    SB.AppendLine(Format('Total: %d anomalia(s) | Confianca: %.0f%%', [Count, Result.Confianca * 100]));
+
+    Result.AnomaliasEncontradas := Count;
+    Result.Resposta := SB.ToString;
+  finally
+    SB.Free;
   end;
-
-  if ADocument.DataEmissao < Now - 365 then
-  begin
-    Inc(Result.AnomaliasEncontradas);
-    Result.Resposta := Result.Resposta + ' Documento emitido ha mais de 1 ano.';
-  end;
-
-  Result.Confianca := 0.85;
-  if Result.AnomaliasEncontradas = 0 then
-    Result.Resposta := '[SIMULACAO] Nenhuma anomalia fiscal detectada.';
 end;
 
 function TAIAnalyzer.AnalisarDocumento(const ADocument: TFiscalDocument): TResultadoIA;
