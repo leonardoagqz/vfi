@@ -2,7 +2,7 @@ program VFI;
 
 uses
   Vcl.Forms, Vcl.Dialogs, System.SysUtils,
-  VFI.UI.MainForm in 'UI\VFI.UI.MainForm.pas' {frmMain},
+  VFI.UI.MainForm in 'UI\VFI.UI.MainForm.pas' {TfrmMain},
   VFI.UI.MainController in 'UI\VFI.UI.MainController.pas',
   VFI.AppModule in 'Services\VFI.AppModule.pas',
   VFI.Domain.Entities in 'Domain\VFI.Domain.Entities.pas',
@@ -17,27 +17,27 @@ uses
 
 {$R *.res}
 
+var
+  Form: TfrmMain;
+
 begin
   try
     Application.Initialize;
     Application.MainFormOnTaskbar := True;
     TAppModule.Inicializar;
 
-    Application.CreateForm(TfrmMain, TfrmMain(Application.MainForm));
-    with TfrmMain(Application.MainForm) do
-    begin
-      Controller := TMainController.Create(
-        TAppModule.Repository,
-        TAppModule.Validator,
-        TAppModule.AIAnalyzer);
-      Controller.SetOnStatus(AtualizarStatus);
-      Controller.Inicializar;
-      AtualizarTela;
-    end;
+    Application.CreateForm(TfrmMain, Form);
+    Form.Controller := TMainController.Create(
+      TAppModule.Repository,
+      TAppModule.Validator,
+      TAppModule.AIAnalyzer);
+    Form.Controller.SetOnStatus(Form.AtualizarStatus);
+    Form.Controller.Inicializar;
+    Form.AtualizarTela;
 
     Application.Run;
   except
     on E: Exception do
-      ShowMessage('Erro ao iniciar VFI: ' + E.Message);
+      ShowMessage('Erro ao iniciar: ' + E.Message);
   end;
 end.
