@@ -486,19 +486,28 @@ object frmMain: TfrmMain
             object btnAddRegra: TButton
               Left = 4
               Top = 4
-              Width = 100
+              Width = 90
               Height = 26
-              Caption = 'Adicionar Regra'
+              Caption = 'Adicionar'
               TabOrder = 0
               OnClick = btnAddRegraClick
             end
-            object btnDelRegra: TButton
-              Left = 108
+            object btnEditRegra: TButton
+              Left = 98
               Top = 4
-              Width = 100
+              Width = 90
               Height = 26
-              Caption = 'Excluir Regra'
+              Caption = 'Editar'
               TabOrder = 1
+              OnClick = btnEditRegraClick
+            end
+            object btnDelRegra: TButton
+              Left = 192
+              Top = 4
+              Width = 90
+              Height = 26
+              Caption = 'Excluir'
+              TabOrder = 2
               OnClick = btnDelRegraClick
             end
           end
