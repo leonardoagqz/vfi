@@ -468,6 +468,10 @@ object frmMain: TfrmMain
             item
               Caption = 'Severidade'
               Width = 70
+            end
+            item
+              Caption = 'Atualizacao'
+              Width = 120
             end>
           GridLines = True
           ReadOnly = True

@@ -42,6 +42,7 @@ type
     Description: string;
     Severity: string;
     IsActive: Boolean;
+    UpdatedAt: string;
   end;
   TArrayOfAiRule = TArray<TAiRuleRecord>;
 

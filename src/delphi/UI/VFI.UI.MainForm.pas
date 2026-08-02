@@ -320,6 +320,7 @@ begin
         LI.Caption := IntToStr(Regras[i].Id);
         LI.SubItems.Add(Regras[i].Description);
         LI.SubItems.Add(Regras[i].Severity);
+        LI.SubItems.Add(Regras[i].UpdatedAt);
         RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
           [i + 1, Regras[i].Severity, Regras[i].Description]);
       end;

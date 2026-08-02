@@ -258,6 +258,7 @@ begin
             Result[i].Description := JsonArray.Items[i].GetValue<string>('description', '');
             Result[i].Severity := JsonArray.Items[i].GetValue<string>('severity', '');
             Result[i].IsActive := JsonArray.Items[i].GetValue<Boolean>('isActive', False);
+            Result[i].UpdatedAt := JsonArray.Items[i].GetValue<string>('updatedAt', '');
           end;
         finally
           JsonArray.Free;
