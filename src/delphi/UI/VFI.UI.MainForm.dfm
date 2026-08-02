@@ -364,21 +364,51 @@ object frmMain: TfrmMain
     Padding.Right = 8
     Padding.Bottom = 4
     TabOrder = 4
-    object memLog: TMemo
+    object pcBottom: TPageControl
       Left = 8
       Top = 0
       Width = 1084
       Height = 164
       Align = alClient
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Consolas'
-      Font.Style = []
-      ParentFont = False
-      ReadOnly = True
-      ScrollBars = ssBoth
       TabOrder = 0
+      object tsLog: TTabSheet
+        Caption = 'Log'
+        object memLog: TMemo
+          Left = 0
+          Top = 0
+          Width = 1076
+          Height = 134
+          Align = alClient
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Consolas'
+          Font.Style = []
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssBoth
+          TabOrder = 0
+        end
+      end
+      object tsValidacoes: TTabSheet
+        Caption = 'Resultado das Validacoes'
+        object memValidacoes: TMemo
+          Left = 0
+          Top = 0
+          Width = 1076
+          Height = 134
+          Align = alClient
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Consolas'
+          Font.Style = []
+          ParentFont = False
+          ReadOnly = True
+          ScrollBars = ssBoth
+          TabOrder = 0
+        end
+      end
     end
   end
   object PopupImportar: TPopupMenu

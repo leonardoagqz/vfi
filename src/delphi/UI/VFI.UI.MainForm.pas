@@ -27,7 +27,8 @@ type
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
-    pnlBottom: TPanel; memLog: TMemo;
+    pnlBottom: TPanel; pcBottom: TPageControl; tsLog: TTabSheet; memLog: TMemo;
+    tsValidacoes: TTabSheet; memValidacoes: TMemo;
     pnlStatus: TPanel; lblStatusMsg: TLabel;
     PopupImportar: TPopupMenu; miImportarUm: TMenuItem; miImportarVarios: TMenuItem;
     PopupExcluir: TPopupMenu; miExcluirSelecionado: TMenuItem; miLimparTudo: TMenuItem;
@@ -118,11 +119,16 @@ begin
 end;
 
 procedure TfrmMain.AtualizarTela;
-var i,Qtd: Integer; Doc: TFiscalDocument; LI: TListItem;
+var
+  i, Qtd, Aprovados, Reprovados: Integer;
+  Doc: TFiscalDocument; LI: TListItem;
+  Val: TResultadoValidacao;
 begin
   if not Assigned(FController) then Exit;
   FController.CarregarDocumentos; Qtd:=FController.QuantidadeDocumentos;
   lblCount.Caption:=Format('%d documento(s)',[Qtd]);
+  Aprovados := 0; Reprovados := 0;
+
   lvDocs.Items.BeginUpdate;
   try
     lvDocs.Items.Clear;
@@ -134,6 +140,29 @@ begin
       LI.SubItems.Add(StatusToStr(Doc.Status));
     end;
   finally lvDocs.Items.EndUpdate; end;
+
+  memValidacoes.Clear;
+  memValidacoes.Lines.Add(Format('=== RESUMO DE VALIDACOES ===  %s', [FormatDateTime('dd/mm/yyyy hh:nn', Now)]));
+  memValidacoes.Lines.Add('');
+  for i:=0 to Qtd-1 do begin
+    Doc:=FController.ObterDocumento(i); if not Assigned(Doc) then Continue;
+    Val:=TAppModule.Validator.ValidarDocumento(Doc);
+    if Val.IsValid then begin
+      memValidacoes.Lines.Add(Format('[APROVADO] #%d  %s  %s  %s  R$ %s',
+        [Doc.Id, TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente,1,25), FmtValor(Doc.ValorTotal)]));
+      Inc(Aprovados);
+    end else begin
+      memValidacoes.Lines.Add(Format('[REPROVADO] #%d  %s  %s  %s  R$ %s  (%d erros)',
+        [Doc.Id, TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente,1,25), FmtValor(Doc.ValorTotal), Val.Erros.Count]));
+      memValidacoes.Lines.AddStrings(Val.Erros);
+      memValidacoes.Lines.Add('');
+      Inc(Reprovados);
+    end;
+  end;
+  memValidacoes.Lines.Add('');
+  memValidacoes.Lines.Add(Format('TOTAL: %d aprovado(s) | %d reprovado(s) | %d documento(s)',
+    [Aprovados, Reprovados, Qtd]));
+
   if lvDocs.Items.Count>0 then begin lvDocs.Selected:=lvDocs.Items[0]; lvDocs.ItemFocused:=lvDocs.Items[0]; MostrarDetalhes(0); end
   else LimparDetalhes;
 end;
