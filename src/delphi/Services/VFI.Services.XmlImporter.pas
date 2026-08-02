@@ -244,7 +244,7 @@ begin
       Item.ValorTotal := SafeXmlCurr(ProdNode, 'vProd');
       Result.Itens.Add(Item);
 
-      ExtrairImpostos(DetNode, Result, 0);
+      ExtrairImpostos(DetNode, Result, Result.Itens.Count - 1);
     end;
   end;
 
