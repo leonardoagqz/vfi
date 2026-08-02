@@ -27,7 +27,7 @@ type
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
-    tsRegras: TTabSheet; sgRegras: TStringGrid;
+    tsRegras: TTabSheet; sgRegras: TStringGrid; pnlRegras: TPanel;
     btnAddRegra: TButton; btnDelRegra: TButton;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
