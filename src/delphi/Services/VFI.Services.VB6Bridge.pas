@@ -43,19 +43,9 @@ end;
 
 function TVB6Bridge.TryVB6Call: Boolean;
 var
-  ComObj: IUnknown;
+  ClsID: TGUID;
 begin
-  try
-    ComObj := CreateOleObject('FiscalEngine.FiscalCalculator');
-    Result := ComObj <> nil;
-  except
-    on EOleSysError do
-      Result := False;
-    on EOleError do
-      Result := False;
-    else
-      Result := False;
-  end;
+  Result := Succeeded(CLSIDFromProgID(PWideChar(WideString('FiscalEngine.FiscalCalculator')), ClsID));
 end;
 
 function TVB6Bridge.CalcularICMS(const AValorProduto, AAliquota, APercReducao,
