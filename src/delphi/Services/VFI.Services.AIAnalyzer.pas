@@ -180,6 +180,111 @@ begin
       [TipoDocumentoToStr(ADocument.Tipo), ADocument.Numero, ADocument.NomeEmitente, ADocument.ValorTotal]));
     SB.AppendLine('');
 
+    if Count = 0 then
+    begin
+      SB.AppendLine('RESULTADO: NENHUM PROBLEMA ENCONTRADO');
+      SB.AppendLine('Nenhum padrao suspeito detectado. Documento aparenta conformidade.');
+      Result.Confianca := 0.95;
+    end
+    else
+    begin
+      SB.AppendLine(Format('RESULTADO: %d PADRAO(OES) SUSPEITO(S) DETECTADO(S)', [Count]));
+      SB.AppendLine('');
+      SB.AppendLine('ATENCAO: Os itens abaixo merecem sua revisao:');
+      SB.AppendLine('========================================================');
+
+      for Item in ADocument.Itens do
+        TotalItens := TotalItens + Item.ValorTotal;
+
+      if (ADocument.Itens.Count > 0) and (Abs(TotalItens - ADocument.ValorTotal) > 0.01) then
+      begin
+        Diferenca := Abs(TotalItens - ADocument.ValorTotal);
+        SB.AppendLine(Format('[CRITICO] Divergencia financeira: soma dos itens = R$ %.2f, total declarado = R$ %.2f (diferenca: R$ %.2f).',
+          [TotalItens, ADocument.ValorTotal, Diferenca]));
+        Inc(Count);
+      end;
+
+      for Item in ADocument.Itens do
+      begin
+        if Copy(Item.CFOP, 1, 1) = '6' then
+        begin
+          SB.AppendLine(Format('[ATENCAO] CFOP %s (%s): operacao de ENTRADA/aquisicao - nao gera credito de ICMS proprio.',
+            [Item.CFOP, Item.NomeProduto]));
+          Inc(Count);
+        end;
+
+        if Item.ValorUnitario > 10000 then
+        begin
+          SB.AppendLine(Format('[ATENCAO] Item "%s": valor unitario R$ %.2f acima do padrao de mercado para NCM %s.',
+            [Item.NomeProduto, Item.ValorUnitario, Item.NCM]));
+          Inc(Count);
+        end;
+
+        if (Copy(Item.NCM, 1, 2) = '85') and (Copy(Item.CFOP, 1, 1) = '5') then
+        begin
+          SB.AppendLine(Format('[INFO] NCM %s (eletronicos) com CFOP %s: verificar necessidade de ST e recolhimento antecipado.',
+            [Item.NCM, Item.CFOP]));
+          Inc(Count);
+        end;
+      end;
+
+      if (ADocument.Tipo = tdNFe) and (ADocument.ValorTotal > 50000) then
+      begin
+        SB.AppendLine('[ATENCAO] NF-e acima de R$ 50.000: verificar se ha MDF-e vinculado para transporte.');
+        Inc(Count);
+      end;
+
+      if ADocument.Itens.Count = 0 then
+      begin
+        if ADocument.Tipo = tdCTe then
+          SB.AppendLine('[INFO] CTe sem itens detalhados - normal para conhecimento de transporte.')
+        else
+        begin
+          SB.AppendLine('[CRITICO] NF-e sem itens cadastrados - documento incompleto ou XML mal formado.');
+          Inc(Count);
+        end;
+      end;
+
+      if ADocument.DataEmissao < Now - 365 then
+      begin
+        SB.AppendLine('[ATENCAO] Documento emitido ha mais de 1 ano: verificar prescricao fiscal (5 anos para creditos).');
+        Inc(Count);
+      end;
+
+      if ADocument.Tipo = tdNFe then
+      begin
+        if ADocument.Calculos.Count = 0 then
+        begin
+          SB.AppendLine('[ALERTA] NF-e sem impostos extraidos do XML - verificar se o XML contem a tag <imposto>.');
+          Inc(Count);
+        end
+        else if ADocument.Calculos.Count < 2 then
+        begin
+          SB.AppendLine(Format('[INFO] Apenas %d imposto(s) extraido(s) - NF-e tipica tem ICMS+IPI+PIS+COFINS.',
+            [ADocument.Calculos.Count]));
+          Inc(Count);
+        end;
+      end;
+    end;
+
+    SB.AppendLine('========================================================');
+    if Count = 0 then
+      Result.Confianca := 0.95
+    else if Count <= 2 then
+      Result.Confianca := 0.80
+    else
+      Result.Confianca := 0.60;
+
+    SB.AppendLine(Format('Total: %d padrao(oes) | Confianca: %.0f%% | Regras analisadas: %d',
+      [Count, Result.Confianca * 100, ADocument.Itens.Count]));
+    SB.AppendLine('');
+    SB.AppendLine('O QUE FAZER:');
+    SB.AppendLine('- [CRITICO]: Corrija antes de prosseguir. Pode gerar rejeicao na SEFAZ.');
+    SB.AppendLine('- [ATENCAO]: Revise antes de enviar. Risco fiscal moderado.');
+    SB.AppendLine('- [INFO]: Informativo. Nao bloqueia o fluxo.');
+    SB.AppendLine('');
+    SB.AppendLine('Base legal das regras: consulte a coluna Embasamento Legal na tab Regras Fiscais.');
+
     for Item in ADocument.Itens do
       TotalItens := TotalItens + Item.ValorTotal;
 
