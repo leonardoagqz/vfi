@@ -94,15 +94,27 @@ object frmMain: TfrmMain
     end
     object btnAnalisarIA: TSpeedButton
       Left = 236
-    Top = 2
-    Width = 130
-    Height = 32
-    Hint = 'Analisar com IA'
-    Caption = 'Analisar com IA'
-    Flat = True
+      Top = 2
+      Width = 130
+      Height = 32
+      Hint = 'Analisar com IA'
+      Caption = 'Analisar com IA'
+      Flat = True
       ParentShowHint = False
-    ShowHint = True
-    OnClick = btnAnalisarIAClick
+      ShowHint = True
+      OnClick = btnAnalisarIAClick
+    end
+    object btnConfigurar: TSpeedButton
+      Left = 372
+      Top = 2
+      Width = 120
+      Height = 32
+      Hint = 'Configurar chave API DeepSeek'
+      Caption = 'Configurar API'
+      Flat = True
+      ParentShowHint = False
+      ShowHint = True
+      OnClick = btnConfigurarClick
     end
   end
   object PopupImportar: TPopupMenu

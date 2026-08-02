@@ -49,6 +49,7 @@ type
     function ObterUltimoResultadoIA: TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
     procedure SetRegrasFiscais(const ARegras: string);
+    procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
   end;
 
 implementation

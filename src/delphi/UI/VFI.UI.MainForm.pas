@@ -13,6 +13,7 @@ type
     pnlTop: TPanel; lblTitle: TLabel; lblSub: TLabel; lblCount: TLabel;
     pnlToolbar: TPanel;
     btnImportar: TSpeedButton; btnExcluir: TSpeedButton; btnAnalisarIA: TSpeedButton;
+    btnConfigurar: TSpeedButton;
     Splitter1: TSplitter;
     pnlLeft: TPanel; lvDocs: TListView;
     pnlRight: TPanel;
@@ -41,6 +42,7 @@ type
     procedure btnExcluirClick(Sender: TObject);
     procedure miExcluirSelecionadoClick(Sender: TObject); procedure miLimparTudoClick(Sender: TObject);
     procedure btnAnalisarIAClick(Sender: TObject);
+    procedure btnConfigurarClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure memRegrasFiscaisChange(Sender: TObject);
   private
@@ -320,6 +322,46 @@ begin
   begin
     memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA ---');
     memRegrasFiscais.Lines.Add('Adicione regras fiscais para a IA usar como base de analise.');
+  end;
+end;
+
+procedure TfrmMain.btnConfigurarClick(Sender: TObject);
+var
+  ApiKey, Model: string;
+  Ini: TMemIniFile;
+  IniPath: string;
+begin
+  IniPath := ExtractFilePath(ParamStr(0)) + '..\..\..\..\src\delphi\Resources\vfi.ini';
+  Ini := TMemIniFile.Create(IniPath);
+  try
+    ApiKey := Ini.ReadString('AI', 'ApiKey', '');
+    Model := Ini.ReadString('AI', 'Model', 'deepseek-chat');
+
+    ApiKey := InputBox('Configurar DeepSeek API',
+      'Cole sua chave API do DeepSeek (obtenha em platform.deepseek.com):' + sLineBreak +
+      sLineBreak + '(Deixe em branco para usar analise local offline)', ApiKey);
+
+    if ApiKey <> '' then
+    begin
+      Model := InputBox('Modelo', 'Modelo DeepSeek (padrao: deepseek-chat):', Model);
+      Ini.WriteString('AI', 'ApiKey', ApiKey);
+      Ini.WriteString('AI', 'Model', Model);
+      Ini.UpdateFile;
+      TAppModule.Config.LeString('AI', 'ApiKey', '');
+
+      FController.ConfigurarAPI(ApiKey,
+        'https://api.deepseek.com/v1/chat/completions', Model);
+
+      AtualizarStatus('API DeepSeek configurada. Modelo: ' + Model + '. Pronto para analise real.');
+    end
+    else
+    begin
+      Ini.WriteString('AI', 'ApiKey', '');
+      Ini.UpdateFile;
+      AtualizarStatus('Chave API removida. Usando analise local offline.');
+    end;
+  finally
+    Ini.Free;
   end;
 end;
 

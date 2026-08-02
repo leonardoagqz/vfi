@@ -35,6 +35,7 @@ type
     function ObterUltimoResultadoIA: TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
     procedure SetRegrasFiscais(const ARegras: string);
+    procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
@@ -45,7 +46,7 @@ type
 implementation
 
 uses
-  VFI.Services.XmlImporter;
+  VFI.Services.XmlImporter, VFI.Services.AIAnalyzer;
 
 constructor TMainController.Create(const ARepository: IFiscalDocumentRepository;
   const AValidator: IFiscalValidator; const AAIAnalyzer: IAIAnalyzer);
@@ -214,6 +215,11 @@ end;
 procedure TMainController.SetRegrasFiscais(const ARegras: string);
 begin
   FRegrasFiscais := ARegras;
+end;
+
+procedure TMainController.ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
+begin
+  FAIAnalyzer := TAIAnalyzer.Create(AApiKey, AEndpoint, AModel);
 end;
 
 end.
