@@ -314,7 +314,7 @@ procedure TfrmMain.CarregarRegrasPadrao;
 var
   Path: string;
 begin
-    Path := ExtractFilePath(ParamStr(0)) + '..\..\..\' + DIR_RESOURCES + ARQ_REGRAS_FISCAIS;
+    Path := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
   if FileExists(Path) then
     memRegrasFiscais.Lines.LoadFromFile(Path)
   else
