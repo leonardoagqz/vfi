@@ -23,3 +23,13 @@ VALUES
 (1, 3, 'ICMS', 5000.00, 0.1800, 900.00, 'VB6'),
 (1, 3, 'IPI',  5000.00, 0.1000, 500.00, 'VB6');
 GO
+
+INSERT INTO AiRule (Description, Severity, IsActive)
+VALUES
+('Inconsistencias nos valores calculados (ICMS, ST, IPI, PIS, COFINS)', 'CRITICO', 1),
+('CFOP incompativel com NCM do produto', 'ALERTA', 1),
+('Valores suspeitos ou fora do padrao de mercado', 'ALERTA', 1),
+('Problemas de enquadramento fiscal (regime tributario)', 'CRITICO', 1),
+('Divergencias entre XML e totais declarados', 'CRITICO', 1),
+('Prazos de emissao fora do permitido', 'INFO', 1);
+GO

@@ -25,16 +25,34 @@ Analise documentos fiscais e identifique anomalias, inconsistencias e riscos fis
 Classifique as anomalias como: CRITICO, ALERTA ou INFO.
 Responda SEMPRE em formato JSON valido."""
 
+def fetch_active_rules() -> list:
+    fallback_rules = [
+        "Inconsistencias nos valores calculados (ICMS, ST, IPI, PIS, COFINS)",
+        "CFOP incompativel com NCM do produto",
+        "Valores suspeitos ou fora do padrao de mercado",
+        "Problemas de enquadramento fiscal (regime tributario)",
+        "Divergencias entre XML e totais declarados",
+        "Prazos de emissao fora do permitido"
+    ]
+    try:
+        req = urllib.request.Request("http://localhost:5000/api/AiRules?activeOnly=true")
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return [rule.get("description", "") for rule in data if rule.get("description")]
+    except Exception as e:
+        print(f"[AVISO] Falha ao buscar regras da API ({e}). Usando regras fallback.")
+        return fallback_rules
+
 def build_prompt(document_id: int) -> str:
+    rules = fetch_active_rules()
+    rules_text = "\n".join([f"{i+1}. {rule}" for i, rule in enumerate(rules)])
+    if not rules_text:
+        rules_text = "1. Nenhuma regra ativa configurada."
+
     return f"""Analise fiscal do documento #{document_id}.
 
 Identifique e classifique:
-1. Inconsistencias nos valores calculados (ICMS, ST, IPI, PIS, COFINS)
-2. CFOP incompativel com NCM do produto
-3. Valores suspeitos ou fora do padrao de mercado
-4. Problemas de enquadramento fiscal (regime tributario)
-5. Divergencias entre XML e totais declarados
-6. Prazos de emissao fora do permitido
+{rules_text}
 
 Formato de resposta JSON esperado:
 {{

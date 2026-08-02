@@ -12,6 +12,7 @@ public class VfiDbContext : DbContext
     public DbSet<TaxCalculation> TaxCalculations => Set<TaxCalculation>();
     public DbSet<ValidationLog> ValidationLogs => Set<ValidationLog>();
     public DbSet<AIAnalysisLog> AIAnalysisLogs => Set<AIAnalysisLog>();
+    public DbSet<AiRule> AiRules => Set<AiRule>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -62,6 +63,12 @@ public class VfiDbContext : DbContext
                   .WithMany(d => d.AIAnalysisLogs)
                   .HasForeignKey(e => e.DocumentId)
                   .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<AiRule>(entity =>
+        {
+            entity.ToTable("AiRule");
+            entity.HasKey(e => e.Id);
         });
     }
 }

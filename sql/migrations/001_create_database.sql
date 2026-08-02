@@ -83,3 +83,12 @@ CREATE INDEX IX_FiscalDocument_Status ON FiscalDocument(Status);
 CREATE INDEX IX_DocumentItem_DocumentId ON DocumentItem(DocumentId);
 CREATE INDEX IX_TaxCalculation_DocumentId ON TaxCalculation(DocumentId);
 GO
+
+CREATE TABLE AiRule (
+    Id              INT IDENTITY(1,1) PRIMARY KEY,
+    Description     NVARCHAR(500) NOT NULL,
+    Severity        NVARCHAR(50)  NULL,
+    IsActive        BIT           NOT NULL DEFAULT 1,
+    CreatedAt       DATETIME2     NOT NULL DEFAULT GETDATE()
+);
+GO

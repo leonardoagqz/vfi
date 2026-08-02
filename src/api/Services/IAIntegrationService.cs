@@ -9,18 +9,22 @@ public class IAIntegrationService
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _configuration;
     private readonly ILogger<IAIntegrationService> _logger;
+    private readonly Data.VfiDbContext _dbContext;
 
-    public IAIntegrationService(HttpClient httpClient, IConfiguration configuration, ILogger<IAIntegrationService> logger)
+    public IAIntegrationService(HttpClient httpClient, IConfiguration configuration, ILogger<IAIntegrationService> logger, Data.VfiDbContext dbContext)
     {
         _httpClient = httpClient;
         _configuration = configuration;
         _logger = logger;
+        _dbContext = dbContext;
     }
 
     public async Task<AIAnalysisLog> AnalyzeDocumentAsync(FiscalDocument document, string? modelOverride = null)
     {
         var model = modelOverride ?? _configuration["AI:Model"] ?? "gpt-4o-mini";
-        var prompt = BuildAnalysisPrompt(document);
+        
+        var activeRules = _dbContext.AiRules.Where(r => r.IsActive).Select(r => r.Description).ToList();
+        var prompt = BuildAnalysisPrompt(document, activeRules);
 
         var log = new AIAnalysisLog
         {
@@ -85,7 +89,7 @@ public class IAIntegrationService
         return log;
     }
 
-    private static string BuildAnalysisPrompt(FiscalDocument document)
+    private static string BuildAnalysisPrompt(FiscalDocument document, List<string> rules)
     {
         var sb = new StringBuilder();
         sb.AppendLine("Analise o seguinte documento fiscal:");
@@ -106,10 +110,18 @@ public class IAIntegrationService
 
         sb.AppendLine();
         sb.AppendLine("Identifique:");
-        sb.AppendLine("1. Inconsistencias nos valores calculados");
-        sb.AppendLine("2. CFOP incompativel com NCM");
-        sb.AppendLine("3. Valores suspeitos ou fora do padrao");
-        sb.AppendLine("4. Problemas de enquadramento fiscal");
+        if (rules != null && rules.Any())
+        {
+            for (int i = 0; i < rules.Count; i++)
+            {
+                sb.AppendLine($"{i + 1}. {rules[i]}");
+            }
+        }
+        else
+        {
+            sb.AppendLine("1. Nenhuma regra ativa configurada no momento.");
+        }
+        
         sb.AppendLine("Responda em formato JSON com anomalias encontradas.");
 
         return sb.ToString();
