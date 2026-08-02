@@ -95,34 +95,45 @@ begin
 
   if not Assigned(Doc) then
   begin
-    Status('ERRO: XML invalido ou formato nao reconhecido.');
+    Status('ERRO: XML invalido: ' + ExtractFileName(AArquivo));
     Exit;
   end;
 
-  FRepository.Inserir(Doc);
+  try
+    FRepository.Inserir(Doc);
 
-  for Calc in Doc.Calculos do
-  begin
-    Calc.DocumentId := Doc.Id;
-    FRepository.InserirCalculo(Calc);
+    for Calc in Doc.Calculos do
+    begin
+      Calc.DocumentId := Doc.Id;
+      FRepository.InserirCalculo(Calc);
+    end;
+
+    FUltimaValidacao := FValidator.ValidarDocumento(Doc);
+    if FUltimaValidacao.IsValid then
+    begin
+      FRepository.AtualizarStatus(Doc.Id, stValidado);
+      ValResumo := 'VALIDO';
+    end
+    else
+    begin
+      FRepository.AtualizarStatus(Doc.Id, stRejeitado);
+      ValResumo := Format('REJEITADO (%d erros)', [FUltimaValidacao.Erros.Count]);
+    end;
+
+    Status(Format('OK: %s #%s | %s | %d itens | %d impostos | R$ %s | %s',
+      [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 25),
+       Doc.Itens.Count, Doc.Calculos.Count,
+       FormatFloat('#,##0.00', Doc.ValorTotal), ValResumo]));
+  except
+    on E: Exception do
+    begin
+      if Pos('UNIQUE KEY', UpperCase(E.Message)) > 0 then
+        Status(Format('JA EXISTE: %s #%s - documento ja foi importado anteriormente.',
+          [TipoDocumentoToStr(Doc.Tipo), Doc.Numero]))
+      else
+        Status('ERRO ao importar: ' + ExtractFileName(AArquivo) + ' - ' + E.Message);
+    end;
   end;
-
-  FUltimaValidacao := FValidator.ValidarDocumento(Doc);
-  if FUltimaValidacao.IsValid then
-  begin
-    FRepository.AtualizarStatus(Doc.Id, stValidado);
-    ValResumo := 'VALIDO';
-  end
-  else
-  begin
-    FRepository.AtualizarStatus(Doc.Id, stRejeitado);
-    ValResumo := Format('REJEITADO (%d erros)', [FUltimaValidacao.Erros.Count]);
-  end;
-
-  Status(Format('IMPORTADO: %s #%s | %s | %d itens | %d impostos | R$ %s | %s',
-    [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 25),
-     Doc.Itens.Count, Doc.Calculos.Count,
-     FormatFloat('#,##0.00', Doc.ValorTotal), ValResumo]));
 
   Doc.Free;
   CarregarDocumentos;
