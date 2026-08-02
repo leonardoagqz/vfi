@@ -20,7 +20,7 @@ type
     gbDetalhes: TGroupBox;
     lblTipo: TLabel; lblTipoVal: TLabel; lblNumero: TLabel; lblNumeroVal: TLabel;
     lblEmitente: TLabel; lblEmitenteVal: TLabel; lblCNPJE: TLabel; lblCNPJEVal: TLabel;
-    lblDest: TLabel; lblDestVal: TLabel; lblCNPJD: TLabel; lblCNPJDVal: TLabel;
+    lblDest: TLabel; lblDestVal: TLabel;
     lblValor: TLabel; lblValorVal: TLabel; lblStatus: TLabel; lblStatusVal: TLabel;
     ShapeStatus: TShape;
     pcDetalhes: TPageControl;
@@ -126,7 +126,7 @@ begin lblStatusMsg.Caption:=AMsg; memLog.Lines.Add(FormatDateTime('hh:nn:ss',Now
 procedure TfrmMain.LimparDetalhes;
 begin
   lblTipoVal.Caption:='-'; lblNumeroVal.Caption:='-'; lblEmitenteVal.Caption:='-';
-  lblCNPJEVal.Caption:='-'; lblDestVal.Caption:='-'; lblCNPJDVal.Caption:='-';
+  lblCNPJEVal.Caption:='-'; lblDestVal.Caption:='-';
   lblValorVal.Caption:='-'; lblStatusVal.Caption:='-';
   ShapeStatus.Brush.Color:=clBtnFace; lblStatusVal.Font.Color:=clWindowText;
   lvImpostos.Items.Clear; lvItens.Items.Clear; memResultadoIA.Clear;
@@ -166,7 +166,7 @@ begin
   Doc:=FController.ObterDocumento(AIndex); if not Assigned(Doc) then begin LimparDetalhes; Exit; end;
   lblTipoVal.Caption:=TipoDocumentoToStr(Doc.Tipo); lblNumeroVal.Caption:=Doc.Numero;
   lblEmitenteVal.Caption:=Doc.NomeEmitente; lblCNPJEVal.Caption:=FormatarCNPJ(Doc.CnpjEmitente);
-  lblDestVal.Caption:=Doc.NomeDestinatario; lblCNPJDVal.Caption:=FormatarCNPJ(Doc.CnpjDestinatario);
+  lblDestVal.Caption:=Doc.NomeDestinatario;
   lblValorVal.Caption:='R$ '+FmtValor(Doc.ValorTotal); lblStatusVal.Caption:=StatusToStr(Doc.Status);
   case Doc.Status of
     stPendente:  begin ShapeStatus.Brush.Color:=COR_STATUS_PENDENTE; lblStatusVal.Font.Color:=clNavy; end;
