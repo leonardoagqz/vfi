@@ -22,7 +22,6 @@ type
     lblDest: TLabel; lblDestVal: TLabel; lblCNPJD: TLabel; lblCNPJDVal: TLabel;
     lblValor: TLabel; lblValorVal: TLabel; lblStatus: TLabel; lblStatusVal: TLabel;
     ShapeStatus: TShape;
-    pnlValidacao: TPanel; lblValidacaoTitulo: TLabel; memValidacao: TMemo;
     pcDetalhes: TPageControl;
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
@@ -112,8 +111,6 @@ begin
   lblCNPJEVal.Caption:='-'; lblDestVal.Caption:='-'; lblCNPJDVal.Caption:='-';
   lblValorVal.Caption:='-'; lblStatusVal.Caption:='-';
   ShapeStatus.Brush.Color:=clBtnFace; lblStatusVal.Font.Color:=clWindowText;
-  lblValidacaoTitulo.Caption:=''; lblValidacaoTitulo.Font.Color:=clWindowText;
-  pnlValidacao.Color:=clBtnFace; memValidacao.Clear;
   lvImpostos.Items.Clear; lvItens.Items.Clear; memResultadoIA.Clear;
   tsImpostos.Caption:='Impostos'; tsItens.Caption:='Itens';
 end;
@@ -142,7 +139,8 @@ begin
   finally lvDocs.Items.EndUpdate; end;
 
   memValidacoes.Clear;
-  memValidacoes.Lines.Add(Format('=== RESUMO DE VALIDACOES ===  %s', [FormatDateTime('dd/mm/yyyy hh:nn', Now)]));
+  memValidacoes.Lines.Add('=== VALIDACAO AUTOMATICA (codigo) - CNPJ, NCM, CFOP, Chave Fiscal ===');
+  memValidacoes.Lines.Add(Format('Atualizado: %s', [FormatDateTime('dd/mm/yyyy hh:nn', Now)]));
   memValidacoes.Lines.Add('');
   for i:=0 to Qtd-1 do begin
     Doc:=FController.ObterDocumento(i); if not Assigned(Doc) then Continue;
@@ -168,7 +166,7 @@ begin
 end;
 
 procedure TfrmMain.MostrarDetalhes(const AIndex: Integer);
-var Doc: TFiscalDocument; i: Integer; Item: TDocumentItem; Calc: TTaxCalculation; LI: TListItem; Val: TResultadoValidacao;
+var Doc: TFiscalDocument; i: Integer; Item: TDocumentItem; Calc: TTaxCalculation; LI: TListItem;
 begin
   if not Assigned(FController) then Exit;
   Doc:=FController.ObterDocumento(AIndex); if not Assigned(Doc) then begin LimparDetalhes; Exit; end;
@@ -180,18 +178,6 @@ begin
     stPendente:  begin ShapeStatus.Brush.Color:=$004090FF; lblStatusVal.Font.Color:=clNavy; end;
     stValidado:  begin ShapeStatus.Brush.Color:=$0040B840; lblStatusVal.Font.Color:=clGreen; end;
     stRejeitado: begin ShapeStatus.Brush.Color:=$004040F0; lblStatusVal.Font.Color:=clMaroon; end;
-  end;
-
-  Val:=TAppModule.Validator.ValidarDocumento(Doc);
-  if Val.IsValid then begin
-    lblValidacaoTitulo.Caption:='APROVADO - Todos os campos fiscais validos';
-    lblValidacaoTitulo.Font.Color:=clGreen; pnlValidacao.Color:=$00E0FFE0;
-    memValidacao.Clear; memValidacao.Lines.Add('CNPJ, NCM, CFOP e chave fiscal corretos.');
-  end else begin
-    lblValidacaoTitulo.Caption:=Format('REPROVADO - %d problema(s) encontrado(s)',[Val.Erros.Count]);
-    lblValidacaoTitulo.Font.Color:=clMaroon; pnlValidacao.Color:=$00E0E0FF;
-    memValidacao.Clear;
-    for i:=0 to Val.Erros.Count-1 do memValidacao.Lines.Add(Val.Erros[i]);
   end;
 
   tsImpostos.Caption:=Format('Impostos (%d)',[Doc.Calculos.Count]);
@@ -298,6 +284,8 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   Idx:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(Idx); if not Assigned(Doc) then Exit;
 
   memResultadoIA.Clear;
+  memResultadoIA.Lines.Add('=== ANALISE INTELIGENTE (IA) - Regras fiscais avancadas ===');
+  memResultadoIA.Lines.Add('');
   memResultadoIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
     [TipoDocumentoToStr(Doc.Tipo),Doc.Numero,FmtValor(Doc.ValorTotal),Doc.Itens.Count,Doc.Calculos.Count]));
   memResultadoIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));

@@ -255,49 +255,9 @@ object frmMain: TfrmMain
         ParentFont = False
       end
     end
-    object pnlValidacao: TPanel
-      Left = 4
-      Top = 114
-      Width = 404
-      Height = 80
-      Align = alTop
-      BevelOuter = bvNone
-      TabOrder = 1
-      object lblValidacaoTitulo: TLabel
-        Left = 0
-        Top = 0
-        Width = 404
-        Height = 20
-        Align = alTop
-        Alignment = taCenter
-        Font.Height = -12
-        Font.Name = 'Segoe UI'
-        Font.Style = [fsBold]
-        ParentFont = False
-      end
-      object memValidacao: TMemo
-        Left = 4
-        Top = 22
-        Width = 396
-        Height = 55
-        BevelInner = bvNone
-        BevelOuter = bvNone
-        BorderStyle = bsNone
-        Color = clBtnFace
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Consolas'
-        Font.Style = []
-        ParentFont = False
-        ReadOnly = True
-        ScrollBars = ssVertical
-        TabOrder = 0
-      end
-    end
     object pcDetalhes: TPageControl
       Left = 4
-      Top = 194
+      Top = 114
       Width = 404
       Height = 228
       Align = alClient
@@ -391,7 +351,7 @@ object frmMain: TfrmMain
         end
       end
       object tsValidacoes: TTabSheet
-        Caption = 'Resultado das Validacoes'
+        Caption = 'Validacao Automatica'
         object memValidacoes: TMemo
           Left = 0
           Top = 0
