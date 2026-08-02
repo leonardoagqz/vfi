@@ -89,6 +89,7 @@ CREATE TABLE AiRule (
     Description     NVARCHAR(500) NOT NULL,
     Severity        NVARCHAR(50)  NULL,
     IsActive        BIT           NOT NULL DEFAULT 1,
-    CreatedAt       DATETIME2     NOT NULL DEFAULT GETDATE()
+    CreatedAt       DATETIME2     NOT NULL DEFAULT GETDATE(),
+    UpdatedAt       DATETIME2     NULL
 );
 GO

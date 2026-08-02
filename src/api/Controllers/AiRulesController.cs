@@ -55,9 +55,8 @@ public class AiRulesController : ControllerBase
             return BadRequest();
 
         _context.Entry(rule).State = EntityState.Modified;
-        
-        // Prevent changing CreatedAt
         _context.Entry(rule).Property(x => x.CreatedAt).IsModified = false;
+        rule.UpdatedAt = DateTime.UtcNow;
 
         try
         {

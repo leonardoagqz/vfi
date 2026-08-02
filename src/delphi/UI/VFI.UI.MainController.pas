@@ -39,6 +39,7 @@ type
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
     function ListarRegrasIA: TArrayOfAiRule;
     procedure AdicionarRegraIA(const ADescricao: string);
+    procedure AtualizarRegraIA(const AId: Integer; const ADescricao: string);
     procedure ExcluirRegraIA(const AId: Integer);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
@@ -291,6 +292,33 @@ begin
     end;
   except
     on E: Exception do Status('Erro ao adicionar regra na API: ' + E.Message);
+  end;
+  JsonObj.Free;
+  Http.Free;
+end;
+
+procedure TMainController.AtualizarRegraIA(const AId: Integer; const ADescricao: string);
+var
+  Http: THTTPClient;
+  JsonObj: TJSONObject;
+  StringStream: TStringStream;
+begin
+  Http := THTTPClient.Create;
+  JsonObj := TJSONObject.Create;
+  try
+    JsonObj.AddPair('id', TJSONNumber.Create(AId));
+    JsonObj.AddPair('description', ADescricao);
+    JsonObj.AddPair('severity', 'INFO');
+    JsonObj.AddPair('isActive', TJSONBool.Create(True));
+    StringStream := TStringStream.Create(JsonObj.ToString, TEncoding.UTF8);
+    try
+      Http.ContentType := 'application/json';
+      Http.Put('http://localhost:5000/api/AiRules/' + AId.ToString, StringStream);
+    finally
+      StringStream.Free;
+    end;
+  except
+    on E: Exception do Status('Erro ao atualizar regra na API: ' + E.Message);
   end;
   JsonObj.Free;
   Http.Free;

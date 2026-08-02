@@ -423,6 +423,7 @@ end;
 procedure TfrmMain.btnEditRegraClick(Sender: TObject);
 var
   Id: Integer;
+  NovaDesc: string;
 begin
   if not Assigned(FController) then Exit;
   if not Assigned(lvRegras.Selected) then
@@ -433,10 +434,12 @@ begin
   Id := StrToIntDef(lvRegras.Selected.Caption, 0);
   if Id = 0 then Exit;
   
-  FController.AdicionarRegraIA(
-    InputBox('Editar Regra #' + IntToStr(Id), 'Nova descricao:', lvRegras.Selected.SubItems[0]));
-  FController.ExcluirRegraIA(Id);
+  NovaDesc := InputBox('Editar Regra #' + IntToStr(Id), 'Descricao:', lvRegras.Selected.SubItems[0]);
+  if NovaDesc = '' then Exit;
+  
+  FController.AtualizarRegraIA(Id, NovaDesc);
   CarregarRegrasPadrao;
+  AtualizarStatus(Format('Regra #%d atualizada.', [Id]));
 end;
 
 end.

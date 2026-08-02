@@ -63,6 +63,7 @@ type
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
     function ListarRegrasIA: TArrayOfAiRule;
     procedure AdicionarRegraIA(const ADescricao: string);
+    procedure AtualizarRegraIA(const AId: Integer; const ADescricao: string);
     procedure ExcluirRegraIA(const AId: Integer);
   end;
 
