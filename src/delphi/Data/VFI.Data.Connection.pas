@@ -10,13 +10,13 @@ type
   private
     class var FConnectionString: string;
   public
-    class procedure Configure(const AServer, ADatabase, AUser, APassword: string);
+    class procedure Configure(const AUser, APassword: string);
     class function CriarConexao: TADOConnection;
   end;
 
 implementation
 
-class procedure TConnectionFactory.Configure(const AServer, ADatabase, AUser, APassword: string);
+class procedure TConnectionFactory.Configure(const AUser, APassword: string);
 begin
   FConnectionString := Format(
     'Provider=MSDASQL.1;Persist Security Info=False;Data Source=VFI_DSN;User ID=%s;Password=%s;',

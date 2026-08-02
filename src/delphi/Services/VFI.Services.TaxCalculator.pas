@@ -211,6 +211,7 @@ begin
   Result.TipoImposto := tiDIFAL;
   Result.BaseCalculo := Round2(Base);
   Result.Aliquota := AAliquotaDestino - AAliquotaInterestadual;
+  if Result.Aliquota < 0 then Result.Aliquota := 0;
   Result.ValorImposto := Round2(ParcelaDestino);
   Result.CST := '90';
   Result.CFOP := '6102';

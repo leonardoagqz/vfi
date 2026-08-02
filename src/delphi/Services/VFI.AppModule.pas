@@ -35,8 +35,6 @@ begin
   FConfig := TAppConfig.Create;
 
   TConnectionFactory.Configure(
-    FConfig.LeString('Database', 'Server', 'localhost'),
-    FConfig.LeString('Database', 'Database', 'VFI_DB'),
     FConfig.LeString('Database', 'User', 'vfi_app'),
     FConfig.LeString('Database', 'Password', 'Vfi@2024#Dev'));
 

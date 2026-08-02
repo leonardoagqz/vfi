@@ -96,22 +96,17 @@ begin
     JSONRequest.AddPair('max_tokens', TJSONNumber.Create(1000));
 
     JSONMessages := TJSONArray.Create;
-    try
-      JSONMessage := TJSONObject.Create;
-      JSONMessage.AddPair('role', 'system');
-      JSONMessage.AddPair('content', 'Voce e um auditor fiscal experiente especializado em NF-e, CT-e e MDF-e. Responda sempre em JSON valido.');
-      JSONMessages.Add(JSONMessage);
+    JSONMessage := TJSONObject.Create;
+    JSONMessage.AddPair('role', 'system');
+    JSONMessage.AddPair('content', 'Voce e um auditor fiscal experiente especializado em NF-e, CT-e e MDF-e. Responda sempre em JSON valido.');
+    JSONMessages.Add(JSONMessage);
 
-      JSONMessage := TJSONObject.Create;
-      JSONMessage.AddPair('role', 'user');
-      JSONMessage.AddPair('content', APrompt);
-      JSONMessages.Add(JSONMessage);
+    JSONMessage := TJSONObject.Create;
+    JSONMessage.AddPair('role', 'user');
+    JSONMessage.AddPair('content', APrompt);
+    JSONMessages.Add(JSONMessage);
 
-      JSONRequest.AddPair('messages', JSONMessages);
-    except
-      JSONMessages.Free;
-      raise;
-    end;
+    JSONRequest.AddPair('messages', JSONMessages);
 
     RequestBody := TStringStream.Create(JSONRequest.ToJSON, TEncoding.UTF8);
     try
@@ -210,7 +205,10 @@ begin
   end;
 
   Result.Resposta := RawResponse;
-  ParseResponse(RawResponse);
+  Result := ParseResponse(RawResponse);
+  Result.Resposta := RawResponse;
+  Result.Prompt := Prompt;
+  Result.Modelo := FModel;
   Result.Sucesso := True;
 end;
 

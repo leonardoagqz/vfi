@@ -31,6 +31,11 @@ implementation
 uses
   VFI.Data.Connection;
 
+function QuotedStrSafe(const S: string): string;
+begin
+  Result := '''' + StringReplace(S, '''', '''''', [rfReplaceAll]) + '''';
+end;
+
 function TFiscalDocumentRepository.CriarQuery: TADOQuery;
 begin
   Result := TADOQuery.Create(nil);
@@ -74,8 +79,7 @@ var
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = :Id';
-    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, ADocId);
+    Qry.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = ' + IntToStr(ADocId);
     Qry.Open;
     while not Qry.Eof do
     begin
@@ -97,8 +101,7 @@ var
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text := 'SELECT * FROM TaxCalculation WHERE DocumentId = :Id';
-    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, ADocId);
+    Qry.SQL.Text := 'SELECT * FROM TaxCalculation WHERE DocumentId = ' + IntToStr(ADocId);
     Qry.Open;
     while not Qry.Eof do
     begin
@@ -158,8 +161,7 @@ begin
     Qry.SQL.Text :=
       'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, ' +
-      'XMLContent, Status FROM FiscalDocument WHERE Id = :Id';
-    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, AId);
+      'XMLContent, Status FROM FiscalDocument WHERE Id = ' + IntToStr(AId);
     Qry.Open;
     if not Qry.IsEmpty then
     begin
@@ -176,38 +178,69 @@ end;
 
 function TFiscalDocumentRepository.BuscarPorFiltro(const ATipo: TTipoDocumento;
   const AStatus: string): TObjectList<TFiscalDocument>;
+var
+  Qry: TADOQuery;
+  Doc: TFiscalDocument;
+  SQL, TipoStr: string;
 begin
-  Result := BuscarTodos;
+  Result := TObjectList<TFiscalDocument>.Create(True);
+  TipoStr := TipoDocumentoToStr(ATipo);
+  SQL :=
+    'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
+    'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, ' +
+    'XMLContent, Status FROM FiscalDocument WHERE 1=1';
+
+  if ATipo <> tdNFe then
+    SQL := SQL + ' AND DocumentType = ' + QuotedStrSafe(TipoStr);
+  if AStatus <> '' then
+    SQL := SQL + ' AND Status = ' + QuotedStrSafe(AStatus);
+  SQL := SQL + ' ORDER BY IssueDate DESC';
+
+  Qry := CriarQuery;
+  try
+    Qry.SQL.Text := SQL;
+    Qry.Open;
+    while not Qry.Eof do
+    begin
+      Doc := TFiscalDocument.Create;
+      PopularDocumento(Qry, Doc);
+      PopularItens(Doc.Id, Doc);
+      PopularCalculos(Doc.Id, Doc);
+      Result.Add(Doc);
+      Qry.Next;
+    end;
+  finally
+    Qry.Connection.Free;
+    Qry.Free;
+  end;
 end;
 
 procedure TFiscalDocumentRepository.Inserir(const ADocument: TFiscalDocument);
 var
   Qry: TADOQuery;
-  DocId: Integer;
+  SQL: string;
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text :=
+    SQL := Format(
       'INSERT INTO FiscalDocument (DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status) ' +
-      'VALUES (:Tipo, :Chave, :Numero, :Data, :CNPJE, :NomeE, :CNPJD, :NomeD, :Valor, :XML, :Status); ' +
-      'SELECT SCOPE_IDENTITY()';
+      'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s); SELECT SCOPE_IDENTITY()',
+      [QuotedStrSafe(TipoDocumentoToStr(ADocument.Tipo)),
+       QuotedStrSafe(ADocument.Chave),
+       QuotedStrSafe(ADocument.Numero),
+       QuotedStrSafe(FormatDateTime('yyyy-mm-dd hh:nn:ss', ADocument.DataEmissao)),
+       QuotedStrSafe(ADocument.CnpjEmitente),
+       QuotedStrSafe(ADocument.NomeEmitente),
+       QuotedStrSafe(ADocument.CnpjDestinatario),
+       QuotedStrSafe(ADocument.NomeDestinatario),
+       CurrToStr(ADocument.ValorTotal),
+       QuotedStrSafe(ADocument.XmlContent),
+       QuotedStrSafe(StatusToStr(ADocument.Status))]);
 
-    Qry.Parameters.CreateParameter('Tipo', ftString, pdInput, 20, TipoDocumentoToStr(ADocument.Tipo));
-    Qry.Parameters.CreateParameter('Chave', ftString, pdInput, 44, ADocument.Chave);
-    Qry.Parameters.CreateParameter('Numero', ftString, pdInput, 20, ADocument.Numero);
-    Qry.Parameters.CreateParameter('Data', ftDateTime, pdInput, 0, ADocument.DataEmissao);
-    Qry.Parameters.CreateParameter('CNPJE', ftString, pdInput, 14, ADocument.CnpjEmitente);
-    Qry.Parameters.CreateParameter('NomeE', ftString, pdInput, 200, ADocument.NomeEmitente);
-    Qry.Parameters.CreateParameter('CNPJD', ftString, pdInput, 14, ADocument.CnpjDestinatario);
-    Qry.Parameters.CreateParameter('NomeD', ftString, pdInput, 200, ADocument.NomeDestinatario);
-    Qry.Parameters.CreateParameter('Valor', ftCurrency, pdInput, 0, ADocument.ValorTotal);
-    Qry.Parameters.CreateParameter('XML', ftString, pdInput, 0, ADocument.XmlContent);
-    Qry.Parameters.CreateParameter('Status', ftString, pdInput, 20, StatusToStr(ADocument.Status));
-
+    Qry.SQL.Text := SQL;
     Qry.Open;
-    DocId := Qry.Fields[0].AsInteger;
-    ADocument.Id := DocId;
+    ADocument.Id := Qry.Fields[0].AsInteger;
   finally
     Qry.Connection.Free;
     Qry.Free;
@@ -220,9 +253,9 @@ var
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text := 'UPDATE FiscalDocument SET Status = :Status, UpdatedAt = GETDATE() WHERE Id = :Id';
-    Qry.Parameters.CreateParameter('Status', ftString, pdInput, 20, StatusToStr(AStatus));
-    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, AId);
+    Qry.SQL.Text := Format(
+      'UPDATE FiscalDocument SET Status = %s, UpdatedAt = GETDATE() WHERE Id = %d',
+      [QuotedStrSafe(StatusToStr(AStatus)), AId]);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
@@ -236,16 +269,16 @@ var
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text :=
+    Qry.SQL.Text := Format(
       'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
-      'VALUES (:DocId, :ItemId, :TaxType, :Base, :Rate, :Value, :Engine)';
-    Qry.Parameters.CreateParameter('DocId', ftInteger, pdInput, 0, ACalculo.DocumentId);
-    Qry.Parameters.CreateParameter('ItemId', ftInteger, pdInput, 0, ACalculo.ItemId);
-    Qry.Parameters.CreateParameter('TaxType', ftString, pdInput, 10, ImpostoToStr(ACalculo.TipoImposto));
-    Qry.Parameters.CreateParameter('Base', ftCurrency, pdInput, 0, ACalculo.BaseCalculo);
-    Qry.Parameters.CreateParameter('Rate', ftFloat, pdInput, 0, ACalculo.Aliquota);
-    Qry.Parameters.CreateParameter('Value', ftCurrency, pdInput, 0, ACalculo.ValorImposto);
-    Qry.Parameters.CreateParameter('Engine', ftString, pdInput, 20, 'Internal');
+      'VALUES (%d,%d,%s,%s,%s,%s,%s)',
+      [ACalculo.DocumentId,
+       ACalculo.ItemId,
+       QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
+       CurrToStr(ACalculo.BaseCalculo),
+       FloatToStr(ACalculo.Aliquota),
+       CurrToStr(ACalculo.ValorImposto),
+       QuotedStrSafe('Internal')]);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
@@ -260,15 +293,15 @@ var
 begin
   Qry := CriarQuery;
   try
-    Qry.SQL.Text :=
+    Qry.SQL.Text := Format(
       'INSERT INTO AIAnalysisLog (DocumentId, Model, Prompt, Response, AnomaliesFound, ConfidenceScore) ' +
-      'VALUES (:DocId, :Model, :Prompt, :Response, :Anomalies, :Score)';
-    Qry.Parameters.CreateParameter('DocId', ftInteger, pdInput, 0, ADocId);
-    Qry.Parameters.CreateParameter('Model', ftString, pdInput, 50, AModelo);
-    Qry.Parameters.CreateParameter('Prompt', ftString, pdInput, 0, APrompt);
-    Qry.Parameters.CreateParameter('Response', ftString, pdInput, 0, AResposta);
-    Qry.Parameters.CreateParameter('Anomalies', ftInteger, pdInput, 0, AAnomalias);
-    Qry.Parameters.CreateParameter('Score', ftFloat, pdInput, 0, AConfianca);
+      'VALUES (%d,%s,%s,%s,%d,%s)',
+      [ADocId,
+       QuotedStrSafe(AModelo),
+       QuotedStrSafe(APrompt),
+       QuotedStrSafe(AResposta),
+       AAnomalias,
+       FloatToStr(AConfianca)]);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;

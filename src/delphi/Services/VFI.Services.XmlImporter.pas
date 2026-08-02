@@ -92,7 +92,7 @@ begin
     Result.Numero := SafeXmlStr(IdeNode, 'nCT');
     if Result.Numero = '' then
       Result.Numero := SafeXmlStr(IdeNode, 'nNF');
-    Result.DataEmissao := Now;
+    Result.DataEmissao := StrToDateDef(SafeXmlStr(IdeNode, 'dhEmi'), Now);
   end;
 
   if Emit <> nil then
