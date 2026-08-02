@@ -42,6 +42,8 @@ type
   private
     FController: IMainController;
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
+    procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
+    procedure AtualizarResumoValidacoes;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
   public
     procedure AtualizarStatus(const AMsg: string); procedure AtualizarTela;
@@ -116,16 +118,11 @@ begin
 end;
 
 procedure TfrmMain.AtualizarTela;
-var
-  i, Qtd, Aprovados, Reprovados: Integer;
-  Doc: TFiscalDocument; LI: TListItem;
-  Val: TResultadoValidacao;
+var i,Qtd: Integer; Doc: TFiscalDocument; LI: TListItem;
 begin
   if not Assigned(FController) then Exit;
   FController.CarregarDocumentos; Qtd:=FController.QuantidadeDocumentos;
   lblCount.Caption:=Format('%d documento(s)',[Qtd]);
-  Aprovados := 0; Reprovados := 0;
-
   lvDocs.Items.BeginUpdate;
   try
     lvDocs.Items.Clear;
@@ -137,30 +134,6 @@ begin
       LI.SubItems.Add(StatusToStr(Doc.Status));
     end;
   finally lvDocs.Items.EndUpdate; end;
-
-  memValidacoes.Clear;
-  memValidacoes.Lines.Add('=== VALIDACAO AUTOMATICA (codigo) - CNPJ, NCM, CFOP, Chave Fiscal ===');
-  memValidacoes.Lines.Add(Format('Atualizado: %s', [FormatDateTime('dd/mm/yyyy hh:nn', Now)]));
-  memValidacoes.Lines.Add('');
-  for i:=0 to Qtd-1 do begin
-    Doc:=FController.ObterDocumento(i); if not Assigned(Doc) then Continue;
-    Val:=TAppModule.Validator.ValidarDocumento(Doc);
-    if Val.IsValid then begin
-      memValidacoes.Lines.Add(Format('[APROVADO] #%d  %s  %s  %s  R$ %s',
-        [Doc.Id, TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente,1,25), FmtValor(Doc.ValorTotal)]));
-      Inc(Aprovados);
-    end else begin
-      memValidacoes.Lines.Add(Format('[REPROVADO] #%d  %s  %s  %s  R$ %s  (%d erros)',
-        [Doc.Id, TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente,1,25), FmtValor(Doc.ValorTotal), Val.Erros.Count]));
-      memValidacoes.Lines.AddStrings(Val.Erros);
-      memValidacoes.Lines.Add('');
-      Inc(Reprovados);
-    end;
-  end;
-  memValidacoes.Lines.Add('');
-  memValidacoes.Lines.Add(Format('TOTAL: %d aprovado(s) | %d reprovado(s) | %d documento(s)',
-    [Aprovados, Reprovados, Qtd]));
-
   if lvDocs.Items.Count>0 then begin lvDocs.Selected:=lvDocs.Items[0]; lvDocs.ItemFocused:=lvDocs.Items[0]; MostrarDetalhes(0); end
   else LimparDetalhes;
 end;
@@ -202,6 +175,55 @@ begin
       LI.SubItems.Add(Item.NCM); LI.SubItems.Add(Item.CFOP);
     end;
   finally lvItens.Items.EndUpdate; end;
+
+  AtualizarValidacaoSelecionada(Doc);
+end;
+
+procedure TfrmMain.AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
+var
+  Val: TResultadoValidacao;
+begin
+  Val := TAppModule.Validator.ValidarDocumento(ADoc);
+  memValidacoes.Clear;
+  memValidacoes.Lines.Add('=== DOCUMENTO SELECIONADO ===');
+  memValidacoes.Lines.Add(Format('#%d  %s  %s  %s  R$ %s',
+    [ADoc.Id, TipoDocumentoToStr(ADoc.Tipo), ADoc.Numero, ADoc.NomeEmitente, FmtValor(ADoc.ValorTotal)]));
+  memValidacoes.Lines.Add('');
+
+  memValidacoes.Lines.Add('--- REGRAS DO SISTEMA (obrigatorias) ---');
+  if Val.IsValid then
+    memValidacoes.Lines.Add('[OK] CNPJ, NCM, CFOP e chave fiscal corretos.')
+  else
+    for var j := 0 to Val.Erros.Count - 1 do
+      memValidacoes.Lines.Add('[ERRO] ' + Val.Erros[j]);
+
+  memValidacoes.Lines.Add('');
+  memValidacoes.Lines.Add('--- RESUMO DE TODOS OS DOCUMENTOS ---');
+  memValidacoes.Lines.Add('');
+  AtualizarResumoValidacoes;
+end;
+
+procedure TfrmMain.AtualizarResumoValidacoes;
+var
+  i, Qtd, Aprovados, Reprovados: Integer;
+  Doc: TFiscalDocument; Val: TResultadoValidacao;
+begin
+  Aprovados := 0; Reprovados := 0;
+  for i := 0 to FController.QuantidadeDocumentos - 1 do
+  begin
+    Doc := FController.ObterDocumento(i);
+    if not Assigned(Doc) then Continue;
+    Val := TAppModule.Validator.ValidarDocumento(Doc);
+    if Val.IsValid then
+      Inc(Aprovados)
+    else
+      Inc(Reprovados);
+  end;
+  Qtd := FController.QuantidadeDocumentos;
+  memValidacoes.Lines.Add(Format('APROVADOS: %d  |  REPROVADOS: %d  |  TOTAL: %d', [Aprovados, Reprovados, Qtd]));
+  memValidacoes.Lines.Add('');
+  memValidacoes.Lines.Add('[REGRA] Validacao automatica = regras fiscais obrigatorias (CNPJ, NCM, CFOP, chave)');
+  memValidacoes.Lines.Add('[IA]    Analise IA = sugestoes baseadas em padroes (nao bloqueiam o fluxo)');
 end;
 
 function TfrmMain.ObterIdSelecionado: Integer; begin if Assigned(lvDocs.Selected) then Result:=StrToIntDef(lvDocs.Selected.Caption,0) else Result:=0; end;
@@ -284,7 +306,7 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   Idx:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(Idx); if not Assigned(Doc) then Exit;
 
   memResultadoIA.Clear;
-  memResultadoIA.Lines.Add('=== ANALISE INTELIGENTE (IA) - Regras fiscais avancadas ===');
+  memResultadoIA.Lines.Add('=== ANALISE IA (sugestoes informativas - nao bloqueiam o fluxo) ===');
   memResultadoIA.Lines.Add('');
   memResultadoIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
     [TipoDocumentoToStr(Doc.Tipo),Doc.Numero,FmtValor(Doc.ValorTotal),Doc.Itens.Count,Doc.Calculos.Count]));
