@@ -15,6 +15,21 @@ object frmMain: TfrmMain
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
+  TextHeight = 13
+  object Splitter1: TSplitter
+    Left = 680
+    Top = 84
+    Width = 4
+    Height = 402
+  end
+  object Splitter2: TSplitter
+    Left = 0
+    Top = 486
+    Width = 1100
+    Height = 4
+    Cursor = crVSplit
+    Align = alBottom
+  end
   object pnlTop: TPanel
     Left = 0
     Top = 0
@@ -25,39 +40,51 @@ object frmMain: TfrmMain
     Color = 3158064
     ParentBackground = False
     TabOrder = 0
+    DesignSize = (
+      1100
+      48)
     object lblTitle: TLabel
       Left = 16
-    Top = 4
-    Caption = 'VFI - Validador Fiscal Inteligente'
+      Top = 4
+      Width = 259
+      Height = 23
+      Caption = 'VFI - Validador Fiscal Inteligente'
+      Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
-    Font.Height = -17
-    Font.Name = 'Segoe UI'
-    Font.Style = [fsBold]
-    ParentFont = False
+      Font.Height = -17
+      Font.Name = 'Segoe UI'
+      Font.Style = [fsBold]
+      ParentFont = False
     end
     object lblSub: TLabel
       Left = 16
-    Top = 28
-    Caption = 'Importacao XML | Validacao Automatica | Analise IA | Regras Fiscais'
+      Top = 28
+      Width = 340
+      Height = 13
+      Caption = 
+        'Importacao XML | Validacao Automatica | Analise IA | Regras Fisc' +
+        'ais'
+      Font.Charset = DEFAULT_CHARSET
       Font.Color = 13619151
-    Font.Height = -11
-    Font.Name = 'Segoe UI'
-    Font.Style = []
-    ParentFont = False
+      Font.Height = -11
+      Font.Name = 'Segoe UI'
+      Font.Style = []
+      ParentFont = False
     end
     object lblCount: TLabel
-      Left = 940
-    Top = 14
-    Width = 140
-    Height = 17
-    Alignment = taRightJustify
-    Anchors = [akTop, akRight]
+      Left = 983
+      Top = 14
+      Width = 97
+      Height = 17
+      Alignment = taRightJustify
+      Anchors = [akTop, akRight]
       Caption = '0 documento(s)'
-    Font.Color = 13619151
-    Font.Height = -13
-    Font.Name = 'Segoe UI'
-    Font.Style = [fsBold]
-    ParentFont = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = 13619151
+      Font.Height = -13
+      Font.Name = 'Segoe UI'
+      Font.Style = [fsBold]
+      ParentFont = False
     end
   end
   object pnlToolbar: TPanel
@@ -70,27 +97,27 @@ object frmMain: TfrmMain
     TabOrder = 1
     object btnImportar: TSpeedButton
       Left = 8
-    Top = 2
-    Width = 110
-    Height = 32
-    Hint = 'Importar XML fiscal'
-    Caption = 'Importar  '
-    Flat = True
+      Top = 2
+      Width = 110
+      Height = 32
+      Hint = 'Importar XML fiscal'
+      Caption = 'Importar  '
+      Flat = True
       ParentShowHint = False
-    ShowHint = True
-    OnClick = btnImportarClick
+      ShowHint = True
+      OnClick = btnImportarClick
     end
     object btnExcluir: TSpeedButton
       Left = 122
-    Top = 2
-    Width = 110
-    Height = 32
-    Hint = 'Excluir documento'
-    Caption = 'Excluir  '
-    Flat = True
+      Top = 2
+      Width = 110
+      Height = 32
+      Hint = 'Excluir documento'
+      Caption = 'Excluir  '
+      Flat = True
       ParentShowHint = False
-    ShowHint = True
-    OnClick = btnExcluirClick
+      ShowHint = True
+      OnClick = btnExcluirClick
     end
     object btnAnalisarIA: TSpeedButton
       Left = 236
@@ -117,32 +144,6 @@ object frmMain: TfrmMain
       OnClick = btnConfigurarClick
     end
   end
-  object PopupImportar: TPopupMenu
-    Left = 16
-    Top = 88
-    object miImportarUm: TMenuItem
-    Caption = 'Importar um arquivo...'
-    ShortCut = 16457
-    OnClick = miImportarUmClick
-    end
-    object miImportarVarios: TMenuItem
-    Caption = 'Importar varios arquivos...'
-    OnClick = miImportarVariosClick
-    end
-  end
-  object PopupExcluir: TPopupMenu
-    Left = 128
-    Top = 88
-    object miExcluirSelecionado: TMenuItem
-    Caption = 'Excluir selecionado'
-    ShortCut = 46
-    OnClick = miExcluirSelecionadoClick
-    end
-    object miLimparTudo: TMenuItem
-    Caption = 'Limpar tudo...'
-    OnClick = miLimparTudoClick
-    end
-  end
   object pnlLeft: TPanel
     Left = 0
     Top = 84
@@ -157,24 +158,18 @@ object frmMain: TfrmMain
     TabOrder = 2
     object lvDocs: TListView
       Left = 8
-    Top = 4
-    Width = 668
-    Height = 394
-    Align = alClient
-    ReadOnly = True
-    RowSelect = True
+      Top = 4
+      Width = 668
+      Height = 394
+      Align = alClient
+      Columns = <>
+      ReadOnly = True
+      RowSelect = True
       TabOrder = 0
-    ViewStyle = vsReport
-    OnSelectItem = lvDocsSelectItem
+      ViewStyle = vsReport
+      OnSelectItem = lvDocsSelectItem
     end
   end
-  object Splitter1: TSplitter
-    Left = 680
-    Top = 84
-    Width = 4
-    Height = 402
-    Align = alLeft
-    end
   object pnlRight: TPanel
     Left = 684
     Top = 84
@@ -189,189 +184,246 @@ object frmMain: TfrmMain
     TabOrder = 3
     object gbDetalhes: TGroupBox
       Left = 4
-    Top = 4
-    Width = 404
-    Height = 115
-    Align = alTop
-    Caption = ' Detalhes '
-    TabOrder = 0
+      Top = 4
+      Width = 404
+      Height = 115
+      Align = alTop
+      Caption = ' Detalhes '
+      TabOrder = 0
       object lblTipo: TLabel
-    Left = 12
-    Top = 22
-    Caption = 'Tipo:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 12
+        Top = 22
+        Width = 26
+        Height = 13
+        Caption = 'Tipo:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblTipoVal: TLabel
-    Left = 90
-    Top = 22
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 90
+        Top = 22
+        Width = 3
+        Height = 13
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblNumero: TLabel
-    Left = 160
-    Top = 22
-    Caption = 'Numero:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 160
+        Top = 22
+        Width = 46
+        Height = 13
+        Caption = 'Numero:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblNumeroVal: TLabel
-    Left = 220
-    Top = 22
-    end
+        Left = 220
+        Top = 22
+        Width = 3
+        Height = 13
+      end
       object lblValor: TLabel
-    Left = 280
-    Top = 22
-    Caption = 'Valor:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 280
+        Top = 22
+        Width = 29
+        Height = 13
+        Caption = 'Valor:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblValorVal: TLabel
-    Left = 322
-    Top = 22
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 322
+        Top = 22
+        Width = 3
+        Height = 13
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblStatus: TLabel
-    Left = 12
-    Top = 44
-    Caption = 'Status:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 12
+        Top = 44
+        Width = 35
+        Height = 13
+        Caption = 'Status:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblStatusVal: TLabel
-    Left = 90
-    Top = 44
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 90
+        Top = 44
+        Width = 3
+        Height = 13
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object ShapeStatus: TShape
-    Left = 70
-    Top = 46
-    Width = 12
-    Height = 12
-    Brush.Color = clBtnFace
-    Pen.Style = psClear
-    Shape = stCircle
-    end
+        Left = 70
+        Top = 46
+        Width = 12
+        Height = 12
+        Brush.Color = clBtnFace
+        Pen.Style = psClear
+        Shape = stCircle
+      end
       object lblEmitente: TLabel
-    Left = 12
-    Top = 66
-    Caption = 'Emitente:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 12
+        Top = 66
+        Width = 49
+        Height = 13
+        Caption = 'Emitente:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblEmitenteVal: TLabel
-    Left = 90
-    Top = 66
-    Width = 300
-    end
+        Left = 90
+        Top = 66
+        Width = 3
+        Height = 13
+      end
       object lblCNPJE: TLabel
-    Left = 12
-    Top = 84
-    Caption = 'CNPJ Emit.:'
-    end
+        Left = 12
+        Top = 84
+        Width = 55
+        Height = 13
+        Caption = 'CNPJ Emit.:'
+      end
       object lblCNPJEVal: TLabel
-    Left = 90
-    Top = 84
-    end
+        Left = 90
+        Top = 84
+        Width = 3
+        Height = 13
+      end
       object lblDest: TLabel
-    Left = 12
-    Top = 100
-    Caption = 'Destinatario:'
-    Font.Style = [fsBold]
-    ParentFont = False
-    end
+        Left = 12
+        Top = 100
+        Width = 66
+        Height = 13
+        Caption = 'Destinatario:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Segoe UI'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object lblDestVal: TLabel
-    Left = 90
-    Top = 100
-    Width = 300
-    end
+        Left = 90
+        Top = 100
+        Width = 3
+        Height = 13
+      end
     end
     object pcDetalhes: TPageControl
       Left = 4
-    Top = 119
-    Width = 404
-    Height = 279
-    Align = alClient
-    TabOrder = 1
+      Top = 119
+      Width = 404
+      Height = 279
+      ActivePage = tsImpostos
+      Align = alClient
+      TabOrder = 1
       object tsImpostos: TTabSheet
         Caption = 'Impostos'
         object lvImpostos: TListView
           Left = 0
-    Top = 0
-    Width = 396
-    Height = 249
-    Align = alClient
-    GridLines = True
+          Top = 0
+          Width = 396
+          Height = 249
+          Align = alClient
+          Columns = <>
+          GridLines = True
           ReadOnly = True
-    RowSelect = True
-    TabOrder = 0
-    ViewStyle = vsReport
+          RowSelect = True
+          TabOrder = 0
+          ViewStyle = vsReport
         end
       end
       object tsItens: TTabSheet
         Caption = 'Itens'
         object lvItens: TListView
           Left = 0
-    Top = 0
-    Width = 396
-    Height = 249
-    Align = alClient
-    GridLines = True
+          Top = 0
+          Width = 396
+          Height = 249
+          Align = alClient
+          Columns = <>
+          GridLines = True
           ReadOnly = True
-    RowSelect = True
-    TabOrder = 0
-    ViewStyle = vsReport
+          RowSelect = True
+          TabOrder = 0
+          ViewStyle = vsReport
         end
       end
       object tsAnaliseIA: TTabSheet
         Caption = 'Analise IA'
         object memResultadoIA: TMemo
           Left = 0
-    Top = 0
-    Width = 396
-    Height = 249
-    Align = alClient
+          Top = 0
+          Width = 396
+          Height = 249
+          Align = alClient
           Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
+          Font.Color = clWindowText
+          Font.Height = -11
           Font.Name = 'Consolas'
-    Font.Style = []
-    ParentFont = False
+          Font.Style = []
+          ParentFont = False
           ReadOnly = True
-    ScrollBars = ssBoth
-    TabOrder = 0
+          ScrollBars = ssBoth
+          TabOrder = 0
         end
       end
       object tsRegras: TTabSheet
         Caption = 'Regras Fiscais'
         object memRegrasFiscais: TMemo
           Left = 0
-    Top = 0
-    Width = 396
-    Height = 249
-    Align = alClient
+          Top = 0
+          Width = 396
+          Height = 249
+          Align = alClient
           Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
+          Font.Color = clWindowText
+          Font.Height = -11
           Font.Name = 'Consolas'
-    Font.Style = []
-    ParentFont = False
+          Font.Style = []
+          ParentFont = False
           ScrollBars = ssBoth
-    TabOrder = 0
-    OnChange = memRegrasFiscaisChange
+          TabOrder = 0
+          OnChange = memRegrasFiscaisChange
         end
       end
     end
-  end
-  object Splitter2: TSplitter
-    Left = 0
-    Top = 486
-    Width = 1100
-    Height = 4
-    Align = alBottom
-    Cursor = crVSplit
   end
   object pnlBottom: TPanel
     Left = 0
@@ -386,47 +438,48 @@ object frmMain: TfrmMain
     TabOrder = 4
     object pcBottom: TPageControl
       Left = 8
-    Top = 0
-    Width = 1084
-    Height = 204
-    Align = alClient
-    TabOrder = 0
+      Top = 0
+      Width = 1084
+      Height = 204
+      ActivePage = tsLog
+      Align = alClient
+      TabOrder = 0
       object tsLog: TTabSheet
         Caption = 'Log'
         object memLog: TMemo
           Left = 0
-    Top = 0
-    Width = 1076
-    Height = 174
-    Align = alClient
+          Top = 0
+          Width = 1076
+          Height = 174
+          Align = alClient
           Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
+          Font.Color = clWindowText
+          Font.Height = -11
           Font.Name = 'Consolas'
-    Font.Style = []
-    ParentFont = False
+          Font.Style = []
+          ParentFont = False
           ReadOnly = True
-    ScrollBars = ssBoth
-    TabOrder = 0
+          ScrollBars = ssBoth
+          TabOrder = 0
         end
       end
       object tsValidacoes: TTabSheet
         Caption = 'Validacao Automatica'
         object memValidacoes: TMemo
           Left = 0
-    Top = 0
-    Width = 1076
-    Height = 174
-    Align = alClient
+          Top = 0
+          Width = 1076
+          Height = 174
+          Align = alClient
           Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -11
+          Font.Color = clWindowText
+          Font.Height = -11
           Font.Name = 'Consolas'
-    Font.Style = []
-    ParentFont = False
+          Font.Style = []
+          ParentFont = False
           ReadOnly = True
-    ScrollBars = ssBoth
-    TabOrder = 0
+          ScrollBars = ssBoth
+          TabOrder = 0
         end
       end
     end
@@ -439,12 +492,26 @@ object frmMain: TfrmMain
     Align = alBottom
     Alignment = taLeftJustify
     BevelOuter = bvLowered
-    TabOrder = 6
+    TabOrder = 5
     object lblStatusMsg: TLabel
-    Left = 8
-    Top = 3
-    Caption = 'Pronto'
+      Left = 8
+      Top = 3
+      Width = 35
+      Height = 13
+      Caption = 'Pronto'
+    end
+  end
+  object PopupExcluir: TPopupMenu
+    Left = 128
+    Top = 88
+    object miExcluirSelecionado: TMenuItem
+      Caption = 'Excluir selecionado'
+      ShortCut = 46
+      OnClick = miExcluirSelecionadoClick
+    end
+    object miLimparTudo: TMenuItem
+      Caption = 'Limpar tudo...'
+      OnClick = miLimparTudoClick
     end
   end
 end
-
