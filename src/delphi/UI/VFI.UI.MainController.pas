@@ -34,6 +34,7 @@ type
 
     function ObterUltimoResultadoIA: TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
+    procedure SetRegrasFiscais(const ARegras: string);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
