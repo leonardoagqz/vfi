@@ -75,7 +75,7 @@ begin
   Qry := CriarQuery;
   try
     Qry.SQL.Text := 'SELECT * FROM DocumentItem WHERE DocumentId = :Id';
-    Qry.Parameters.ParamByName('Id').Value := ADocId;
+    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, ADocId);
     Qry.Open;
     while not Qry.Eof do
     begin
@@ -98,7 +98,7 @@ begin
   Qry := CriarQuery;
   try
     Qry.SQL.Text := 'SELECT * FROM TaxCalculation WHERE DocumentId = :Id';
-    Qry.Parameters.ParamByName('Id').Value := ADocId;
+    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, ADocId);
     Qry.Open;
     while not Qry.Eof do
     begin
@@ -159,7 +159,7 @@ begin
       'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, ' +
       'XMLContent, Status FROM FiscalDocument WHERE Id = :Id';
-    Qry.Parameters.ParamByName('Id').Value := AId;
+    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, AId);
     Qry.Open;
     if not Qry.IsEmpty then
     begin
@@ -192,17 +192,19 @@ begin
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status) ' +
       'VALUES (:Tipo, :Chave, :Numero, :Data, :CNPJE, :NomeE, :CNPJD, :NomeD, :Valor, :XML, :Status); ' +
       'SELECT SCOPE_IDENTITY()';
-    Qry.Parameters.ParamByName('Tipo').Value := TipoDocumentoToStr(ADocument.Tipo);
-    Qry.Parameters.ParamByName('Chave').Value := ADocument.Chave;
-    Qry.Parameters.ParamByName('Numero').Value := ADocument.Numero;
-    Qry.Parameters.ParamByName('Data').Value := ADocument.DataEmissao;
-    Qry.Parameters.ParamByName('CNPJE').Value := ADocument.CnpjEmitente;
-    Qry.Parameters.ParamByName('NomeE').Value := ADocument.NomeEmitente;
-    Qry.Parameters.ParamByName('CNPJD').Value := ADocument.CnpjDestinatario;
-    Qry.Parameters.ParamByName('NomeD').Value := ADocument.NomeDestinatario;
-    Qry.Parameters.ParamByName('Valor').Value := ADocument.ValorTotal;
-    Qry.Parameters.ParamByName('XML').Value := ADocument.XmlContent;
-    Qry.Parameters.ParamByName('Status').Value := StatusToStr(ADocument.Status);
+
+    Qry.Parameters.CreateParameter('Tipo', ftString, pdInput, 20, TipoDocumentoToStr(ADocument.Tipo));
+    Qry.Parameters.CreateParameter('Chave', ftString, pdInput, 44, ADocument.Chave);
+    Qry.Parameters.CreateParameter('Numero', ftString, pdInput, 20, ADocument.Numero);
+    Qry.Parameters.CreateParameter('Data', ftDateTime, pdInput, 0, ADocument.DataEmissao);
+    Qry.Parameters.CreateParameter('CNPJE', ftString, pdInput, 14, ADocument.CnpjEmitente);
+    Qry.Parameters.CreateParameter('NomeE', ftString, pdInput, 200, ADocument.NomeEmitente);
+    Qry.Parameters.CreateParameter('CNPJD', ftString, pdInput, 14, ADocument.CnpjDestinatario);
+    Qry.Parameters.CreateParameter('NomeD', ftString, pdInput, 200, ADocument.NomeDestinatario);
+    Qry.Parameters.CreateParameter('Valor', ftCurrency, pdInput, 0, ADocument.ValorTotal);
+    Qry.Parameters.CreateParameter('XML', ftString, pdInput, 0, ADocument.XmlContent);
+    Qry.Parameters.CreateParameter('Status', ftString, pdInput, 20, StatusToStr(ADocument.Status));
+
     Qry.Open;
     DocId := Qry.Fields[0].AsInteger;
     ADocument.Id := DocId;
@@ -219,8 +221,8 @@ begin
   Qry := CriarQuery;
   try
     Qry.SQL.Text := 'UPDATE FiscalDocument SET Status = :Status, UpdatedAt = GETDATE() WHERE Id = :Id';
-    Qry.Parameters.ParamByName('Status').Value := StatusToStr(AStatus);
-    Qry.Parameters.ParamByName('Id').Value := AId;
+    Qry.Parameters.CreateParameter('Status', ftString, pdInput, 20, StatusToStr(AStatus));
+    Qry.Parameters.CreateParameter('Id', ftInteger, pdInput, 0, AId);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
@@ -237,13 +239,13 @@ begin
     Qry.SQL.Text :=
       'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
       'VALUES (:DocId, :ItemId, :TaxType, :Base, :Rate, :Value, :Engine)';
-    Qry.Parameters.ParamByName('DocId').Value := ACalculo.DocumentId;
-    Qry.Parameters.ParamByName('ItemId').Value := ACalculo.ItemId;
-    Qry.Parameters.ParamByName('TaxType').Value := ImpostoToStr(ACalculo.TipoImposto);
-    Qry.Parameters.ParamByName('Base').Value := ACalculo.BaseCalculo;
-    Qry.Parameters.ParamByName('Rate').Value := ACalculo.Aliquota;
-    Qry.Parameters.ParamByName('Value').Value := ACalculo.ValorImposto;
-    Qry.Parameters.ParamByName('Engine').Value := 'VB6';
+    Qry.Parameters.CreateParameter('DocId', ftInteger, pdInput, 0, ACalculo.DocumentId);
+    Qry.Parameters.CreateParameter('ItemId', ftInteger, pdInput, 0, ACalculo.ItemId);
+    Qry.Parameters.CreateParameter('TaxType', ftString, pdInput, 10, ImpostoToStr(ACalculo.TipoImposto));
+    Qry.Parameters.CreateParameter('Base', ftCurrency, pdInput, 0, ACalculo.BaseCalculo);
+    Qry.Parameters.CreateParameter('Rate', ftFloat, pdInput, 0, ACalculo.Aliquota);
+    Qry.Parameters.CreateParameter('Value', ftCurrency, pdInput, 0, ACalculo.ValorImposto);
+    Qry.Parameters.CreateParameter('Engine', ftString, pdInput, 20, 'Internal');
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
@@ -261,12 +263,12 @@ begin
     Qry.SQL.Text :=
       'INSERT INTO AIAnalysisLog (DocumentId, Model, Prompt, Response, AnomaliesFound, ConfidenceScore) ' +
       'VALUES (:DocId, :Model, :Prompt, :Response, :Anomalies, :Score)';
-    Qry.Parameters.ParamByName('DocId').Value := ADocId;
-    Qry.Parameters.ParamByName('Model').Value := AModelo;
-    Qry.Parameters.ParamByName('Prompt').Value := APrompt;
-    Qry.Parameters.ParamByName('Response').Value := AResposta;
-    Qry.Parameters.ParamByName('Anomalies').Value := AAnomalias;
-    Qry.Parameters.ParamByName('Score').Value := AConfianca;
+    Qry.Parameters.CreateParameter('DocId', ftInteger, pdInput, 0, ADocId);
+    Qry.Parameters.CreateParameter('Model', ftString, pdInput, 50, AModelo);
+    Qry.Parameters.CreateParameter('Prompt', ftString, pdInput, 0, APrompt);
+    Qry.Parameters.CreateParameter('Response', ftString, pdInput, 0, AResposta);
+    Qry.Parameters.CreateParameter('Anomalies', ftInteger, pdInput, 0, AAnomalias);
+    Qry.Parameters.CreateParameter('Score', ftFloat, pdInput, 0, AConfianca);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;
