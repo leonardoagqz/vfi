@@ -29,7 +29,7 @@ type
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
     tsRegras: TTabSheet; lvRegras: TListView; pnlRegrasBotoes: TPanel;
     edtBuscarRegra: TEdit; lblInfoRegras: TLabel;
-    btnAddRegra: TButton; btnEditRegra: TButton; btnDelRegra: TButton;
+    btnAddRegra: TButton; btnEditRegra: TButton; btnDelRegra: TButton; btnAjuda: TButton;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
@@ -45,6 +45,7 @@ type
     procedure btnAddRegraClick(Sender: TObject);
     procedure btnEditRegraClick(Sender: TObject);
     procedure btnDelRegraClick(Sender: TObject);
+    procedure btnAjudaClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure lvRegrasColumnClick(Sender: TObject; Column: TListColumn);
     procedure lvRegrasCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
@@ -336,8 +337,12 @@ begin
         else
           LI.SubItems.Add('-');
         LI.SubItems.Add(Regras[i].Referencia);
-        RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
-          [i + 1, Regras[i].Severity, Regras[i].Description]);
+        if Regras[i].Referencia <> '' then
+          RegrasTexto := RegrasTexto + Format('%d. [%s] %s (Base Legal: %s)' + sLineBreak,
+            [i + 1, Regras[i].Severity, Regras[i].Description, Regras[i].Referencia])
+        else
+          RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
+            [i + 1, Regras[i].Severity, Regras[i].Description]);
       end;
       FController.SetRegrasFiscais(RegrasTexto);
       AtualizarStatus(Format('Regras carregadas e enviadas para IA: %d ativas.', [Length(Regras)]));
@@ -532,6 +537,26 @@ begin
     Compare := CompareText(S1, S2);
   end;
   if not FOrdemAscendente then Compare := -Compare;
+end;
+
+procedure TfrmMain.btnAjudaClick(Sender: TObject);
+begin
+  ShowMessage(
+    'COMO FUNCIONA A ANALISE FISCAL COM IA' + sLineBreak + sLineBreak +
+    '1. Importe XMLs fiscais (NF-e/CT-e)' + sLineBreak +
+    '2. O sistema extrai automaticamente dados e impostos' + sLineBreak +
+    '3. Validacao automatica: CNPJ, NCM, CFOP, chave fiscal' + sLineBreak +
+    '4. As regras fiscais sao carregadas do banco (tab Regras Fiscais)' + sLineBreak +
+    '5. Ao clicar Analisar com IA:' + sLineBreak +
+    '   - Monta prompt com documento + regras fiscais' + sLineBreak +
+    '   - Envia para DeepSeek (se chave configurada)' + sLineBreak +
+    '   - Ou analisa localmente com as regras carregadas' + sLineBreak +
+    '6. Resultado: padroes suspeitos com EMBASAMENTO LEGAL REAL' + sLineBreak + sLineBreak +
+    'CADA REGRA TEM BASE LEGAL OFICIAL:' + sLineBreak +
+    'Leis, Decretos, Convenios ICMS, Ajustes SINIEF, Decisoes STF.' + sLineBreak + sLineBreak +
+    'CONFIGURE CHAVE DEEPSEEK:' + sLineBreak +
+    'Clique em Configurar API (platform.deepseek.com).' + sLineBreak +
+    'Sem chave = analise local offline.');
 end;
 
 end.

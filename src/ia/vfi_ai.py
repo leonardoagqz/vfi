@@ -38,7 +38,10 @@ def fetch_active_rules() -> list:
         req = urllib.request.Request("http://localhost:5000/api/AiRules?activeOnly=true")
         with urllib.request.urlopen(req, timeout=5) as resp:
             data = json.loads(resp.read().decode("utf-8"))
-            return [rule.get("description", "") for rule in data if rule.get("description")]
+            return [
+                f"{rule.get('description', '')} (Base Legal: {rule.get('referencia')})" if rule.get("referencia") else rule.get("description", "")
+                for rule in data if rule.get("description")
+            ]
     except Exception as e:
         print(f"[AVISO] Falha ao buscar regras da API ({e}). Usando regras fallback.")
         return fallback_rules

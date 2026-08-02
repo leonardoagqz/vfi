@@ -23,7 +23,10 @@ public class IAIntegrationService
     {
         var model = modelOverride ?? _configuration["AI:Model"] ?? "gpt-4o-mini";
         
-        var activeRules = _dbContext.AiRules.Where(r => r.IsActive).Select(r => r.Description).ToList();
+        var activeRules = _dbContext.AiRules
+            .Where(r => r.IsActive)
+            .Select(r => !string.IsNullOrEmpty(r.Referencia) ? $"{r.Description} (Base Legal: {r.Referencia})" : r.Description)
+            .ToList();
         var prompt = BuildAnalysisPrompt(document, activeRules);
 
         var log = new AIAnalysisLog

@@ -546,6 +546,15 @@ object frmMain: TfrmMain
             TabOrder = 2
             OnClick = btnDelRegraClick
           end
+          object btnAjuda: TButton
+            Left = 286
+            Top = 4
+            Width = 105
+            Height = 26
+            Caption = 'Como Funciona?'
+            TabOrder = 3
+            OnClick = btnAjudaClick
+          end
         end
       end
     end
