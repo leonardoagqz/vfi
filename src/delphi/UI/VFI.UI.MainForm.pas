@@ -66,7 +66,7 @@ function FmtValor(const V: Currency): string; begin Result:=FormatFloat('#,##0.0
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
   KeyPreview:=True; DoubleBuffered:=True;
-  lvDocs.ViewStyle:=vsReport; lvDocs.RowSelect:=True; lvDocs.GridLines:=True;
+  lvDocs.ViewStyle:=vsReport; lvDocs.RowSelect:=True; lvDocs.GridLines:=True; lvDocs.MultiSelect:=True;
   lvDocs.Columns.Add.Caption:='ID'; lvDocs.Columns[0].Width:=38;
   lvDocs.Columns.Add.Caption:='Tipo'; lvDocs.Columns[1].Width:=44;
   lvDocs.Columns.Add.Caption:='Numero'; lvDocs.Columns[2].Width:=60;
@@ -221,11 +221,40 @@ end;
 procedure TfrmMain.btnExcluirClick(Sender: TObject); var Pt:TPoint; begin Pt:=btnExcluir.ClientToScreen(Point(0,btnExcluir.Height)); PopupExcluir.Popup(Pt.X,Pt.Y); end;
 
 procedure TfrmMain.miExcluirSelecionadoClick(Sender: TObject);
-var Id:Integer;
-begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um documento.'); Exit; end;
-  if MessageDlg(Format('Excluir documento #%d?',[Id]),mtConfirmation,[mbYes,mbNo],0)=mrYes then begin
-    FController.ExcluirDocumento(Id); AtualizarTela; memLog.Clear; memResultadoIA.Clear;
-    AtualizarStatus(Format('Documento #%d excluido.',[Id])); end;
+var
+  i, Count: Integer;
+  Id: Integer;
+begin
+  Count := lvDocs.SelCount;
+  if Count = 0 then
+  begin
+    AtualizarStatus('Selecione pelo menos um documento.');
+    Exit;
+  end;
+
+  if Count = 1 then
+  begin
+    Id := StrToIntDef(lvDocs.Selected.Caption, 0);
+    if MessageDlg(Format('Excluir documento #%d?', [Id]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+      Exit;
+  end
+  else if MessageDlg(Format('Excluir %d documentos selecionados?', [Count]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
+    Exit;
+
+  for i := lvDocs.Items.Count - 1 downto 0 do
+  begin
+    if lvDocs.Items[i].Selected then
+    begin
+      Id := StrToIntDef(lvDocs.Items[i].Caption, 0);
+      if Id > 0 then
+        FController.ExcluirDocumento(Id);
+    end;
+  end;
+
+  AtualizarTela;
+  memLog.Clear;
+  memResultadoIA.Clear;
+  AtualizarStatus(Format('%d documento(s) excluido(s).', [Count]));
 end;
 
 procedure TfrmMain.miLimparTudoClick(Sender: TObject);
