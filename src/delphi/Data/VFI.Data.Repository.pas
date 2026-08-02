@@ -15,6 +15,7 @@ type
     procedure PopularItem(const AQuery: TADOQuery; const AItem: TDocumentItem);
     procedure PopularItens(const ADocId: Integer; const ADoc: TFiscalDocument);
     procedure PopularCalculos(const ADocId: Integer; const ADoc: TFiscalDocument);
+    function InserirItem(const AItem: TDocumentItem): Integer;
   public
     function BuscarTodos: TObjectList<TFiscalDocument>;
     function BuscarPorId(const AId: Integer): TFiscalDocument;
@@ -200,13 +201,11 @@ begin
     'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
     'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, ' +
     'XMLContent, Status FROM FiscalDocument WHERE 1=1';
-
   if ATipo <> tdNFe then
     SQL := SQL + ' AND DocumentType = ' + QuotedStrSafe(TipoStr);
   if AStatus <> '' then
     SQL := SQL + ' AND Status = ' + QuotedStrSafe(AStatus);
   SQL := SQL + ' ORDER BY IssueDate DESC';
-
   Qry := CriarQuery;
   try
     Qry.SQL.Text := SQL;
@@ -226,10 +225,32 @@ begin
   end;
 end;
 
+function TFiscalDocumentRepository.InserirItem(const AItem: TDocumentItem): Integer;
+var
+  Qry: TADOQuery;
+begin
+  Qry := CriarQuery;
+  try
+    Qry.SQL.Text := Format(
+      'INSERT INTO DocumentItem (DocumentId, ProductCode, ProductName, NCM, CFOP, Quantity, UnitValue, TotalValue, CST) ' +
+      'VALUES (%d,%s,%s,%s,%s,%s,%s,%s,%s); SELECT SCOPE_IDENTITY()',
+      [AItem.DocumentId, QuotedStrSafe(AItem.CodigoProduto), QuotedStrSafe(AItem.NomeProduto),
+       QuotedStrSafe(AItem.NCM), QuotedStrSafe(AItem.CFOP),
+       FloatToSql(AItem.Quantidade), CurrToSql(AItem.ValorUnitario), CurrToSql(AItem.ValorTotal),
+       QuotedStrSafe(AItem.CST)]);
+    Qry.Open;
+    Result := Qry.Fields[0].AsInteger;
+  finally
+    Qry.Connection.Free;
+    Qry.Free;
+  end;
+end;
+
 procedure TFiscalDocumentRepository.Inserir(const ADocument: TFiscalDocument);
 var
   Qry: TADOQuery;
   SQL: string;
+  Item: TDocumentItem;
 begin
   Qry := CriarQuery;
   try
@@ -237,16 +258,11 @@ begin
       'INSERT INTO FiscalDocument (DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
       'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status) ' +
       'VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s); SELECT SCOPE_IDENTITY()',
-      [QuotedStrSafe(TipoDocumentoToStr(ADocument.Tipo)),
-       QuotedStrSafe(ADocument.Chave),
-       QuotedStrSafe(ADocument.Numero),
-       QuotedStrSafe(FormatDateTime('yyyy-mm-dd hh:nn:ss', ADocument.DataEmissao)),
-       QuotedStrSafe(ADocument.CnpjEmitente),
-       QuotedStrSafe(ADocument.NomeEmitente),
-       QuotedStrSafe(ADocument.CnpjDestinatario),
-       QuotedStrSafe(ADocument.NomeDestinatario),
-       CurrToSql(ADocument.ValorTotal),
-       QuotedStrSafe(ADocument.XmlContent),
+      [QuotedStrSafe(TipoDocumentoToStr(ADocument.Tipo)), QuotedStrSafe(ADocument.Chave),
+       QuotedStrSafe(ADocument.Numero), QuotedStrSafe(FormatDateTime('yyyy-mm-dd hh:nn:ss', ADocument.DataEmissao)),
+       QuotedStrSafe(ADocument.CnpjEmitente), QuotedStrSafe(ADocument.NomeEmitente),
+       QuotedStrSafe(ADocument.CnpjDestinatario), QuotedStrSafe(ADocument.NomeDestinatario),
+       CurrToSql(ADocument.ValorTotal), QuotedStrSafe(ADocument.XmlContent),
        QuotedStrSafe(StatusToStr(ADocument.Status))]);
     Qry.SQL.Text := SQL;
     Qry.Open;
@@ -254,6 +270,12 @@ begin
   finally
     Qry.Connection.Free;
     Qry.Free;
+  end;
+
+  for Item in ADocument.Itens do
+  begin
+    Item.DocumentId := ADocument.Id;
+    Item.Id := InserirItem(Item);
   end;
 end;
 
