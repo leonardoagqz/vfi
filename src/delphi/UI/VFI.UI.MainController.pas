@@ -70,9 +70,14 @@ end;
 
 procedure TMainController.CarregarDocumentos;
 begin
-  FDocumentos.Clear;
-  FDocumentos.AddRange(FRepository.BuscarTodos);
-  Status(Format('%d documento(s) carregado(s).', [FDocumentos.Count]));
+  try
+    FDocumentos.Clear;
+    FDocumentos.AddRange(FRepository.BuscarTodos);
+    Status(Format('%d documento(s) carregado(s).', [FDocumentos.Count]));
+  except
+    on E: Exception do
+      Status('ERRO ao carregar: ' + E.Message);
+  end;
 end;
 
 procedure TMainController.ValidarDocumento(const AId: Integer);

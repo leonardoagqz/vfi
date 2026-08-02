@@ -1,7 +1,7 @@
 program VFI;
 
 uses
-  Vcl.Forms,
+  Vcl.Forms, Vcl.Dialogs, System.SysUtils,
   VFI.UI.MainForm in 'UI\VFI.UI.MainForm.pas' {frmMain},
   VFI.UI.MainController in 'UI\VFI.UI.MainController.pas',
   VFI.AppModule in 'Services\VFI.AppModule.pas',
@@ -19,13 +19,13 @@ uses
 {$R *.res}
 
 begin
-  Application.Initialize;
-  Application.MainFormOnTaskbar := True;
-
-  TAppModule.Inicializar;
-
-  frmMain := TfrmMain.Create(Application);
   try
+    Application.Initialize;
+    Application.MainFormOnTaskbar := True;
+
+    TAppModule.Inicializar;
+
+    Application.CreateForm(TfrmMain, frmMain);
     frmMain.Controller := TMainController.Create(
       TAppModule.Repository,
       TAppModule.Validator,
@@ -35,8 +35,8 @@ begin
     frmMain.Controller.Inicializar;
 
     Application.Run;
-  finally
-    frmMain.Free;
-    TAppModule.Finalizar;
+  except
+    on E: Exception do
+      ShowMessage('Erro na inicializacao: ' + E.Message);
   end;
 end.

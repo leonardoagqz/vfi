@@ -132,7 +132,11 @@ end;
 
 procedure TfrmMain.btnRefreshClick(Sender: TObject);
 begin
-  if not Assigned(FController) then Exit;
+  if not Assigned(FController) then
+  begin
+    AtualizarStatus('ERRO: Controller nao inicializado.');
+    Exit;
+  end;
   FController.CarregarDocumentos;
   AtualizarGrade;
 end;
