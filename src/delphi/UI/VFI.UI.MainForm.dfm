@@ -20,8 +20,7 @@ object frmMain: TfrmMain
     Left = 680
     Top = 84
     Width = 4
-    Height = 610
-    ExplicitHeight = 402
+    Height = 602
   end
   object Splitter2: TSplitter
     Left = 0
@@ -42,6 +41,7 @@ object frmMain: TfrmMain
     Color = 3158064
     ParentBackground = False
     TabOrder = 0
+    ExplicitWidth = 1098
     DesignSize = (
       1100
       48)
@@ -97,6 +97,7 @@ object frmMain: TfrmMain
     Align = alTop
     BevelOuter = bvLowered
     TabOrder = 1
+    ExplicitWidth = 1098
     object btnImportar: TSpeedButton
       Left = 8
       Top = 2
@@ -150,7 +151,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 84
     Width = 680
-    Height = 610
+    Height = 602
     Align = alLeft
     BevelOuter = bvNone
     Padding.Left = 8
@@ -158,12 +159,12 @@ object frmMain: TfrmMain
     Padding.Right = 4
     Padding.Bottom = 4
     TabOrder = 2
-    ExplicitHeight = 402
+    ExplicitHeight = 602
     object lvDocs: TListView
       Left = 8
       Top = 4
       Width = 668
-      Height = 602
+      Height = 214
       Align = alClient
       Columns = <>
       ReadOnly = True
@@ -171,14 +172,14 @@ object frmMain: TfrmMain
       TabOrder = 0
       ViewStyle = vsReport
       OnSelectItem = lvDocsSelectItem
-      ExplicitHeight = 394
+      ExplicitHeight = 602
     end
   end
   object pnlRight: TPanel
     Left = 684
     Top = 84
     Width = 416
-    Height = 610
+    Height = 602
     Align = alClient
     BevelOuter = bvNone
     Padding.Left = 4
@@ -186,7 +187,8 @@ object frmMain: TfrmMain
     Padding.Right = 8
     Padding.Bottom = 4
     TabOrder = 3
-    ExplicitHeight = 402
+    ExplicitWidth = 414
+    ExplicitHeight = 602
     object gbDetalhes: TGroupBox
       Left = 4
       Top = 4
@@ -195,6 +197,7 @@ object frmMain: TfrmMain
       Align = alTop
       Caption = ' Detalhes '
       TabOrder = 0
+      ExplicitWidth = 402
       object lblTipo: TLabel
         Left = 12
         Top = 22
@@ -352,12 +355,14 @@ object frmMain: TfrmMain
     end
     object pcDetalhes: TPageControl
       Left = 4
-      Top = 152
+      Top = -56
       Width = 404
       Height = 454
       ActivePage = tsImpostos
       Align = alBottom
       TabOrder = 1
+      ExplicitTop = 144
+      ExplicitWidth = 402
       object tsImpostos: TTabSheet
         Caption = 'Impostos'
         object lvImpostos: TListView
@@ -372,7 +377,6 @@ object frmMain: TfrmMain
           RowSelect = True
           TabOrder = 0
           ViewStyle = vsReport
-          ExplicitHeight = 251
         end
       end
       object tsItens: TTabSheet
@@ -389,7 +393,6 @@ object frmMain: TfrmMain
           RowSelect = True
           TabOrder = 0
           ViewStyle = vsReport
-          ExplicitHeight = 251
         end
       end
       object tsAnaliseIA: TTabSheet
@@ -409,7 +412,6 @@ object frmMain: TfrmMain
           ReadOnly = True
           ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitHeight = 251
         end
       end
       object tsRegras: TTabSheet
@@ -429,36 +431,38 @@ object frmMain: TfrmMain
           ScrollBars = ssBoth
           TabOrder = 0
           OnChange = memRegrasFiscaisChange
-          ExplicitHeight = 251
         end
       end
     end
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 490
-    Width = 678
+    Top = 486
+    Width = 1100
     Height = 208
+    Align = alBottom
     BevelOuter = bvNone
     Padding.Left = 8
     Padding.Right = 8
     Padding.Bottom = 4
     TabOrder = 4
+    ExplicitTop = 490
+    ExplicitWidth = 678
     object pcBottom: TPageControl
       Left = 8
       Top = 0
-      Width = 662
+      Width = 1084
       Height = 204
       ActivePage = tsLog
       Align = alClient
       TabOrder = 0
-      ExplicitWidth = 1084
+      ExplicitWidth = 662
       object tsLog: TTabSheet
         Caption = 'Log'
         object memLog: TMemo
           Left = 0
           Top = 0
-          Width = 654
+          Width = 1076
           Height = 176
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
@@ -470,7 +474,7 @@ object frmMain: TfrmMain
           ReadOnly = True
           ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitWidth = 1076
+          ExplicitWidth = 654
         end
       end
       object tsValidacoes: TTabSheet
@@ -478,7 +482,7 @@ object frmMain: TfrmMain
         object memValidacoes: TMemo
           Left = 0
           Top = 0
-          Width = 654
+          Width = 1076
           Height = 176
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
@@ -490,7 +494,7 @@ object frmMain: TfrmMain
           ReadOnly = True
           ScrollBars = ssBoth
           TabOrder = 0
-          ExplicitWidth = 1076
+          ExplicitWidth = 654
         end
       end
     end
@@ -504,6 +508,8 @@ object frmMain: TfrmMain
     Alignment = taLeftJustify
     BevelOuter = bvLowered
     TabOrder = 5
+    ExplicitTop = 690
+    ExplicitWidth = 1098
     object lblStatusMsg: TLabel
       Left = 8
       Top = 3

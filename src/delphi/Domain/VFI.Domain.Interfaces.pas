@@ -12,10 +12,11 @@ type
   IFiscalDocumentRepository = interface
     ['{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}']
     function BuscarTodos: TObjectList<TFiscalDocument>;
-    function BuscarPorId(const AId: Integer): TFiscalDocument;
+    function BuscarPorId(const AIdentificador: Integer): TFiscalDocument;
+    function BuscarPorFiltro(const ATipo: TTipoDocumento; const AStatus: string): TObjectList<TFiscalDocument>;
     procedure Inserir(const ADocument: TFiscalDocument);
-    procedure AtualizarStatus(const AId: Integer; const AStatus: TStatusDocumento);
-    procedure Excluir(const AId: Integer);
+    procedure AtualizarStatus(const AIdentificador: Integer; const AStatus: TStatusDocumento);
+    procedure Excluir(const AIdentificador: Integer);
     function ExisteChave(const AChave: string): Boolean;
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
