@@ -96,6 +96,7 @@ begin
   memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
   
   lvRegras.ViewStyle:=vsReport; lvRegras.RowSelect:=True; lvRegras.GridLines:=True;
+  lvRegras.Columns[2].AutoSize := True;
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
