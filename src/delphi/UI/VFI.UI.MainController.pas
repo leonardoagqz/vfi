@@ -47,7 +47,7 @@ type
 implementation
 
 uses
-  VFI.Services.XmlImporter, VFI.Services.AIAnalyzer;
+  VFI.Services.XmlImporter, VFI.AppModule;
 
 constructor TMainController.Create(const ARepository: IFiscalDocumentRepository;
   const AValidator: IFiscalValidator; const AAIAnalyzer: IAIAnalyzer);
@@ -220,7 +220,8 @@ end;
 
 procedure TMainController.ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
 begin
-  FAIAnalyzer := TAIAnalyzer.Create(AApiKey, AEndpoint, AModel);
+  TAppModule.ReconfigurarIA(AApiKey, AEndpoint, AModel);
+  FAIAnalyzer := TAppModule.AIAnalyzer;
 end;
 
 function TMainController.ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;

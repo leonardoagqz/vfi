@@ -18,6 +18,7 @@ type
   public
     class procedure Inicializar;
     class procedure Finalizar;
+    class procedure ReconfigurarIA(const AApiKey, AEndpoint, AModel: string);
 
     class property Config: TAppConfig read FConfig;
     class property Repository: IFiscalDocumentRepository read FRepository;
@@ -47,6 +48,11 @@ end;
 class procedure TAppModule.Finalizar;
 begin
   FConfig.Free;
+end;
+
+class procedure TAppModule.ReconfigurarIA(const AApiKey, AEndpoint, AModel: string);
+begin
+  FAIAnalyzer := TAIAnalyzer.Create(AApiKey, AEndpoint, AModel);
 end;
 
 end.

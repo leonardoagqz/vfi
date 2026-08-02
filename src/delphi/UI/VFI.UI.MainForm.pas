@@ -58,9 +58,6 @@ type
     property Controller: IMainController read FController write FController;
   end;
 
-var
-  frmMain: TfrmMain;
-
 implementation
 {$R *.dfm}
 uses VFI.AppModule;

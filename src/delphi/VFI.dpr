@@ -21,21 +21,23 @@ begin
   try
     Application.Initialize;
     Application.MainFormOnTaskbar := True;
-
     TAppModule.Inicializar;
 
-    Application.CreateForm(TfrmMain, frmMain);
-    frmMain.Controller := TMainController.Create(
-      TAppModule.Repository,
-      TAppModule.Validator,
-      TAppModule.AIAnalyzer);
-    frmMain.Controller.SetOnStatus(frmMain.AtualizarStatus);
-    frmMain.Controller.Inicializar;
-    frmMain.AtualizarTela;
+    Application.CreateForm(TfrmMain, TfrmMain(Application.MainForm));
+    with TfrmMain(Application.MainForm) do
+    begin
+      Controller := TMainController.Create(
+        TAppModule.Repository,
+        TAppModule.Validator,
+        TAppModule.AIAnalyzer);
+      Controller.SetOnStatus(AtualizarStatus);
+      Controller.Inicializar;
+      AtualizarTela;
+    end;
 
     Application.Run;
   except
     on E: Exception do
-      ShowMessage('Erro ao iniciar: ' + E.Message);
+      ShowMessage('Erro ao iniciar VFI: ' + E.Message);
   end;
 end.
