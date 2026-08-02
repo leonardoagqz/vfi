@@ -33,12 +33,10 @@ type
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
     pnlStatus: TPanel; lblStatusMsg: TLabel;
-    PopupImportar: TPopupMenu; miImportarUm: TMenuItem; miImportarVarios: TMenuItem;
     PopupExcluir: TPopupMenu; miExcluirSelecionado: TMenuItem; miLimparTudo: TMenuItem;
     procedure FormCreate(Sender: TObject); procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnImportarClick(Sender: TObject);
-    procedure miImportarUmClick(Sender: TObject); procedure miImportarVariosClick(Sender: TObject);
     procedure btnExcluirClick(Sender: TObject);
     procedure miExcluirSelecionadoClick(Sender: TObject); procedure miLimparTudoClick(Sender: TObject);
     procedure btnAnalisarIAClick(Sender: TObject);
@@ -118,7 +116,7 @@ procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
 procedure TfrmMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Shift=[ssCtrl] then case Key of
-    Ord('I'): miImportarUmClick(Self); Ord('A'): btnAnalisarIAClick(Self); end
+    Ord('I'): btnImportarClick(Self); Ord('A'): btnAnalisarIAClick(Self); end
   else if Key=VK_DELETE then miExcluirSelecionadoClick(Self);
 end;
 
@@ -230,30 +228,35 @@ end;
 function TfrmMain.ObterIdSelecionado: Integer; begin if Assigned(lvDocs.Selected) then Result:=StrToIntDef(lvDocs.Selected.Caption,0) else Result:=0; end;
 function TfrmMain.ObterIndexSelecionado: Integer; begin if Assigned(lvDocs.Selected) then Result:=lvDocs.Selected.Index else Result:=-1; end;
 procedure TfrmMain.lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean); begin if Selected and Assigned(Item) then MostrarDetalhes(Item.Index); end;
-procedure TfrmMain.btnImportarClick(Sender: TObject); var Pt:TPoint; begin Pt:=btnImportar.ClientToScreen(Point(0,btnImportar.Height)); PopupImportar.Popup(Pt.X,Pt.Y); end;
-
-procedure TfrmMain.miImportarUmClick(Sender: TObject);
-var Dlg:TOpenDialog;
-begin if not Assigned(FController) then Exit;
-  Dlg:=TOpenDialog.Create(Self);
-  try Dlg.Title:='Importar XML Fiscal'; Dlg.Filter:='XML (*.xml)|*.xml';
-    Dlg.InitialDir:=ExtractFilePath(ParamStr(0))+'..\..\..\..\docs\xml-exemplos';
-    if Dlg.Execute then begin FController.ImportarXml(Dlg.FileName); AtualizarTela; end;
-  finally Dlg.Free; end;
-end;
-
-procedure TfrmMain.miImportarVariosClick(Sender: TObject);
-var Dlg:TOpenDialog; i:Integer; Arqs:TArray<string>;
-begin if not Assigned(FController) then Exit;
-  Dlg:=TOpenDialog.Create(Self);
-  try Dlg.Title:='Importar Varios XMLs'; Dlg.Filter:='XML (*.xml)|*.xml';
-    Dlg.Options:=[ofAllowMultiSelect,ofFileMustExist];
-    Dlg.InitialDir:=ExtractFilePath(ParamStr(0))+'..\..\..\..\docs\xml-exemplos';
-    if Dlg.Execute then begin
-      SetLength(Arqs,Dlg.Files.Count); for i:=0 to Dlg.Files.Count-1 do Arqs[i]:=Dlg.Files[i];
-      FController.ImportarMultiplosXmls(Arqs); AtualizarTela;
+procedure TfrmMain.btnImportarClick(Sender: TObject);
+var
+  Dlg: TOpenDialog;
+  i: Integer;
+  Arquivos: TArray<string>;
+begin
+  if not Assigned(FController) then Exit;
+  Dlg := TOpenDialog.Create(Self);
+  try
+    Dlg.Title := 'Importar XML Fiscal (NFe/CTe) - selecione 1 ou varios';
+    Dlg.Filter := 'XML (*.xml)|*.xml';
+    Dlg.Options := [ofAllowMultiSelect, ofFileMustExist];
+    Dlg.InitialDir := ExtractFilePath(ParamStr(0)) + '..\..\..\..\' + DIR_XML_EXEMPLOS;
+    if Dlg.Execute then
+    begin
+      if Dlg.Files.Count = 1 then
+        FController.ImportarXml(Dlg.Files[0])
+      else
+      begin
+        SetLength(Arquivos, Dlg.Files.Count);
+        for i := 0 to Dlg.Files.Count - 1 do
+          Arquivos[i] := Dlg.Files[i];
+        FController.ImportarMultiplosXmls(Arquivos);
+      end;
+      AtualizarTela;
     end;
-  finally Dlg.Free; end;
+  finally
+    Dlg.Free;
+  end;
 end;
 
 procedure TfrmMain.btnExcluirClick(Sender: TObject); var Pt:TPoint; begin Pt:=btnExcluir.ClientToScreen(Point(0,btnExcluir.Height)); PopupExcluir.Popup(Pt.X,Pt.Y); end;
