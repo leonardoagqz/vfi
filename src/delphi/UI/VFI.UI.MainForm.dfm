@@ -180,7 +180,7 @@ object frmMain: TfrmMain
       Left = 4
       Top = 4
       Width = 404
-      Height = 155
+      Height = 174
       Align = alTop
       Caption = ' Detalhes do Documento '
       Font.Style = []
@@ -308,8 +308,9 @@ object frmMain: TfrmMain
         Left = 12
         Top = 138
         Width = 380
-        Height = 13
+        Height = 30
         AutoSize = False
+        WordWrap = True
         Font.Height = -11
         Font.Name = 'Segoe UI'
         Font.Style = [fsBold]
@@ -318,7 +319,7 @@ object frmMain: TfrmMain
     end
     object pcDetalhes: TPageControl
       Left = 4
-      Top = 159
+      Top = 168
       Width = 404
       Height = 239
       Align = alClient
