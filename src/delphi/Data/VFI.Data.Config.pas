@@ -9,10 +9,10 @@ type
   TAppConfig = class
   private
     FIniFile: TMemIniFile;
-    function FindIniPath: string;
   public
     constructor Create;
     destructor Destroy; override;
+    function FindIniPath: string;
 
     function LeString(const ASecao, AChave, ADefault: string): string;
     function LeInteger(const ASecao, AChave: string; ADefault: Integer): Integer;

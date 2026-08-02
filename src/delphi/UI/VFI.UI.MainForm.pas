@@ -3,7 +3,7 @@ unit VFI.UI.MainForm;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.IniFiles,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.IniFiles, System.IOUtils,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Buttons, Vcl.Menus,
   VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums;
@@ -327,41 +327,52 @@ end;
 
 procedure TfrmMain.btnConfigurarClick(Sender: TObject);
 var
-  ApiKey, Model: string;
+  ApiKey, Model, IniPath: string;
   Ini: TMemIniFile;
-  IniPath: string;
 begin
-  IniPath := ExtractFilePath(ParamStr(0)) + '..\..\..\..\src\delphi\Resources\vfi.ini';
-  Ini := TMemIniFile.Create(IniPath);
   try
-    ApiKey := Ini.ReadString('AI', 'ApiKey', '');
-    Model := Ini.ReadString('AI', 'Model', 'deepseek-chat');
-
-    ApiKey := InputBox('Configurar DeepSeek API',
-      'Cole sua chave API do DeepSeek (obtenha em platform.deepseek.com):' + sLineBreak +
-      sLineBreak + '(Deixe em branco para usar analise local offline)', ApiKey);
-
-    if ApiKey <> '' then
+    IniPath := TAppModule.Config.FindIniPath;
+    if not FileExists(IniPath) then
     begin
-      Model := InputBox('Modelo', 'Modelo DeepSeek (padrao: deepseek-chat):', Model);
-      Ini.WriteString('AI', 'ApiKey', ApiKey);
-      Ini.WriteString('AI', 'Model', Model);
-      Ini.UpdateFile;
-      TAppModule.Config.LeString('AI', 'ApiKey', '');
-
-      FController.ConfigurarAPI(ApiKey,
-        'https://api.deepseek.com/v1/chat/completions', Model);
-
-      AtualizarStatus('API DeepSeek configurada. Modelo: ' + Model + '. Pronto para analise real.');
-    end
-    else
-    begin
-      Ini.WriteString('AI', 'ApiKey', '');
-      Ini.UpdateFile;
-      AtualizarStatus('Chave API removida. Usando analise local offline.');
+      ForceDirectories(ExtractFilePath(IniPath));
+      TFile.WriteAllText(IniPath, '[AI]' + sLineBreak + 'ApiKey=' + sLineBreak + 'Model=deepseek-chat' + sLineBreak);
     end;
-  finally
-    Ini.Free;
+
+    Ini := TMemIniFile.Create(IniPath);
+    try
+      ApiKey := Ini.ReadString('AI', 'ApiKey', '');
+      Model := Ini.ReadString('AI', 'Model', 'deepseek-chat');
+
+      ApiKey := InputBox('Configurar DeepSeek API',
+        'Cole sua chave API do DeepSeek:' + sLineBreak +
+        '(obtenha em platform.deepseek.com)' + sLineBreak + sLineBreak +
+        'Deixe em branco para usar analise local offline.', ApiKey);
+
+      if ApiKey <> '' then
+      begin
+        Model := InputBox('Modelo DeepSeek', 'Modelo (deepseek-chat / deepseek-reasoner):', Model);
+        if Model = '' then Model := 'deepseek-chat';
+        Ini.WriteString('AI', 'ApiKey', ApiKey);
+        Ini.WriteString('AI', 'Model', Model);
+        Ini.UpdateFile;
+
+        FController.ConfigurarAPI(ApiKey,
+          'https://api.deepseek.com/v1/chat/completions', Model);
+
+        AtualizarStatus(Format('API DeepSeek configurada: %s. Analise real ativada.', [Model]));
+      end
+      else
+      begin
+        Ini.WriteString('AI', 'ApiKey', '');
+        Ini.UpdateFile;
+        AtualizarStatus('Chave API removida. Usando analise local offline.');
+      end;
+    finally
+      Ini.Free;
+    end;
+  except
+    on E: Exception do
+      AtualizarStatus('ERRO ao configurar API: ' + E.Message);
   end;
 end;
 
