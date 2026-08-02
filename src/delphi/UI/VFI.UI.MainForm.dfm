@@ -450,15 +450,31 @@ object frmMain: TfrmMain
       end
       object tsRegras: TTabSheet
         Caption = 'Regras Fiscais'
-        object memRegrasFiscais: TMemo
-            Left = 0
-            Top = 0
-            Width = 396
-            Height = 427
-            Align = alClient
-            ScrollBars = ssBoth
-            TabOrder = 0
-          end
+        object lvRegras: TListView
+          Left = 0
+          Top = 0
+          Width = 396
+          Height = 427
+          Align = alClient
+          Columns = <
+            item
+              Caption = 'ID'
+              Width = 40
+            end
+            item
+              Caption = 'Descricao'
+              Width = 270
+            end
+            item
+              Caption = 'Severidade'
+              Width = 70
+            end>
+          GridLines = True
+          ReadOnly = True
+          RowSelect = True
+          TabOrder = 0
+          ViewStyle = vsReport
+        end
           object pnlRegrasBotoes: TPanel
             Left = 0
             Top = 427

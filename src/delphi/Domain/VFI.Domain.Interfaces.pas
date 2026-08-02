@@ -37,6 +37,14 @@ type
     procedure SetRegrasFiscais(const ARegras: string);
   end;
 
+  TAiRuleRecord = record
+    Id: Integer;
+    Description: string;
+    Severity: string;
+    IsActive: Boolean;
+  end;
+  TArrayOfAiRule = TArray<TAiRuleRecord>;
+
   IMainController = interface
     ['{E5F6A7B8-C9D0-1234-EFAB-345678901234}']
     procedure Inicializar;
@@ -53,6 +61,9 @@ type
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
+    function ListarRegrasIA: TArrayOfAiRule;
+    procedure AdicionarRegraIA(const ADescricao: string);
+    procedure ExcluirRegraIA(const AId: Integer);
   end;
 
 implementation

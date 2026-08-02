@@ -27,8 +27,8 @@ type
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
-    tsRegras: TTabSheet; memRegrasFiscais: TMemo; pnlRegrasBotoes: TPanel;
-    btnAddRegra: TButton; btnDelRegra: TButton;
+    tsRegras: TTabSheet; lvRegras: TListView; pnlRegrasBotoes: TPanel;
+    btnAddRegra: TButton; btnEditRegra: TButton; btnDelRegra: TButton;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
@@ -42,19 +42,16 @@ type
     procedure btnAnalisarIAClick(Sender: TObject);
     procedure btnConfigurarClick(Sender: TObject);
     procedure btnAddRegraClick(Sender: TObject);
+    procedure btnEditRegraClick(Sender: TObject);
     procedure btnDelRegraClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
-    procedure memRegrasFiscaisChange(Sender: TObject);
   private
     FController: IMainController;
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
     procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
     procedure CarregarRegrasPadrao;
-    procedure SalvarRegrasFiscais;
-    procedure NotificarRegrasAlteradas;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
-    function ObterRegrasFiscais: string;
   public
     procedure AtualizarStatus(const AMsg: string); procedure AtualizarTela;
     property Controller: IMainController read FController write FController;
@@ -97,25 +94,15 @@ begin
   lvItens.Columns.Add.Caption:='NCM'; lvItens.Columns[5].Width:=70;
   lvItens.Columns.Add.Caption:='CFOP'; lvItens.Columns[6].Width:=55;
   memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
-  memRegrasFiscais.Font.Name:='Consolas'; memRegrasFiscais.Font.Size:=10;
+  
+  lvRegras.ViewStyle:=vsReport; lvRegras.RowSelect:=True; lvRegras.GridLines:=True;
+  lvRegras.Columns.Add.Caption:='ID'; lvRegras.Columns[0].Width:=40;
+  lvRegras.Columns.Add.Caption:='Descricao'; lvRegras.Columns[1].Width:=270;
+  lvRegras.Columns.Add.Caption:='Severidade'; lvRegras.Columns[2].Width:=70;
   CarregarRegrasPadrao;
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
-end;
-
-function TfrmMain.ObterRegrasFiscais: string;
-begin
-  Result := memRegrasFiscais.Lines.Text;
-end;
-
-procedure TfrmMain.memRegrasFiscaisChange(Sender: TObject);
-begin
-  if Assigned(FController) then
-  begin
-    FController.SetRegrasFiscais(memRegrasFiscais.Lines.Text);
-    AtualizarStatus('Regras fiscais atualizadas. A IA usara as novas regras na proxima analise.');
-  end;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
@@ -123,8 +110,7 @@ procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
 procedure TfrmMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Shift=[ssCtrl] then case Key of
-    Ord('I'): btnImportarClick(Self); Ord('A'): btnAnalisarIAClick(Self);
-    Ord('S'): SalvarRegrasFiscais; end
+    Ord('I'): btnImportarClick(Self); Ord('A'): btnAnalisarIAClick(Self); end
   else if Key=VK_DELETE then miExcluirSelecionadoClick(Self);
 end;
 
@@ -303,13 +289,8 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   memResultadoIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
     [TipoDocumentoToStr(Doc.Tipo),Doc.Numero,FmtValor(Doc.ValorTotal),Doc.Itens.Count,Doc.Calculos.Count]));
   memResultadoIA.Lines.Add(Format('Emitente: %s %s',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));
-  if memRegrasFiscais.Lines.Count > 0 then
-    memResultadoIA.Lines.Add(Format('Regras de referencia: %d linha(s) carregada(s)', [memRegrasFiscais.Lines.Count]));
-  memResultadoIA.Lines.Add('');
-
   pcDetalhes.ActivePage:=tsAnaliseIA; Application.ProcessMessages;
 
-  FController.SetRegrasFiscais(ObterRegrasFiscais);
   FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
 
   memResultadoIA.Lines.Add(Format('Modelo: %s | Padroes suspeitos: %d | Confianca: %.0f%%',
@@ -321,108 +302,37 @@ end;
 
 procedure TfrmMain.CarregarRegrasPadrao;
 var
-  Caminho: string;
+  Regras: TArrayOfAiRule;
+  i: Integer;
+  LI: TListItem;
 begin
-  Caminho := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
-  if FileExists(Caminho) then
-  begin
-    memRegrasFiscais.Lines.LoadFromFile(Caminho);
-    AtualizarStatus(Format('Regras fiscais carregadas: %s (%d linhas)', [ExtractFileName(Caminho), memRegrasFiscais.Lines.Count]));
-  end
-  else
-  begin
-    memRegrasFiscais.Lines.Clear;
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (ICMS) ---');
-    memRegrasFiscais.Lines.Add('ICMS-R01: Aliquota interestadual: 7% (Sul/Sudeste p/ Sul/Sudeste), 12% (demais)');
-    memRegrasFiscais.Lines.Add('ICMS-R02: Aliquota interna SP/RJ/MG: 18%, RS: 17%, PR: 18%');
-    memRegrasFiscais.Lines.Add('ICMS-R03: NCM 8528 (monitores): ST obrigatoria SP (Protocolo ICMS)');
-    memRegrasFiscais.Lines.Add('ICMS-R04: NCM 8471 (notebooks/computadores): ST obrigatoria SP, MG, PR');
-    memRegrasFiscais.Lines.Add('ICMS-R05: NCM 8443 (toners/impressoras): ST em SP');
-    memRegrasFiscais.Lines.Add('ICMS-R06: MVA original ST: 40% (interno), 50% (interestadual)');
-    memRegrasFiscais.Lines.Add('ICMS-R07: MVA ajustado = [(1+MVA)*(1-ALQinter)/(1-ALQintra)] - 1');
-    memRegrasFiscais.Lines.Add('ICMS-R08: CFOP 5101/6101: venda interestadual - ICMS interestadual');
-    memRegrasFiscais.Lines.Add('ICMS-R09: CFOP 5405/6405: venda com ST interestadual - retencao origem');
-    memRegrasFiscais.Lines.Add('ICMS-R10: CFOP 5403/6403: venda com ST para consumidor final');
-    memRegrasFiscais.Lines.Add('ICMS-R11: ICMS sobre frete CIF: base inclui valor do frete');
-    memRegrasFiscais.Lines.Add('ICMS-R12: Reducao base calculo: cesta basica (Conv. ICMS)');
-    memRegrasFiscais.Lines.Add('ICMS-R13: Diferimento ICMS: produtos agricolas, sucatas, materias-primas');
-    memRegrasFiscais.Lines.Add('ICMS-R14: Isencao ICMS: exportacao (CFOP 7xxx), livros, jornais');
-    memRegrasFiscais.Lines.Add('ICMS-R15: Creditos ICMS: insumos, ativo fixo (CIAP 1/48), energia');
-    memRegrasFiscais.Lines.Add('ICMS-R16: Estorno credito: saida isenta exige estorno proporcional');
-    memRegrasFiscais.Lines.Add('ICMS-R17: NF-e > R$100k: obrigatoria MDF-e vinculado');
-    memRegrasFiscais.Lines.Add('ICMS-R18: Prazo cancelamento NF-e: 24h (alguns estados: 480h)');
-    memRegrasFiscais.Lines.Add('ICMS-R19: Carta Correcao Eletronica (CC-e): corrige dados nao fiscais');
-    memRegrasFiscais.Lines.Add('ICMS-R20: Simples Nacional: aliquotas unificadas, nao gera credito ICMS');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (IPI) ---');
-    memRegrasFiscais.Lines.Add('IPI-R01: NCM 8471 (computadores/notebooks): IPI 0% (Lei do Bem)');
-    memRegrasFiscais.Lines.Add('IPI-R02: NCM 8528 (monitores): IPI variavel conforme TIPI');
-    memRegrasFiscais.Lines.Add('IPI-R03: NCM 8443 (impressoras/toners): IPI 0-5%');
-    memRegrasFiscais.Lines.Add('IPI-R04: NCM 8534 (circuitos impressos): IPI 0%');
-    memRegrasFiscais.Lines.Add('IPI-R05: NCM 4802 (papel): IPI 0% imprensa, 5% outros');
-    memRegrasFiscais.Lines.Add('IPI-R06: IPI nao cumulativo: creditos para insumos industriais');
-    memRegrasFiscais.Lines.Add('IPI-R07: Estabelecimento comercial: nao destaca IPI');
-    memRegrasFiscais.Lines.Add('IPI-R08: Suspensao IPI: insumos destinados a exportacao');
-    memRegrasFiscais.Lines.Add('IPI-R09: CST IPI: 50=tributado, 51=suspenso, 52=isento, 53=nao trib');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (PIS/COFINS) ---');
-    memRegrasFiscais.Lines.Add('PCO-R01: Lucro Real: PIS 1.65%, COFINS 7.6% (nao-cumulativo)');
-    memRegrasFiscais.Lines.Add('PCO-R02: Lucro Presumido: PIS 0.65%, COFINS 3.0% (cumulativo)');
-    memRegrasFiscais.Lines.Add('PCO-R03: Creditos nao-cumulativo: insumos, energia, alugueis, deprec');
-    memRegrasFiscais.Lines.Add('PCO-R04: Conceito insumo (STJ): essencial e relevante para atividade');
-    memRegrasFiscais.Lines.Add('PCO-R05: Monofasico: combustiveis, medicamentos, cosmeticos, aguas');
-    memRegrasFiscais.Lines.Add('PCO-R06: PIS/COFINS importacao: devido na entrada de bens estrangeiros');
-    memRegrasFiscais.Lines.Add('PCO-R07: CST PIS/COFINS: 01=tributado, 04=monofasico, 06=aliquota zero');
-    memRegrasFiscais.Lines.Add('PCO-R08: Simples: recolhe PIS/COFINS na aliquota unificada');
-    memRegrasFiscais.Lines.Add('PCO-R09: Retencao na fonte: 4.65% sobre servicos (IN SRF 459/2004)');
-    memRegrasFiscais.Lines.Add('PCO-R10: Exclusao ICMS base PIS/COFINS: tese do seculo (STF)');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (CFOP) ---');
-    memRegrasFiscais.Lines.Add('CFOP-R01: 1xxx=entrada estadual, 2xxx=entrada interest, 3xxx=entrada ext');
-    memRegrasFiscais.Lines.Add('CFOP-R02: 5xxx=saida estadual, 6xxx=saida interestadual, 7xxx=saida ext');
-    memRegrasFiscais.Lines.Add('CFOP-R03: 5101/6101: venda producao propria ou mercadoria adquirida');
-    memRegrasFiscais.Lines.Add('CFOP-R04: 5351/6351: prestacao servico transporte (CT-e)');
-    memRegrasFiscais.Lines.Add('CFOP-R05: 5405/6405: venda com ST - usar qdo ha protocolo ICMS-ST');
-    memRegrasFiscais.Lines.Add('CFOP-R06: 5949/6949: outras saidas - nao usar para operacoes comuns');
-    memRegrasFiscais.Lines.Add('CFOP-R07: 5910/6910: remessa para industrializacao');
-    memRegrasFiscais.Lines.Add('CFOP-R08: 5929/6929: remessa para demonstracao (suspensao ICMS)');
-    memRegrasFiscais.Lines.Add('CFOP-R09: CFOP de entrada (1xxx/2xxx/3xxx): nao usar em NF-e de saida');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (NCM) ---');
-    memRegrasFiscais.Lines.Add('NCM-R01: 00000000: invalido - deve ter 8 digitos validos');
-    memRegrasFiscais.Lines.Add('NCM-R02: 85xxxxxx: maquinas, aparelhos e materiais eletricos');
-    memRegrasFiscais.Lines.Add('NCM-R03: 84xxxxxx: reatores, caldeiras, maquinas, aparelhos mecanicos');
-    memRegrasFiscais.Lines.Add('NCM-R04: 48xxxxxx: papel e cartao - possivel incidencia adicional');
-    memRegrasFiscais.Lines.Add('NCM-R05: NCM 8528.52.20: monitores video - ST SP, MG');
-    memRegrasFiscais.Lines.Add('NCM-R06: NCM 8471.30.12: notebooks - ST varios estados, IPI 0%');
-    memRegrasFiscais.Lines.Add('NCM-R07: NCM 8443.99.33: toners - ST SP');
-    memRegrasFiscais.Lines.Add('NCM-R08: NCM 8534.00.00: circuitos impressos - IPI 0%, ICMS 12% SP');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (VALIDACAO) ---');
-    memRegrasFiscais.Lines.Add('VAL-R01: Soma itens NF-e deve coincidir com valor total (vNF)');
-    memRegrasFiscais.Lines.Add('VAL-R02: CNPJ: 14 digitos obrigatorios com DV modulo 11');
-    memRegrasFiscais.Lines.Add('VAL-R03: NCM: 8 digitos obrigatorios, nao aceitar 00000000');
-    memRegrasFiscais.Lines.Add('VAL-R04: CFOP: 4 digitos entre 1000 e 7999');
-    memRegrasFiscais.Lines.Add('VAL-R05: Chave NFe: 44 digitos com DV calculado modulo 11');
-    memRegrasFiscais.Lines.Add('VAL-R06: CST 00 (tributado): vBC>0 e vICMS>0 obrigatoriamente');
-    memRegrasFiscais.Lines.Add('VAL-R07: CST 40/41/50 (isento/nao trib/suspenso): vICMS=0 obrigatorio');
-    memRegrasFiscais.Lines.Add('VAL-R08: CFOP compativel com tipo operacao (entrada/saida)');
-    memRegrasFiscais.Lines.Add('VAL-R09: NCM deve existir na TIPI vigente e ter 8 digitos');
-    memRegrasFiscais.Lines.Add('VAL-R10: Base ICMS total (vBC) <= valor produtos (vProd)');
-    memRegrasFiscais.Lines.Add('VAL-R11: NF-e sem tag <imposto>: documento incompleto');
-    memRegrasFiscais.Lines.Add('VAL-R12: Emitente e destinatario com mesmo CNPJ: suspeito');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA (LIMIARES) ---');
-    memRegrasFiscais.Lines.Add('LIM-R01: NF-e > R$50k: verificar obrigatoriedade MDF-e');
-    memRegrasFiscais.Lines.Add('LIM-R02: NF-e > R$100k: acompanhamento fiscal especial');
-    memRegrasFiscais.Lines.Add('LIM-R03: Valor unitario > R$10k: verificar NCM e aliquota');
-    memRegrasFiscais.Lines.Add('LIM-R04: Documento > 1 ano: verificar prescricao (5 anos)');
-    memRegrasFiscais.Lines.Add('LIM-R05: DIFAL partilha 2024: 60% destino, 40% origem');
-    memRegrasFiscais.Lines.Add('LIM-R06: Mesmo emitente > R$200k/mes: obrigatoriedade EFD');
-    memRegrasFiscais.Lines.Add('');
-    memRegrasFiscais.Lines.Add('--- Editaveis - adicione ou modifique regras ---');
-    memRegrasFiscais.Lines.Add('A IA usara estas regras como referencia na analise fiscal.');
-    AtualizarStatus('Regras fiscais carregadas (modo inline).');
+  if not Assigned(FController) then Exit;
+  Regras := FController.ListarRegrasIA;
+  
+  lvRegras.Items.BeginUpdate;
+  try
+    lvRegras.Items.Clear;
+    if Length(Regras) > 0 then
+    begin
+      for i := 0 to High(Regras) do
+      begin
+        LI := lvRegras.Items.Add;
+        LI.Caption := IntToStr(Regras[i].Id);
+        LI.SubItems.Add(Regras[i].Description);
+        LI.SubItems.Add(Regras[i].Severity);
+      end;
+      AtualizarStatus(Format('Regras carregadas da API: %d ativas.', [Length(Regras)]));
+    end
+    else
+    begin
+      LI := lvRegras.Items.Add;
+      LI.Caption := '-';
+      LI.SubItems.Add('API offline. Regras serao carregadas quando a API estiver disponivel.');
+      LI.SubItems.Add('INFO');
+      AtualizarStatus('API nao encontrada. Inicie a API C# .NET em localhost:5000.');
+    end;
+  finally
+    lvRegras.Items.EndUpdate;
   end;
 end;
 
@@ -476,52 +386,54 @@ begin
   end;
 end;
 
-procedure TfrmMain.NotificarRegrasAlteradas;
-begin
-  if Assigned(FController) then
-    FController.SetRegrasFiscais(ObterRegrasFiscais);
-end;
-
-procedure TfrmMain.SalvarRegrasFiscais;
-var
-  Caminho: string;
-begin
-  try
-    Caminho := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
-    ForceDirectories(ExtractFilePath(Caminho));
-    memRegrasFiscais.Lines.SaveToFile(Caminho);
-    AtualizarStatus(Format('Regras fiscais salvas em disco (%d linhas). A IA usara as regras atualizadas.', [memRegrasFiscais.Lines.Count]));
-  except
-    on E: Exception do
-      AtualizarStatus('ERRO ao salvar regras: ' + E.Message);
-  end;
-end;
-
 procedure TfrmMain.btnAddRegraClick(Sender: TObject);
 var
-  Codigo, Descricao: string;
+  Descricao: string;
 begin
-  Codigo := InputBox('Nova Regra Fiscal', 'Codigo da regra (ex: ICMS-R20):', '');
-  if Codigo = '' then Exit;
-  Descricao := InputBox('Nova Regra Fiscal', 'Descricao da regra:', '');
-  memRegrasFiscais.Lines.Add(Codigo + ': ' + Descricao);
-  AtualizarStatus(Format('Regra %s adicionada. Use Ctrl+S para salvar.', [Codigo]));
-  NotificarRegrasAlteradas;
+  if not Assigned(FController) then Exit;
+  Descricao := InputBox('Nova Regra', 'Descricao da regra fiscal:', '');
+  if Descricao = '' then Exit;
+  
+  FController.AdicionarRegraIA(Descricao);
+  CarregarRegrasPadrao;
 end;
 
 procedure TfrmMain.btnDelRegraClick(Sender: TObject);
 var
-  Linha: Integer;
+  Id: Integer;
 begin
-  Linha := memRegrasFiscais.CaretPos.Y;
-  if (Linha < 0) or (Linha >= memRegrasFiscais.Lines.Count) then
+  if not Assigned(FController) then Exit;
+  if not Assigned(lvRegras.Selected) then
   begin
-    AtualizarStatus('Posicione o cursor na linha a remover.');
+    AtualizarStatus('Selecione uma regra para excluir.');
     Exit;
   end;
-  memRegrasFiscais.Lines.Delete(Linha);
-  AtualizarStatus(Format('Linha %d removida. Use Ctrl+S para salvar.', [Linha + 1]));
-  NotificarRegrasAlteradas;
+  
+  Id := StrToIntDef(lvRegras.Selected.Caption, 0);
+  if MessageDlg(Format('Excluir a regra #%d?', [Id]), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  begin
+    FController.ExcluirRegraIA(Id);
+    CarregarRegrasPadrao;
+  end;
+end;
+
+procedure TfrmMain.btnEditRegraClick(Sender: TObject);
+var
+  Id: Integer;
+begin
+  if not Assigned(FController) then Exit;
+  if not Assigned(lvRegras.Selected) then
+  begin
+    AtualizarStatus('Selecione uma regra para editar.');
+    Exit;
+  end;
+  Id := StrToIntDef(lvRegras.Selected.Caption, 0);
+  if Id = 0 then Exit;
+  
+  FController.AdicionarRegraIA(
+    InputBox('Editar Regra #' + IntToStr(Id), 'Nova descricao:', lvRegras.Selected.SubItems[0]));
+  FController.ExcluirRegraIA(Id);
+  CarregarRegrasPadrao;
 end;
 
 end.

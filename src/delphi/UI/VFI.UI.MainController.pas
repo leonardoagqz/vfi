@@ -37,6 +37,9 @@ type
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
+    function ListarRegrasIA: TArrayOfAiRule;
+    procedure AdicionarRegraIA(const ADescricao: string);
+    procedure ExcluirRegraIA(const AId: Integer);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
@@ -47,7 +50,7 @@ type
 implementation
 
 uses
-  VFI.Services.XmlImporter, VFI.AppModule;
+  VFI.Services.XmlImporter, VFI.AppModule, System.Net.HttpClient, System.JSON, System.Classes;
 
 constructor TMainController.Create(const ARepository: IFiscalDocumentRepository;
   const AValidator: IFiscalValidator; const AAIAnalyzer: IAIAnalyzer);
@@ -228,6 +231,85 @@ end;
 function TMainController.ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
 begin
   Result := FValidator.ValidarDocumento(ADoc);
+end;
+
+function TMainController.ListarRegrasIA: TArrayOfAiRule;
+var
+  Http: THTTPClient;
+  Resp: IHTTPResponse;
+  JsonArray: TJSONArray;
+  i: Integer;
+begin
+  SetLength(Result, 0);
+  Http := THTTPClient.Create;
+  try
+    try
+      Resp := Http.Get('http://localhost:5000/api/AiRules?activeOnly=true');
+      if Resp.StatusCode = 200 then
+      begin
+        JsonArray := TJSONObject.ParseJSONValue(Resp.ContentAsString(TEncoding.UTF8)) as TJSONArray;
+        if Assigned(JsonArray) then
+        try
+          SetLength(Result, JsonArray.Count);
+          for i := 0 to JsonArray.Count - 1 do
+          begin
+            Result[i].Id := JsonArray.Items[i].GetValue<Integer>('id', 0);
+            Result[i].Description := JsonArray.Items[i].GetValue<string>('description', '');
+            Result[i].Severity := JsonArray.Items[i].GetValue<string>('severity', '');
+            Result[i].IsActive := JsonArray.Items[i].GetValue<Boolean>('isActive', False);
+          end;
+        finally
+          JsonArray.Free;
+        end;
+      end;
+    except
+      on E: Exception do Status('Erro ao buscar regras da API: ' + E.Message);
+    end;
+  finally
+    Http.Free;
+  end;
+end;
+
+procedure TMainController.AdicionarRegraIA(const ADescricao: string);
+var
+  Http: THTTPClient;
+  JsonObj: TJSONObject;
+  StringStream: TStringStream;
+begin
+  Http := THTTPClient.Create;
+  JsonObj := TJSONObject.Create;
+  try
+    JsonObj.AddPair('description', ADescricao);
+    JsonObj.AddPair('severity', 'INFO');
+    JsonObj.AddPair('isActive', TJSONBool.Create(True));
+    StringStream := TStringStream.Create(JsonObj.ToString, TEncoding.UTF8);
+    try
+      Http.ContentType := 'application/json';
+      Http.Post('http://localhost:5000/api/AiRules', StringStream);
+    finally
+      StringStream.Free;
+    end;
+  except
+    on E: Exception do Status('Erro ao adicionar regra na API: ' + E.Message);
+  end;
+  JsonObj.Free;
+  Http.Free;
+end;
+
+procedure TMainController.ExcluirRegraIA(const AId: Integer);
+var
+  Http: THTTPClient;
+begin
+  Http := THTTPClient.Create;
+  try
+    try
+      Http.Delete('http://localhost:5000/api/AiRules/' + AId.ToString);
+    except
+      on E: Exception do Status('Erro ao excluir regra na API: ' + E.Message);
+    end;
+  finally
+    Http.Free;
+  end;
 end;
 
 end.
