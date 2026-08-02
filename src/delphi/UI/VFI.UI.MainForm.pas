@@ -3,7 +3,7 @@ unit VFI.UI.MainForm;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.IniFiles, System.IOUtils, System.DateUtils,
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.IniFiles, System.IOUtils, System.DateUtils, System.StrUtils,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Buttons, Vcl.Menus,
   VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums, VFI.UI.Constantes;
@@ -28,6 +28,7 @@ type
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
     tsRegras: TTabSheet; lvRegras: TListView; pnlRegrasBotoes: TPanel;
+    edtBuscarRegra: TEdit; lblInfoRegras: TLabel;
     btnAddRegra: TButton; btnEditRegra: TButton; btnDelRegra: TButton;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
@@ -45,8 +46,13 @@ type
     procedure btnEditRegraClick(Sender: TObject);
     procedure btnDelRegraClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+    procedure lvRegrasColumnClick(Sender: TObject; Column: TListColumn);
+    procedure edtBuscarRegraChange(Sender: TObject);
+    procedure FiltrarRegras;
   private
     FController: IMainController;
+    FColunaOrdenacao: Integer;
+    FOrdemAscendente: Boolean;
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
     procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
@@ -97,6 +103,9 @@ begin
   
   lvRegras.ViewStyle:=vsReport; lvRegras.RowSelect:=True; lvRegras.GridLines:=True;
   lvRegras.Columns[2].AutoSize := True;
+  lvRegras.OnColumnClick := lvRegrasColumnClick;
+  FColunaOrdenacao := -1; FOrdemAscendente := True;
+  edtBuscarRegra.TextHint := 'Buscar regra...';
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
@@ -444,6 +453,60 @@ begin
   FController.AtualizarRegraIA(Id, NovaDesc);
   CarregarRegrasPadrao;
   AtualizarStatus(Format('Regra #%d atualizada.', [Id]));
+end;
+
+procedure TfrmMain.lvRegrasColumnClick(Sender: TObject; Column: TListColumn);
+begin
+  if FColunaOrdenacao = Column.Index then
+    FOrdemAscendente := not FOrdemAscendente
+  else
+  begin
+    FColunaOrdenacao := Column.Index;
+    FOrdemAscendente := True;
+  end;
+  TListView(Sender).CustomSort(nil, 0);
+  AtualizarStatus(Format('Ordenado por %s (%s).', [Column.Caption, ifthen(FOrdemAscendente, 'A-Z', 'Z-A')]));
+end;
+
+procedure TfrmMain.edtBuscarRegraChange(Sender: TObject);
+begin
+  FiltrarRegras;
+end;
+
+procedure TfrmMain.FiltrarRegras;
+var
+  Busca: string;
+  Regras: TArrayOfAiRule;
+  i: Integer;
+  LI: TListItem;
+begin
+  if not Assigned(FController) then Exit;
+  Busca := UpperCase(Trim(edtBuscarRegra.Text));
+  Regras := FController.ListarRegrasIA;
+  
+  lvRegras.Items.BeginUpdate;
+  try
+    lvRegras.Items.Clear;
+    for i := 0 to High(Regras) do
+    begin
+      if (Busca = '') or
+         (Pos(Busca, UpperCase(Regras[i].Description)) > 0) or
+         (Pos(Busca, UpperCase(Regras[i].Severity)) > 0) or
+         (Pos(Busca, IntToStr(Regras[i].Id)) > 0) then
+      begin
+        LI := lvRegras.Items.Add;
+        LI.Caption := IntToStr(Regras[i].Id);
+        LI.SubItems.Add(Regras[i].Description);
+        LI.SubItems.Add(Regras[i].Severity);
+        if Regras[i].UpdatedAt <> '' then
+          LI.SubItems.Add(FormatDateTime('dd/mm/yyyy hh:nn:ss', ISO8601ToDate(Regras[i].UpdatedAt)))
+        else
+          LI.SubItems.Add('-');
+      end;
+    end;
+  finally
+    lvRegras.Items.EndUpdate;
+  end;
 end;
 
 end.

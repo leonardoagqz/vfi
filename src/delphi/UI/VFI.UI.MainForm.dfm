@@ -450,71 +450,92 @@ object frmMain: TfrmMain
       end
       object tsRegras: TTabSheet
         Caption = 'Regras Fiscais'
-        object lvRegras: TListView
-          Left = 0
-          Top = 0
-          Width = 396
-          Height = 427
-          Align = alClient
-          Columns = <
-            item
-              Caption = 'ID'
-              Width = 40
-            end
-            item
-              Caption = 'Descricao'
-              Width = 270
-            end
-            item
-              Caption = 'Severidade'
-              Width = 70
-            end
-            item
-              Caption = 'Atualizacao'
-              Width = 120
-            end>
-          GridLines = True
-          ReadOnly = True
-          RowSelect = True
-          TabOrder = 0
-          ViewStyle = vsReport
-        end
-          object pnlRegrasBotoes: TPanel
+        object edtBuscarRegra: TEdit
             Left = 0
-            Top = 427
+            Top = 0
             Width = 396
-            Height = 34
-            Align = alBottom
-            BevelOuter = bvNone
-            TabOrder = 1
-            object btnAddRegra: TButton
-              Left = 4
-              Top = 4
-              Width = 90
-              Height = 26
-              Caption = 'Adicionar'
-              TabOrder = 0
-              OnClick = btnAddRegraClick
-            end
-            object btnEditRegra: TButton
-              Left = 98
-              Top = 4
-              Width = 90
-              Height = 26
-              Caption = 'Editar'
-              TabOrder = 1
-              OnClick = btnEditRegraClick
-            end
-            object btnDelRegra: TButton
-              Left = 192
-              Top = 4
-              Width = 90
-              Height = 26
-              Caption = 'Excluir'
-              TabOrder = 2
-              OnClick = btnDelRegraClick
-            end
+            Height = 23
+            Align = alTop
+            TabOrder = 0
+            OnChange = edtBuscarRegraChange
           end
+          object lblInfoRegras: TLabel
+            Left = 0
+            Top = 46
+            Width = 396
+            Height = 26
+            Align = alBottom
+            Alignment = taCenter
+            Caption = 'Estas regras sao enviadas como contexto para IA. Ao clicar Analisar com IA, o sistema monta um prompt com o documento + regras e envia ao DeepSeek.'
+            Font.Color = clGray
+            Font.Size = 8
+            WordWrap = True
+          end
+          object lvRegras: TListView
+            Left = 0
+            Top = 23
+            Width = 396
+            Height = 378
+            Align = alClient
+            Columns = <
+              item
+                Caption = 'ID'
+                Width = 40
+              end
+              item
+                Caption = 'Descricao'
+                Width = 270
+              end
+              item
+                Caption = 'Severidade'
+                Width = 70
+              end
+              item
+                Caption = 'Atualizacao'
+                Width = 120
+              end>
+            GridLines = True
+            ReadOnly = True
+            RowSelect = True
+            TabOrder = 1
+            ViewStyle = vsReport
+          end
+        object pnlRegrasBotoes: TPanel
+          Left = 0
+          Top = 453
+          Width = 396
+          Height = 34
+          Align = alBottom
+          BevelOuter = bvNone
+          TabOrder = 1
+          object btnAddRegra: TButton
+            Left = 4
+            Top = 4
+            Width = 90
+            Height = 26
+            Caption = 'Adicionar'
+            TabOrder = 0
+            OnClick = btnAddRegraClick
+          end
+          object btnEditRegra: TButton
+            Left = 98
+            Top = 4
+            Width = 90
+            Height = 26
+            Caption = 'Editar'
+            TabOrder = 1
+            OnClick = btnEditRegraClick
+          end
+          object btnDelRegra: TButton
+            Left = 192
+            Top = 4
+            Width = 90
+            Height = 26
+            Caption = 'Excluir'
+            TabOrder = 2
+            OnClick = btnDelRegraClick
+          end
+        end
       end
     end
   end
