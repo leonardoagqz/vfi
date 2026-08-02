@@ -315,13 +315,19 @@ end;
 procedure TFiscalDocumentRepository.InserirCalculo(const ACalculo: TTaxCalculation);
 var
   Qry: TADOQuery;
+  ItemIdStr: string;
 begin
   Qry := CriarQuery;
   try
+    if ACalculo.ItemId <= 0 then
+      ItemIdStr := 'NULL'
+    else
+      ItemIdStr := IntToStr(ACalculo.ItemId);
+
     Qry.SQL.Text := Format(
       'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
-      'VALUES (%d,%d,%s,%s,%s,%s,%s)',
-      [ACalculo.DocumentId, ACalculo.ItemId, QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
+      'VALUES (%d,%s,%s,%s,%s,%s,%s)',
+      [ACalculo.DocumentId, ItemIdStr, QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
        CurrToSql(ACalculo.BaseCalculo), FloatToSql(ACalculo.Aliquota), CurrToSql(ACalculo.ValorImposto),
        QuotedStrSafe('Internal')]);
     Qry.ExecSQL;

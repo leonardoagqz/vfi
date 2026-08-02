@@ -106,7 +106,9 @@ begin
     begin
       Calc.DocumentId := Doc.Id;
       if (Calc.ItemId >= 0) and (Calc.ItemId < Doc.Itens.Count) then
-        Calc.ItemId := Doc.Itens[Calc.ItemId].Id;
+        Calc.ItemId := Doc.Itens[Calc.ItemId].Id
+      else
+        Calc.ItemId := -1;
       FRepository.InserirCalculo(Calc);
     end;
 
