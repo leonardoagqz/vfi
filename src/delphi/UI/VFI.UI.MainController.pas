@@ -32,11 +32,11 @@ type
     procedure ExcluirDocumento(const AId: Integer);
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
+    function ObterUltimoResultadoIA: TResultadoIA;
     procedure SetOnStatus(const AProc: TStatusCallback);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
-    property UltimoResultadoIA: TResultadoIA read FUltimoResultadoIA;
   private
     procedure Status(const AMsg: string);
   end;
@@ -234,6 +234,11 @@ end;
 procedure TMainController.ExcluirDocumento(const AId: Integer);
 begin
   FRepository.Excluir(AId);
+end;
+
+function TMainController.ObterUltimoResultadoIA: TResultadoIA;
+begin
+  Result := FUltimoResultadoIA;
 end;
 
 end.

@@ -62,6 +62,7 @@ type
     procedure ImportarXml(const AArquivo: string);
     procedure ImportarMultiplosXmls(const AArquivos: TArray<string>);
     procedure ExcluirDocumento(const AId: Integer);
+    function ObterUltimoResultadoIA: TResultadoIA;
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
     procedure SetOnStatus(const AProc: TStatusCallback);
