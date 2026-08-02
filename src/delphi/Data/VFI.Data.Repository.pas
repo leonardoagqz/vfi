@@ -37,20 +37,21 @@ uses
 
 procedure TFiscalDocumentRepository.SetParam(const AQuery: TADOQuery; const AName: string;
   AType: TFieldType; const AValue: Variant);
-var
-  P: TParameter;
 begin
-  P := AQuery.Parameters.FindParam(AName);
-  if P = nil then
-    P := AQuery.Parameters.CreateParameter(AName, AType, pdInput, 0, AValue)
-  else
-    P.Value := AValue;
+  with AQuery.Parameters.AddParameter do
+  begin
+    Name := AName;
+    DataType := AType;
+    Direction := pdInput;
+    Value := AValue;
+  end;
 end;
 
 function TFiscalDocumentRepository.CriarQuery: TADOQuery;
 begin
   Result := TADOQuery.Create(nil);
   Result.Connection := TConnectionFactory.CriarConexao;
+  Result.ParamCheck := False;
 end;
 
 procedure TFiscalDocumentRepository.PopularDocumento(const AQuery: TADOQuery; const ADoc: TFiscalDocument);

@@ -191,7 +191,7 @@ object frmMain: TfrmMain
       Left = 4
       Top = 4
       Width = 404
-      Height = 141
+      Height = 133
       Align = alTop
       Caption = ' Detalhes '
       TabOrder = 0
@@ -352,9 +352,9 @@ object frmMain: TfrmMain
     end
     object pcDetalhes: TPageControl
       Left = 4
-      Top = 168
+      Top = 152
       Width = 404
-      Height = 438
+      Height = 454
       ActivePage = tsImpostos
       Align = alBottom
       TabOrder = 1
@@ -364,7 +364,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 396
-          Height = 410
+          Height = 426
           Align = alClient
           Columns = <>
           GridLines = True
@@ -381,7 +381,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 396
-          Height = 410
+          Height = 426
           Align = alClient
           Columns = <>
           GridLines = True
@@ -398,7 +398,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 396
-          Height = 410
+          Height = 426
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -418,7 +418,7 @@ object frmMain: TfrmMain
           Left = 0
           Top = 0
           Width = 396
-          Height = 410
+          Height = 426
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
