@@ -3,6 +3,7 @@ program VFI;
 uses
   Vcl.Forms, Vcl.Dialogs, System.SysUtils,
   VFI.UI.MainForm in 'UI\VFI.UI.MainForm.pas' {TfrmMain},
+  VFI.UI.Constantes in 'UI\VFI.UI.Constantes.pas',
   VFI.UI.MainController in 'UI\VFI.UI.MainController.pas',
   VFI.AppModule in 'Services\VFI.AppModule.pas',
   VFI.Domain.Entities in 'Domain\VFI.Domain.Entities.pas',
