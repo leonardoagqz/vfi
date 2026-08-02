@@ -36,6 +36,7 @@ type
     function ObterUltimaValidacao: TResultadoValidacao;
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
+    function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
@@ -220,6 +221,11 @@ end;
 procedure TMainController.ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
 begin
   FAIAnalyzer := TAIAnalyzer.Create(AApiKey, AEndpoint, AModel);
+end;
+
+function TMainController.ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
+begin
+  Result := FValidator.ValidarDocumento(ADoc);
 end;
 
 end.

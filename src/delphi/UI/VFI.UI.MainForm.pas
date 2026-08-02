@@ -6,7 +6,7 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, System.IniFiles, System.IOUtils,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Buttons, Vcl.Menus,
-  VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums;
+  VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums, VFI.UI.Constantes;
 
 type
   TfrmMain = class(TForm)
@@ -174,9 +174,9 @@ begin
   lblDestVal.Caption:=Doc.NomeDestinatario; lblCNPJDVal.Caption:=FormatarCNPJ(Doc.CnpjDestinatario);
   lblValorVal.Caption:='R$ '+FmtValor(Doc.ValorTotal); lblStatusVal.Caption:=StatusToStr(Doc.Status);
   case Doc.Status of
-    stPendente:  begin ShapeStatus.Brush.Color:=$004090FF; lblStatusVal.Font.Color:=clNavy; end;
-    stValidado:  begin ShapeStatus.Brush.Color:=$0040B840; lblStatusVal.Font.Color:=clGreen; end;
-    stRejeitado: begin ShapeStatus.Brush.Color:=$004040F0; lblStatusVal.Font.Color:=clMaroon; end;
+    stPendente:  begin ShapeStatus.Brush.Color:=COR_STATUS_PENDENTE; lblStatusVal.Font.Color:=clNavy; end;
+    stValidado:  begin ShapeStatus.Brush.Color:=COR_STATUS_VALIDADO; lblStatusVal.Font.Color:=clGreen; end;
+    stRejeitado: begin ShapeStatus.Brush.Color:=COR_STATUS_REJEITADO; lblStatusVal.Font.Color:=clMaroon; end;
   end;
 
   tsImpostos.Caption:=Format('Impostos (%d)',[Doc.Calculos.Count]);
@@ -206,7 +206,7 @@ end;
 procedure TfrmMain.AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
 var Val: TResultadoValidacao; Resumo: string;
 begin
-  Val := TAppModule.Validator.ValidarDocumento(ADoc);
+  Val := FController.ValidarDocumentoAtual(ADoc);
   memValidacoes.Clear;
   memValidacoes.Lines.Add('=== DOCUMENTO SELECIONADO ===');
   memValidacoes.Lines.Add(Format('#%d  %s  %s  %s  R$ %s',
@@ -315,7 +315,7 @@ procedure TfrmMain.CarregarRegrasPadrao;
 var
   Path: string;
 begin
-  Path := ExtractFilePath(ParamStr(0)) + '..\..\..\..\src\delphi\Resources\regras_fiscais.txt';
+  Path := ExtractFilePath(ParamStr(0)) + '..\..\..\..\' + DIR_RESOURCES + ARQ_REGRAS_FISCAIS;
   if FileExists(Path) then
     memRegrasFiscais.Lines.LoadFromFile(Path)
   else
@@ -356,8 +356,7 @@ begin
         Ini.WriteString('AI', 'Model', Model);
         Ini.UpdateFile;
 
-        FController.ConfigurarAPI(ApiKey,
-          'https://api.deepseek.com/v1/chat/completions', Model);
+        FController.ConfigurarAPI(ApiKey, DEEPSEEK_ENDPOINT, Model);
 
         AtualizarStatus(Format('API DeepSeek configurada: %s. Analise real ativada.', [Model]));
       end

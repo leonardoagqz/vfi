@@ -50,6 +50,7 @@ type
     function ObterUltimaValidacao: TResultadoValidacao;
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
+    function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
   end;
 
 implementation
