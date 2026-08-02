@@ -34,6 +34,7 @@ type
   IAIAnalyzer = interface
     ['{D4E5F6A7-B8C9-0123-DEFA-234567890123}']
     function AnalisarDocumento(const ADocument: TFiscalDocument): TResultadoIA;
+    procedure SetRegrasFiscais(const ARegras: string);
   end;
 
   IMainController = interface

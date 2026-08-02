@@ -216,6 +216,7 @@ end;
 procedure TMainController.SetRegrasFiscais(const ARegras: string);
 begin
   FRegrasFiscais := ARegras;
+  FAIAnalyzer.SetRegrasFiscais(ARegras);
 end;
 
 procedure TMainController.ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);

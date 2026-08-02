@@ -14,6 +14,7 @@ type
     FApiKey: string;
     FEndpoint: string;
     FModel: string;
+    FRegrasFiscais: string;
     function BuildPrompt(const ADocument: TFiscalDocument): string;
     function CallDeepSeekAPI(const APrompt: string): string;
     function ParseResponse(const AJson: string): TResultadoIA;
@@ -22,6 +23,7 @@ type
     constructor Create(const AApiKey, AEndpoint, AModel: string);
     destructor Destroy; override;
     function AnalisarDocumento(const ADocument: TFiscalDocument): TResultadoIA;
+    procedure SetRegrasFiscais(const ARegras: string);
   end;
 
 implementation
@@ -70,8 +72,15 @@ begin
     end;
 
     SB.AppendLine;
-    SB.AppendLine('Identifique anomalias fiscais: CFOP incompativel com NCM, valores suspeitos, prazos irregulares.');
-    SB.AppendLine('Responda em JSON: {"anomalias": [{"tipo":"CRITICO|ALERTA|INFO","descricao":"..."}], "confianca":0.0-1.0, "recomendacao":"..."}');
+    SB.AppendLine('Identifique anomalias fiscais neste documento.');
+    if FRegrasFiscais <> '' then
+    begin
+      SB.AppendLine;
+      SB.AppendLine('REGRAS FISCAIS DE REFERENCIA (use APENAS estas regras para validar):');
+      SB.AppendLine(Copy(FRegrasFiscais, 1, 2000));
+    end;
+    SB.AppendLine;
+    SB.AppendLine('Responda em JSON: {"anomalias":[{"tipo":"CRITICO|ALERTA|INFO","descricao":"..."}],"confianca":0.0-1.0}');
 
     Result := SB.ToString;
   finally
@@ -300,6 +309,11 @@ begin
   Result.Prompt := Prompt;
   Result.Modelo := FModel;
   Result.Sucesso := True;
+end;
+
+procedure TAIAnalyzer.SetRegrasFiscais(const ARegras: string);
+begin
+  FRegrasFiscais := ARegras;
 end;
 
 end.
