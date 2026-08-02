@@ -27,7 +27,8 @@ type
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
-    tsRegras: TTabSheet; memRegrasFiscais: TMemo;
+    tsRegras: TTabSheet; memRegrasFiscais: TMemo; pnlRegrasBotoes: TPanel;
+    btnAddRegra: TButton; btnDelRegra: TButton;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
@@ -40,6 +41,8 @@ type
     procedure miExcluirSelecionadoClick(Sender: TObject); procedure miLimparTudoClick(Sender: TObject);
     procedure btnAnalisarIAClick(Sender: TObject);
     procedure btnConfigurarClick(Sender: TObject);
+    procedure btnAddRegraClick(Sender: TObject);
+    procedure btnDelRegraClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure memRegrasFiscaisChange(Sender: TObject);
   private
@@ -49,6 +52,7 @@ type
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
     procedure CarregarRegrasPadrao;
     procedure SalvarRegrasFiscais;
+    procedure NotificarRegrasAlteradas;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
     function ObterRegrasFiscais: string;
   public
@@ -472,6 +476,12 @@ begin
   end;
 end;
 
+procedure TfrmMain.NotificarRegrasAlteradas;
+begin
+  if Assigned(FController) then
+    FController.SetRegrasFiscais(ObterRegrasFiscais);
+end;
+
 procedure TfrmMain.SalvarRegrasFiscais;
 var
   Caminho: string;
@@ -485,6 +495,33 @@ begin
     on E: Exception do
       AtualizarStatus('ERRO ao salvar regras: ' + E.Message);
   end;
+end;
+
+procedure TfrmMain.btnAddRegraClick(Sender: TObject);
+var
+  Codigo, Descricao: string;
+begin
+  Codigo := InputBox('Nova Regra Fiscal', 'Codigo da regra (ex: ICMS-R20):', '');
+  if Codigo = '' then Exit;
+  Descricao := InputBox('Nova Regra Fiscal', 'Descricao da regra:', '');
+  memRegrasFiscais.Lines.Add(Codigo + ': ' + Descricao);
+  AtualizarStatus(Format('Regra %s adicionada. Use Ctrl+S para salvar.', [Codigo]));
+  NotificarRegrasAlteradas;
+end;
+
+procedure TfrmMain.btnDelRegraClick(Sender: TObject);
+var
+  Linha: Integer;
+begin
+  Linha := memRegrasFiscais.CaretPos.Y;
+  if (Linha < 0) or (Linha >= memRegrasFiscais.Lines.Count) then
+  begin
+    AtualizarStatus('Posicione o cursor na linha a remover.');
+    Exit;
+  end;
+  memRegrasFiscais.Lines.Delete(Linha);
+  AtualizarStatus(Format('Linha %d removida. Use Ctrl+S para salvar.', [Linha + 1]));
+  NotificarRegrasAlteradas;
 end;
 
 end.
