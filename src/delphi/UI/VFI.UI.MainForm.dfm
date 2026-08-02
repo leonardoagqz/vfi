@@ -368,7 +368,6 @@ object frmMain: TfrmMain
     ParentFont = False
           ScrollBars = ssBoth
     TabOrder = 0
-    OnChange = memRegrasFiscaisChange
         end
       end
     end
