@@ -64,8 +64,8 @@ type
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;
     function ListarRegrasIA: TArrayOfAiRule;
-    procedure AdicionarRegraIA(const ADescricao: string);
-    procedure AtualizarRegraIA(const AId: Integer; const ADescricao: string);
+    procedure AdicionarRegraIA(const ADescricao, ASeveridade, AReferencia: string);
+    procedure AtualizarRegraIA(const AId: Integer; const ADescricao, ASeveridade, AReferencia: string);
     procedure ExcluirRegraIA(const AId: Integer);
   end;
 

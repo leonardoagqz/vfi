@@ -418,7 +418,7 @@ begin
   Descricao := InputBox('Nova Regra', 'Descricao da regra fiscal:', '');
   if Descricao = '' then Exit;
   
-  FController.AdicionarRegraIA(Descricao);
+  FController.AdicionarRegraIA(Descricao, 'INFO', '');
   CarregarRegrasPadrao;
 end;
 
@@ -458,7 +458,7 @@ begin
   NovaDesc := InputBox('Editar Regra #' + IntToStr(Id), 'Descricao:', lvRegras.Selected.SubItems[0]);
   if NovaDesc = '' then Exit;
   
-  FController.AtualizarRegraIA(Id, NovaDesc);
+  FController.AtualizarRegraIA(Id, NovaDesc, 'INFO', '');
   CarregarRegrasPadrao;
   AtualizarStatus(Format('Regra #%d atualizada.', [Id]));
 end;
