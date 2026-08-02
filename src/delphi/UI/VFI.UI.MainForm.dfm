@@ -19,7 +19,7 @@ object frmMain: TfrmMain
     Left = 0
     Top = 0
     Width = 1100
-    Height = 56
+    Height = 52
     Align = alTop
     BevelOuter = bvNone
     Color = 3158064
@@ -31,15 +31,15 @@ object frmMain: TfrmMain
       Caption = 'VFI - Validador Fiscal Inteligente'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWhite
-      Font.Height = -19
+      Font.Height = -18
       Font.Name = 'Segoe UI'
       Font.Style = [fsBold]
       ParentFont = False
     end
     object lblSub: TLabel
       Left = 16
-      Top = 33
-      Caption = 'Importe XMLs fiscais | Impostos extraidos automaticamente | Validacao automatica | DeepSeek IA'
+      Top = 32
+      Caption = 'Importe XMLs  |  Validacao automatica  |  Impostos extraidos do XML  |  Analise IA'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = 13619151
       Font.Height = -11
@@ -49,7 +49,7 @@ object frmMain: TfrmMain
     end
     object lblCount: TLabel
       Left = 940
-      Top = 18
+      Top = 16
       Width = 140
       Height = 17
       Alignment = taRightJustify
@@ -65,54 +65,30 @@ object frmMain: TfrmMain
   end
   object pnlToolbar: TPanel
     Left = 0
-    Top = 56
+    Top = 52
     Width = 1100
-    Height = 42
+    Height = 38
     Align = alTop
     BevelOuter = bvLowered
     TabOrder = 1
     object btnImportar: TSpeedButton
       Left = 8
-      Top = 4
-      Width = 110
-      Height = 34
-      Hint = 'Importar um XML fiscal [Ctrl+I]'
-      Caption = 'Importar XML'
+      Top = 3
+      Width = 120
+      Height = 32
+      Hint = 'Importar XML fiscal [Ctrl+I]'
+      Caption = 'Importar'
       Flat = True
       ParentShowHint = False
       ShowHint = True
       OnClick = btnImportarClick
     end
-    object btnImportarVarios: TSpeedButton
-      Left = 124
-      Top = 4
-      Width = 110
-      Height = 34
-      Hint = 'Importar varios XMLs de uma vez'
-      Caption = 'Importar Varios'
-      Flat = True
-      ParentShowHint = False
-      ShowHint = True
-      OnClick = btnImportarVariosClick
-    end
-    object btnAtualizar: TSpeedButton
-      Left = 240
-      Top = 4
-      Width = 90
-      Height = 34
-      Hint = 'Atualizar lista [Ctrl+R]'
-      Caption = 'Atualizar'
-      Flat = True
-      ParentShowHint = False
-      ShowHint = True
-      OnClick = btnAtualizarClick
-    end
     object btnExcluir: TSpeedButton
-      Left = 336
-      Top = 4
-      Width = 80
-      Height = 34
-      Hint = 'Excluir documento selecionado [Del]'
+      Left = 134
+      Top = 3
+      Width = 120
+      Height = 32
+      Hint = 'Excluir documento [Del]'
       Caption = 'Excluir'
       Flat = True
       ParentShowHint = False
@@ -120,11 +96,11 @@ object frmMain: TfrmMain
       OnClick = btnExcluirClick
     end
     object btnAnalisarIA: TSpeedButton
-      Left = 460
-      Top = 4
-      Width = 150
-      Height = 34
-      Hint = 'Analisar documento com DeepSeek IA [Ctrl+A]'
+      Left = 260
+      Top = 3
+      Width = 130
+      Height = 32
+      Hint = 'Analisar com IA [Ctrl+A]'
       Caption = 'Analisar com IA'
       Flat = True
       ParentShowHint = False
@@ -132,11 +108,37 @@ object frmMain: TfrmMain
       OnClick = btnAnalisarIAClick
     end
   end
+  object PopupImportar: TPopupMenu
+    Left = 16
+    Top = 96
+    object miImportarUm: TMenuItem
+      Caption = 'Importar um arquivo...'
+      ShortCut = 16457
+      OnClick = miImportarUmClick
+    end
+    object miImportarVarios: TMenuItem
+      Caption = 'Importar varios arquivos...'
+      OnClick = miImportarVariosClick
+    end
+  end
+  object PopupExcluir: TPopupMenu
+    Left = 144
+    Top = 96
+    object miExcluirSelecionado: TMenuItem
+      Caption = 'Excluir selecionado'
+      ShortCut = 46
+      OnClick = miExcluirSelecionadoClick
+    end
+    object miLimparTudo: TMenuItem
+      Caption = 'Limpar tudo...'
+      OnClick = miLimparTudoClick
+    end
+  end
   object pnlLeft: TPanel
     Left = 0
-    Top = 98
+    Top = 90
     Width = 680
-    Height = 392
+    Height = 396
     Align = alLeft
     BevelOuter = bvNone
     Padding.Left = 8
@@ -148,7 +150,7 @@ object frmMain: TfrmMain
       Left = 8
       Top = 4
       Width = 668
-      Height = 384
+      Height = 388
       Align = alClient
       Columns = <>
       ReadOnly = True
@@ -160,16 +162,16 @@ object frmMain: TfrmMain
   end
   object Splitter1: TSplitter
     Left = 680
-    Top = 98
+    Top = 90
     Width = 4
-    Height = 392
+    Height = 396
     Align = alLeft
   end
   object pnlRight: TPanel
     Left = 684
-    Top = 98
+    Top = 90
     Width = 416
-    Height = 392
+    Height = 396
     Align = alClient
     BevelOuter = bvNone
     Padding.Left = 4
@@ -181,7 +183,7 @@ object frmMain: TfrmMain
       Left = 4
       Top = 4
       Width = 404
-      Height = 140
+      Height = 130
       Align = alTop
       Caption = ' Detalhes '
       TabOrder = 0
@@ -193,7 +195,7 @@ object frmMain: TfrmMain
         ParentFont = False
       end
       object lblTipoVal: TLabel
-        Left = 100
+        Left = 110
         Top = 20
         Caption = '-'
       end
@@ -205,7 +207,7 @@ object frmMain: TfrmMain
         ParentFont = False
       end
       object lblNumeroVal: TLabel
-        Left = 100
+        Left = 110
         Top = 38
         Caption = '-'
       end
@@ -217,78 +219,79 @@ object frmMain: TfrmMain
         ParentFont = False
       end
       object lblEmitenteVal: TLabel
-        Left = 100
+        Left = 110
         Top = 56
+        Width = 280
         Caption = '-'
       end
       object lblCNPJE: TLabel
         Left = 12
         Top = 74
-        Caption = 'CNPJ Emit.:'
+        Caption = 'CNPJ:'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblCNPJEVal: TLabel
-        Left = 100
+        Left = 110
         Top = 74
         Caption = '-'
       end
       object lblDest: TLabel
-        Left = 200
-        Top = 20
-        Caption = 'Destinatario:'
+        Left = 12
+        Top = 92
+        Caption = 'Dest.:'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblDestVal: TLabel
-        Left = 290
-        Top = 20
-        Width = 100
+        Left = 110
+        Top = 92
+        Width = 280
         Caption = '-'
       end
       object lblCNPJD: TLabel
-        Left = 200
-        Top = 38
+        Left = 12
+        Top = 110
         Caption = 'CNPJ Dest.:'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblCNPJDVal: TLabel
-        Left = 290
-        Top = 38
+        Left = 110
+        Top = 110
         Caption = '-'
       end
       object lblValor: TLabel
-        Left = 200
-        Top = 56
+        Left = 220
+        Top = 20
         Caption = 'Valor:'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblValorVal: TLabel
-        Left = 290
-        Top = 56
+        Left = 270
+        Top = 20
         Caption = '-'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblStatus: TLabel
-        Left = 200
-        Top = 74
+        Left = 220
+        Top = 40
         Caption = 'Status:'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object lblStatusVal: TLabel
-        Left = 290
-        Top = 74
+        Left = 270
+        Top = 40
         Caption = '-'
         Font.Style = [fsBold]
         ParentFont = False
       end
       object ShapeStatus: TShape
-        Left = 354
-        Top = 76
+        Left = 250
+        Top = 42
         Width = 12
         Height = 12
         Brush.Color = clBtnFace
@@ -298,17 +301,17 @@ object frmMain: TfrmMain
     end
     object gbValidacao: TGroupBox
       Left = 4
-      Top = 144
+      Top = 134
       Width = 404
-      Height = 80
+      Height = 60
       Align = alTop
-      Caption = ' Validacao Automatica '
+      Caption = ' Validacao '
       TabOrder = 1
       object memValidacao: TMemo
         Left = 2
         Top = 17
         Width = 400
-        Height = 61
+        Height = 41
         Align = alClient
         BorderStyle = bsNone
         Color = clBtnFace
@@ -324,11 +327,11 @@ object frmMain: TfrmMain
     end
     object gbImpostos: TGroupBox
       Left = 4
-      Top = 224
+      Top = 194
       Width = 404
       Height = 100
       Align = alTop
-      Caption = ' Impostos (0) '
+      Caption = ' Impostos '
       TabOrder = 2
       object lvImpostos: TListView
         Left = 2
@@ -346,17 +349,17 @@ object frmMain: TfrmMain
     end
     object gbItens: TGroupBox
       Left = 4
-      Top = 324
+      Top = 294
       Width = 404
-      Height = 64
+      Height = 98
       Align = alClient
-      Caption = ' Itens (0) '
+      Caption = ' Itens '
       TabOrder = 3
       object lvItens: TListView
         Left = 2
         Top = 17
         Width = 400
-        Height = 45
+        Height = 79
         Align = alClient
         Columns = <>
         GridLines = True
@@ -369,9 +372,9 @@ object frmMain: TfrmMain
   end
   object pnlBottom: TPanel
     Left = 0
-    Top = 490
+    Top = 486
     Width = 1100
-    Height = 188
+    Height = 192
     Align = alBottom
     BevelOuter = bvNone
     TabOrder = 4
@@ -379,16 +382,16 @@ object frmMain: TfrmMain
       Left = 0
       Top = 0
       Width = 1100
-      Height = 188
+      Height = 192
       Align = alClient
       TabOrder = 0
       object tsLog: TTabSheet
-        Caption = ' Log de Operacoes '
+        Caption = 'Log'
         object memLog: TMemo
           Left = 0
           Top = 0
           Width = 1092
-          Height = 158
+          Height = 162
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
@@ -402,12 +405,12 @@ object frmMain: TfrmMain
         end
       end
       object tsIA: TTabSheet
-        Caption = ' Analise IA (DeepSeek) '
+        Caption = 'Analise IA'
         object memIA: TMemo
           Left = 0
           Top = 0
           Width = 1092
-          Height = 158
+          Height = 162
           Align = alClient
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText

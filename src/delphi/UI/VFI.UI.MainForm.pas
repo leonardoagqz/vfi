@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Buttons, Vcl.Grids,
+  Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Buttons, Vcl.Menus,
   VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums;
 
 type
@@ -16,8 +16,6 @@ type
     lblCount: TLabel;
     pnlToolbar: TPanel;
     btnImportar: TSpeedButton;
-    btnImportarVarios: TSpeedButton;
-    btnAtualizar: TSpeedButton;
     btnExcluir: TSpeedButton;
     btnAnalisarIA: TSpeedButton;
     Splitter1: TSplitter;
@@ -25,22 +23,14 @@ type
     lvDocs: TListView;
     pnlRight: TPanel;
     gbDetalhes: TGroupBox;
-    lblTipo: TLabel;
-    lblTipoVal: TLabel;
-    lblNumero: TLabel;
-    lblNumeroVal: TLabel;
-    lblEmitente: TLabel;
-    lblEmitenteVal: TLabel;
-    lblCNPJE: TLabel;
-    lblCNPJEVal: TLabel;
-    lblDest: TLabel;
-    lblDestVal: TLabel;
-    lblCNPJD: TLabel;
-    lblCNPJDVal: TLabel;
-    lblValor: TLabel;
-    lblValorVal: TLabel;
-    lblStatus: TLabel;
-    lblStatusVal: TLabel;
+    lblTipo: TLabel;          lblTipoVal: TLabel;
+    lblNumero: TLabel;        lblNumeroVal: TLabel;
+    lblEmitente: TLabel;      lblEmitenteVal: TLabel;
+    lblCNPJE: TLabel;         lblCNPJEVal: TLabel;
+    lblDest: TLabel;          lblDestVal: TLabel;
+    lblCNPJD: TLabel;         lblCNPJDVal: TLabel;
+    lblValor: TLabel;         lblValorVal: TLabel;
+    lblStatus: TLabel;        lblStatusVal: TLabel;
     ShapeStatus: TShape;
     gbValidacao: TGroupBox;
     memValidacao: TMemo;
@@ -56,22 +46,32 @@ type
     memIA: TMemo;
     pnlStatus: TPanel;
     lblStatusMsg: TLabel;
+    PopupImportar: TPopupMenu;
+    miImportarUm: TMenuItem;
+    miImportarVarios: TMenuItem;
+    PopupExcluir: TPopupMenu;
+    miExcluirSelecionado: TMenuItem;
+    miLimparTudo: TMenuItem;
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure btnImportarClick(Sender: TObject);
-    procedure btnImportarVariosClick(Sender: TObject);
-    procedure btnAtualizarClick(Sender: TObject);
+    procedure miImportarUmClick(Sender: TObject);
+    procedure miImportarVariosClick(Sender: TObject);
     procedure btnExcluirClick(Sender: TObject);
+    procedure miExcluirSelecionadoClick(Sender: TObject);
+    procedure miLimparTudoClick(Sender: TObject);
     procedure btnAnalisarIAClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
   private
     FController: IMainController;
-    procedure AtualizarLista;
+    procedure AtualizarTela;
     procedure MostrarDetalhes(const AIndex: Integer);
     procedure LimparDetalhes;
     function ObterIdSelecionado: Integer;
     function ObterIndexSelecionado: Integer;
+    procedure ImportarArquivo(const AArquivo: string);
+    procedure ImportarArquivos(const AArquivos: TArray<string>);
   public
     procedure AtualizarStatus(const AMsg: string);
     property Controller: IMainController read FController write FController;
@@ -105,34 +105,32 @@ begin
   KeyPreview := True;
   DoubleBuffered := True;
 
-  lvDocs.ViewStyle := vsReport;
-  lvDocs.RowSelect := True;
-  lvDocs.GridLines := True;
-  lvDocs.Columns.Add.Caption := 'ID';     lvDocs.Columns[0].Width := 40;
-  lvDocs.Columns.Add.Caption := 'Tipo';   lvDocs.Columns[1].Width := 48;
-  lvDocs.Columns.Add.Caption := 'Nro';    lvDocs.Columns[2].Width := 70;
-  lvDocs.Columns.Add.Caption := 'Emitente'; lvDocs.Columns[3].Width := 180;
-  lvDocs.Columns.Add.Caption := 'Valor';  lvDocs.Columns[4].Width := 100;
-  lvDocs.Columns.Add.Caption := 'Status'; lvDocs.Columns[5].Width := 80;
+  lvDocs.ViewStyle := vsReport; lvDocs.RowSelect := True; lvDocs.GridLines := True;
+  lvDocs.Columns.Add.Caption := 'ID';     lvDocs.Columns[0].Width := 35;
+  lvDocs.Columns.Add.Caption := 'Tipo';   lvDocs.Columns[1].Width := 42;
+  lvDocs.Columns.Add.Caption := 'Nro';    lvDocs.Columns[2].Width := 55;
+  lvDocs.Columns.Add.Caption := 'Emitente'; lvDocs.Columns[3].Width := 220;
+  lvDocs.Columns.Add.Caption := 'Valor';  lvDocs.Columns[4].Width := 95;
+  lvDocs.Columns.Add.Caption := 'Status'; lvDocs.Columns[5].Width := 90;
 
   lvItens.ViewStyle := vsReport; lvItens.RowSelect := True; lvItens.GridLines := True;
-  lvItens.Columns.Add.Caption := 'Codigo'; lvItens.Columns[0].Width := 65;
-  lvItens.Columns.Add.Caption := 'Produto'; lvItens.Columns[1].Width := 140;
-  lvItens.Columns.Add.Caption := 'Qtd';    lvItens.Columns[2].Width := 45;
+  lvItens.Columns.Add.Caption := 'Codigo';  lvItens.Columns[0].Width := 60;
+  lvItens.Columns.Add.Caption := 'Produto'; lvItens.Columns[1].Width := 170;
+  lvItens.Columns.Add.Caption := 'Qtd';     lvItens.Columns[2].Width := 45;
   lvItens.Columns.Add.Caption := 'Vlr Total'; lvItens.Columns[3].Width := 80;
   lvItens.Columns.Add.Caption := 'NCM';     lvItens.Columns[4].Width := 70;
-  lvItens.Columns.Add.Caption := 'CFOP';    lvItens.Columns[5].Width := 55;
+  lvItens.Columns.Add.Caption := 'CFOP';    lvItens.Columns[5].Width := 50;
 
   lvImpostos.ViewStyle := vsReport; lvImpostos.RowSelect := True; lvImpostos.GridLines := True;
-  lvImpostos.Columns.Add.Caption := 'Imposto'; lvImpostos.Columns[0].Width := 60;
-  lvImpostos.Columns.Add.Caption := 'Base';    lvImpostos.Columns[1].Width := 90;
-  lvImpostos.Columns.Add.Caption := 'Aliquota'; lvImpostos.Columns[2].Width := 60;
-  lvImpostos.Columns.Add.Caption := 'Valor';    lvImpostos.Columns[3].Width := 90;
-  lvImpostos.Columns.Add.Caption := 'CST';      lvImpostos.Columns[4].Width := 40;
+  lvImpostos.Columns.Add.Caption := 'Imposto'; lvImpostos.Columns[0].Width := 55;
+  lvImpostos.Columns.Add.Caption := 'Base Calc.'; lvImpostos.Columns[1].Width := 90;
+  lvImpostos.Columns.Add.Caption := 'Aliq.';  lvImpostos.Columns[2].Width := 50;
+  lvImpostos.Columns.Add.Caption := 'Valor';  lvImpostos.Columns[3].Width := 90;
+  lvImpostos.Columns.Add.Caption := 'CST';    lvImpostos.Columns[4].Width := 40;
 
   pcLog.ActivePage := tsLog;
   LimparDetalhes;
-  AtualizarStatus('Pronto. Importe XMLs fiscais para comecar. Os impostos sao extraidos automaticamente.');
+  AtualizarStatus('Pronto. Clique em Importar para carregar XMLs fiscais.');
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject);
@@ -144,12 +142,11 @@ procedure TfrmMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftStat
 begin
   if Shift = [ssCtrl] then
     case Key of
-      Ord('I'): btnImportarClick(Self);
+      Ord('I'): miImportarUmClick(Self);
       Ord('A'): btnAnalisarIAClick(Self);
-      Ord('R'): btnAtualizarClick(Self);
     end
   else if Key = VK_DELETE then
-    btnExcluirClick(Self);
+    miExcluirSelecionadoClick(Self);
 end;
 
 procedure TfrmMain.AtualizarStatus(const AMsg: string);
@@ -165,18 +162,21 @@ begin
   lblDestVal.Caption := '-'; lblCNPJDVal.Caption := '-';
   lblValorVal.Caption := '-'; lblStatusVal.Caption := '-';
   ShapeStatus.Brush.Color := clBtnFace;
+  lblStatusVal.Font.Color := clWindowText;
+  memValidacao.Clear;
   lvItens.Items.Clear;
   lvImpostos.Items.Clear;
-  memValidacao.Clear;
 end;
 
-procedure TfrmMain.AtualizarLista;
+procedure TfrmMain.AtualizarTela;
 var
   i, Qtd: Integer;
   Doc: TFiscalDocument;
   Item: TListItem;
 begin
   if not Assigned(FController) then Exit;
+
+  FController.CarregarDocumentos;
   Qtd := FController.QuantidadeDocumentos;
   lblCount.Caption := Format('%d documento(s)', [Qtd]);
 
@@ -191,7 +191,7 @@ begin
       Item.Caption := IntToStr(Doc.Id);
       Item.SubItems.Add(TipoDocumentoToStr(Doc.Tipo));
       Item.SubItems.Add(Doc.Numero);
-      Item.SubItems.Add(Copy(Doc.NomeEmitente, 1, 28));
+      Item.SubItems.Add(Copy(Doc.NomeEmitente, 1, 32));
       Item.SubItems.Add(FmtValor(Doc.ValorTotal));
       Item.SubItems.Add(StatusToStr(Doc.Status));
     end;
@@ -240,12 +240,11 @@ begin
   memValidacao.Clear;
   Val := TAppModule.Validator.ValidarDocumento(Doc);
   if Val.IsValid then
-    memValidacao.Lines.Add('Validacao: OK - CNPJ, NCM, CFOP e chave validos.')
+    memValidacao.Lines.Add('Status: APROVADO - CNPJ, NCM, CFOP e chave corretos.')
   else
   begin
-    memValidacao.Lines.Add(Format('Validacao: REJEITADO - %d problema(s):', [Val.Erros.Count]));
-    for i := 0 to Val.Erros.Count - 1 do
-      memValidacao.Lines.Add('  ' + Val.Erros[i]);
+    memValidacao.Lines.Add(Format('Status: REJEITADO - %d problema(s):', [Val.Erros.Count]));
+    memValidacao.Lines.AddStrings(Val.Erros);
   end;
 
   gbImpostos.Caption := Format(' Impostos (%d) ', [Doc.Calculos.Count]);
@@ -288,7 +287,10 @@ end;
 
 function TfrmMain.ObterIdSelecionado: Integer;
 begin
-  Result := StrToIntDef(lvDocs.Selected.Caption, 0);
+  if Assigned(lvDocs.Selected) then
+    Result := StrToIntDef(lvDocs.Selected.Caption, 0)
+  else
+    Result := 0;
 end;
 
 function TfrmMain.ObterIndexSelecionado: Integer;
@@ -301,71 +303,43 @@ begin
   if Selected and Assigned(Item) then MostrarDetalhes(Item.Index);
 end;
 
-procedure TfrmMain.btnAtualizarClick(Sender: TObject);
+procedure TfrmMain.ImportarArquivo(const AArquivo: string);
 begin
-  if not Assigned(FController) then Exit;
-  FController.CarregarDocumentos;
-  AtualizarLista;
+  FController.ImportarXml(AArquivo);
+  AtualizarTela;
 end;
 
-procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
-var
-  Id, Idx: Integer;
-  Doc: TFiscalDocument;
-  R: TResultadoIA;
+procedure TfrmMain.ImportarArquivos(const AArquivos: TArray<string>);
 begin
-  Id := ObterIdSelecionado;
-  if Id = 0 then begin AtualizarStatus('Selecione um documento na lista.'); Exit; end;
-
-  Idx := ObterIndexSelecionado;
-  Doc := FController.ObterDocumento(Idx);
-  if not Assigned(Doc) then Exit;
-
-  memIA.Clear;
-  memIA.Lines.Add(Format('Documento: %s #%s', [TipoDocumentoToStr(Doc.Tipo), Doc.Numero]));
-  memIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)', [Doc.NomeEmitente, FormatarCNPJ(Doc.CnpjEmitente)]));
-  memIA.Lines.Add(Format('Valor: R$ %s | Itens: %d | Impostos extraidos: %d',
-    [FmtValor(Doc.ValorTotal), Doc.Itens.Count, Doc.Calculos.Count]));
-  memIA.Lines.Add('');
-
-  pcLog.ActivePage := tsIA;
-  Application.ProcessMessages;
-
-  FController.AnalisarComIA(Id);
-  R := FController.ObterUltimoResultadoIA;
-
-  memIA.Lines.Add(Format('Modelo IA: %s', [R.Modelo]));
-  memIA.Lines.Add(Format('Anomalias detectadas: %d', [R.AnomaliasEncontradas]));
-  memIA.Lines.Add(Format('Confianca da analise: %.0f%%', [R.Confianca * 100]));
-  memIA.Lines.Add('');
-  memIA.Lines.Add('Analise:');
-  if R.Resposta <> '' then
-    memIA.Lines.Add(R.Resposta)
-  else
-    memIA.Lines.Add('[Simulacao] Chave de API DeepSeek nao configurada. Analise offline.');
+  FController.ImportarMultiplosXmls(AArquivos);
+  AtualizarTela;
 end;
 
 procedure TfrmMain.btnImportarClick(Sender: TObject);
+var
+  Pt: TPoint;
+begin
+  Pt := btnImportar.ClientToScreen(Point(0, btnImportar.Height));
+  PopupImportar.Popup(Pt.X, Pt.Y);
+end;
+
+procedure TfrmMain.miImportarUmClick(Sender: TObject);
 var
   Dlg: TOpenDialog;
 begin
   if not Assigned(FController) then Exit;
   Dlg := TOpenDialog.Create(Self);
   try
-    Dlg.Title := 'Importar XML Fiscal (NFe / CTe)';
-    Dlg.Filter := 'XML Fiscal (*.xml)|*.xml';
+    Dlg.Title := 'Importar XML Fiscal (NFe/CTe)';
+    Dlg.Filter := 'XML (*.xml)|*.xml';
     Dlg.InitialDir := ExtractFilePath(ParamStr(0)) + '..\..\..\..\docs\xml-exemplos';
-    if Dlg.Execute then
-    begin
-      FController.ImportarXml(Dlg.FileName);
-      AtualizarLista;
-    end;
+    if Dlg.Execute then ImportarArquivo(Dlg.FileName);
   finally
     Dlg.Free;
   end;
 end;
 
-procedure TfrmMain.btnImportarVariosClick(Sender: TObject);
+procedure TfrmMain.miImportarVariosClick(Sender: TObject);
 var
   Dlg: TOpenDialog;
   i: Integer;
@@ -383,8 +357,7 @@ begin
       SetLength(Arquivos, Dlg.Files.Count);
       for i := 0 to Dlg.Files.Count - 1 do
         Arquivos[i] := Dlg.Files[i];
-      FController.ImportarMultiplosXmls(Arquivos);
-      AtualizarLista;
+      ImportarArquivos(Arquivos);
     end;
   finally
     Dlg.Free;
@@ -393,15 +366,76 @@ end;
 
 procedure TfrmMain.btnExcluirClick(Sender: TObject);
 var
-  Id: Integer;
+  Pt: TPoint;
+begin
+  Pt := btnExcluir.ClientToScreen(Point(0, btnExcluir.Height));
+  PopupExcluir.Popup(Pt.X, Pt.Y);
+end;
+
+procedure TfrmMain.miExcluirSelecionadoClick(Sender: TObject);
+var
+  Id, Idx: Integer;
 begin
   Id := ObterIdSelecionado;
-  if Id = 0 then begin AtualizarStatus('Selecione um documento.'); Exit; end;
-  if MessageDlg(Format('Excluir doc #%d?', [Id]), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
+  if Id = 0 then begin AtualizarStatus('Selecione um documento na lista.'); Exit; end;
+  Idx := ObterIndexSelecionado;
+  if MessageDlg(Format('Excluir documento #%d?', [Id]), mtConfirmation, [mbYes, mbNo], 0) = mrYes then
   begin
     FController.ExcluirDocumento(Id);
-    AtualizarLista;
+    AtualizarTela;
+    memLog.Clear;
+    memIA.Clear;
+    AtualizarStatus(Format('Documento #%d excluido.', [Id]));
   end;
+end;
+
+procedure TfrmMain.miLimparTudoClick(Sender: TObject);
+begin
+  if MessageDlg('Excluir TODOS os documentos? Esta acao nao pode ser desfeita.',
+    mtWarning, [mbYes, mbNo], 0) = mrYes then
+  begin
+    while FController.QuantidadeDocumentos > 0 do
+      FController.ExcluirDocumento(FController.ObterDocumento(0).Id);
+    AtualizarTela;
+    memLog.Clear;
+    memIA.Clear;
+    AtualizarStatus('Todos os documentos foram excluidos.');
+  end;
+end;
+
+procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
+var
+  Id, Idx: Integer;
+  Doc: TFiscalDocument;
+  R: TResultadoIA;
+begin
+  Id := ObterIdSelecionado;
+  if Id = 0 then begin AtualizarStatus('Selecione um documento na lista.'); Exit; end;
+
+  Idx := ObterIndexSelecionado;
+  Doc := FController.ObterDocumento(Idx);
+  if not Assigned(Doc) then Exit;
+
+  memIA.Clear;
+  memIA.Lines.Add(Format('Documento: %s #%s  |  Valor: R$ %s  |  Itens: %d',
+    [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, FmtValor(Doc.ValorTotal), Doc.Itens.Count]));
+  memIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)', [Doc.NomeEmitente, FormatarCNPJ(Doc.CnpjEmitente)]));
+  memIA.Lines.Add('');
+
+  pcLog.ActivePage := tsIA;
+  Application.ProcessMessages;
+
+  FController.AnalisarComIA(Id);
+  R := FController.ObterUltimoResultadoIA;
+
+  memIA.Lines.Add(Format('Resultado da analise (%s):', [R.Modelo]));
+  memIA.Lines.Add(Format('  Anomalias detectadas: %d', [R.AnomaliasEncontradas]));
+  memIA.Lines.Add(Format('  Confianca: %.0f%%', [R.Confianca * 100]));
+  memIA.Lines.Add('');
+  if R.Resposta <> '' then
+    memIA.Lines.Add(R.Resposta)
+  else
+    memIA.Lines.Add('[Simulacao] Chave API nao configurada. Usando modo offline.');
 end;
 
 end.
