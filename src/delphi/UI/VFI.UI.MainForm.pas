@@ -29,7 +29,7 @@ type
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
     tsRegras: TTabSheet; memRegrasFiscais: TMemo;
     Splitter2: TSplitter;
-    pnlBottom: TPanel; pcBottom: TPageControl;
+    pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
     pnlStatus: TPanel; lblStatusMsg: TLabel;
