@@ -99,7 +99,6 @@ begin
   lvRegras.Columns.Add.Caption:='ID'; lvRegras.Columns[0].Width:=40;
   lvRegras.Columns.Add.Caption:='Descricao'; lvRegras.Columns[1].Width:=270;
   lvRegras.Columns.Add.Caption:='Severidade'; lvRegras.Columns[2].Width:=70;
-  CarregarRegrasPadrao;
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
@@ -151,6 +150,7 @@ begin
   finally lvDocs.Items.EndUpdate; end;
   if lvDocs.Items.Count>0 then begin lvDocs.Selected:=lvDocs.Items[0]; lvDocs.ItemFocused:=lvDocs.Items[0]; MostrarDetalhes(0); end
   else LimparDetalhes;
+  CarregarRegrasPadrao;
 end;
 
 procedure TfrmMain.MostrarDetalhes(const AIndex: Integer);
