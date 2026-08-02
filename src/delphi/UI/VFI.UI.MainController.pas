@@ -15,6 +15,7 @@ type
     FAIAnalyzer: IAIAnalyzer;
     FOnStatus: TStatusCallback;
     FDocumentos: TObjectList<TFiscalDocument>;
+    FUltimoResultadoIA: TResultadoIA;
   public
     constructor Create(const ARepository: IFiscalDocumentRepository;
       const AValidator: IFiscalValidator; const ATaxCalc: ITaxCalculator;
@@ -27,12 +28,15 @@ type
     procedure CalcularImpostos(const AId: Integer);
     procedure AnalisarComIA(const AId: Integer);
     procedure ImportarXml(const AArquivo: string);
+    procedure ImportarMultiplosXmls(const AArquivos: TArray<string>);
+    procedure ExcluirDocumento(const AId: Integer);
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
     procedure SetOnStatus(const AProc: TStatusCallback);
 
     property Documentos: TObjectList<TFiscalDocument> read FDocumentos;
     property OnStatus: TStatusCallback read FOnStatus write FOnStatus;
+    property UltimoResultadoIA: TResultadoIA read FUltimoResultadoIA;
   private
     procedure Status(const AMsg: string);
   end;
@@ -52,6 +56,7 @@ begin
   FTaxCalc := ATaxCalc;
   FAIAnalyzer := AAIAnalyzer;
   FDocumentos := TObjectList<TFiscalDocument>.Create(True);
+  FillChar(FUltimoResultadoIA, SizeOf(FUltimoResultadoIA), 0);
 end;
 
 destructor TMainController.Destroy;
@@ -69,7 +74,7 @@ end;
 procedure TMainController.Inicializar;
 begin
   CarregarDocumentos;
-  Status('Sistema inicializado. Repositorio, validador, calculadora fiscal e IA DeepSeek prontos.');
+  Status('Sistema inicializado.');
 end;
 
 procedure TMainController.CarregarDocumentos;
@@ -77,10 +82,9 @@ begin
   try
     FDocumentos.Clear;
     FDocumentos.AddRange(FRepository.BuscarTodos);
-    Status(Format('%d documento(s) carregado(s).', [FDocumentos.Count]));
   except
     on E: Exception do
-      Status('ERRO ao carregar: ' + E.Message);
+      Status('ERRO: ' + E.Message);
   end;
 end;
 
@@ -90,23 +94,19 @@ var
   Resultado: TResultadoValidacao;
 begin
   Doc := FRepository.BuscarPorId(AId);
-  if not Assigned(Doc) then
-  begin
-    Status(Format('Documento #%d nao encontrado.', [AId]));
-    Exit;
-  end;
+  if not Assigned(Doc) then Exit;
   try
     Resultado := FValidator.ValidarDocumento(Doc);
     if Resultado.IsValid then
     begin
       FRepository.AtualizarStatus(AId, stValidado);
-      Status(Format('Documento #%d: VALIDO.', [AId]));
+      Status(Format('Doc #%d VALIDO - CNPJ, NCM, CFOP e chave OK.', [AId]));
     end
     else
     begin
       FRepository.AtualizarStatus(AId, stRejeitado);
-      Status(Format('Documento #%d: REJEITADO. %d erro(s). %s',
-        [AId, Resultado.Erros.Count, Resultado.ErrosAsString]));
+      Status(Format('Doc #%d REJEITADO - %d erro(s):', [AId, Resultado.Erros.Count]));
+      Status(Resultado.ErrosAsString);
     end;
   finally
     Doc.Free;
@@ -119,13 +119,11 @@ var
   Item: TDocumentItem;
   Res: TResultadoCalculo;
   Calc: TTaxCalculation;
+  TotalICMS: Currency;
 begin
   Doc := FRepository.BuscarPorId(AId);
-  if not Assigned(Doc) then
-  begin
-    Status(Format('Documento #%d nao encontrado.', [AId]));
-    Exit;
-  end;
+  if not Assigned(Doc) then Exit;
+  TotalICMS := 0;
   try
     for Item in Doc.Itens do
     begin
@@ -141,9 +139,12 @@ begin
       Calc.CST := Res.CST;
       Calc.CFOP := Res.CFOP;
       FRepository.InserirCalculo(Calc);
+      TotalICMS := TotalICMS + Res.ValorImposto;
+      Status(Format('  %s: base R$ %.2f x %d%% = ICMS R$ %.2f',
+        [Item.NomeProduto, Res.BaseCalculo, Round(Res.Aliquota), Res.ValorImposto]));
       Calc.Free;
     end;
-    Status(Format('Impostos calculados para doc #%d (%d itens).', [AId, Doc.Itens.Count]));
+    Status(Format('Doc #%d: ICMS total = R$ %.2f (%d itens).', [AId, TotalICMS, Doc.Itens.Count]));
   finally
     Doc.Free;
   end;
@@ -152,19 +153,15 @@ end;
 procedure TMainController.AnalisarComIA(const AId: Integer);
 var
   Doc: TFiscalDocument;
-  Res: TResultadoIA;
 begin
   Doc := FRepository.BuscarPorId(AId);
-  if not Assigned(Doc) then
-  begin
-    Status(Format('Documento #%d nao encontrado.', [AId]));
-    Exit;
-  end;
+  if not Assigned(Doc) then Exit;
   try
-    Res := FAIAnalyzer.AnalisarDocumento(Doc);
-    FRepository.InserirAnaliseIA(AId, Res.Modelo, Res.Prompt, Res.Resposta, Res.AnomaliasEncontradas, Res.Confianca);
-    Status(Format('Analise IA concluida para doc #%d. Modelo: %s. %d anomalia(s). Confianca: %.0f%%.',
-      [AId, Res.Modelo, Res.AnomaliasEncontradas, Res.Confianca * 100]));
+    FUltimoResultadoIA := FAIAnalyzer.AnalisarDocumento(Doc);
+    FRepository.InserirAnaliseIA(AId, FUltimoResultadoIA.Modelo, FUltimoResultadoIA.Prompt,
+      FUltimoResultadoIA.Resposta, FUltimoResultadoIA.AnomaliasEncontradas, FUltimoResultadoIA.Confianca);
+    Status(Format('IA: %d anomalia(s) encontrada(s). Confianca: %.0f%%.',
+      [FUltimoResultadoIA.AnomaliasEncontradas, FUltimoResultadoIA.Confianca * 100]));
   finally
     Doc.Free;
   end;
@@ -193,12 +190,6 @@ var
   Doc: TFiscalDocument;
   Importer: TXmlImporter;
 begin
-  if not FileExists(AArquivo) then
-  begin
-    Status('ERRO: Arquivo nao encontrado.');
-    Exit;
-  end;
-
   Importer := TXmlImporter.Create;
   try
     Doc := Importer.Importar(AArquivo);
@@ -208,18 +199,41 @@ begin
 
   if not Assigned(Doc) then
   begin
-    Status('ERRO: XML invalido ou formato nao reconhecido.');
+    Status('ERRO: XML invalido.');
     Exit;
   end;
 
   try
     FRepository.Inserir(Doc);
-    Status(Format('XML importado: %s #%s | %s | %d itens | R$ %.2f',
-      [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 20),
+    Status(Format('IMPORTADO: %s #%s | %s | %d itens | R$ %.2f',
+      [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 25),
        Doc.Itens.Count, Doc.ValorTotal]));
   finally
     Doc.Free;
   end;
+end;
+
+procedure TMainController.ImportarMultiplosXmls(const AArquivos: TArray<string>);
+var
+  i, Sucessos: Integer;
+begin
+  Sucessos := 0;
+  for i := 0 to High(AArquivos) do
+  begin
+    try
+      ImportarXml(AArquivos[i]);
+      Inc(Sucessos);
+    except
+      on E: Exception do
+        Status('FALHA: ' + ExtractFileName(AArquivos[i]) + ' - ' + E.Message);
+    end;
+  end;
+  Status(Format('%d de %d XML(s) importado(s) com sucesso.', [Sucessos, Length(AArquivos)]));
+end;
+
+procedure TMainController.ExcluirDocumento(const AId: Integer);
+begin
+  FRepository.Excluir(AId);
 end;
 
 end.

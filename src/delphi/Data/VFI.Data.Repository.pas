@@ -21,6 +21,7 @@ type
     function BuscarPorFiltro(const ATipo: TTipoDocumento; const AStatus: string): TObjectList<TFiscalDocument>;
     procedure Inserir(const ADocument: TFiscalDocument);
     procedure AtualizarStatus(const AId: Integer; const AStatus: TStatusDocumento);
+    procedure Excluir(const AId: Integer);
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
@@ -247,7 +248,6 @@ begin
        CurrToSql(ADocument.ValorTotal),
        QuotedStrSafe(ADocument.XmlContent),
        QuotedStrSafe(StatusToStr(ADocument.Status))]);
-
     Qry.SQL.Text := SQL;
     Qry.Open;
     ADocument.Id := Qry.Fields[0].AsInteger;
@@ -273,6 +273,23 @@ begin
   end;
 end;
 
+procedure TFiscalDocumentRepository.Excluir(const AId: Integer);
+var
+  Qry: TADOQuery;
+begin
+  Qry := CriarQuery;
+  try
+    Qry.SQL.Text := 'DELETE FROM AIAnalysisLog WHERE DocumentId = ' + IntToStr(AId); Qry.ExecSQL;
+    Qry.SQL.Text := 'DELETE FROM ValidationLog WHERE DocumentId = ' + IntToStr(AId); Qry.ExecSQL;
+    Qry.SQL.Text := 'DELETE FROM TaxCalculation WHERE DocumentId = ' + IntToStr(AId); Qry.ExecSQL;
+    Qry.SQL.Text := 'DELETE FROM DocumentItem WHERE DocumentId = ' + IntToStr(AId); Qry.ExecSQL;
+    Qry.SQL.Text := 'DELETE FROM FiscalDocument WHERE Id = ' + IntToStr(AId); Qry.ExecSQL;
+  finally
+    Qry.Connection.Free;
+    Qry.Free;
+  end;
+end;
+
 procedure TFiscalDocumentRepository.InserirCalculo(const ACalculo: TTaxCalculation);
 var
   Qry: TADOQuery;
@@ -282,12 +299,8 @@ begin
     Qry.SQL.Text := Format(
       'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
       'VALUES (%d,%d,%s,%s,%s,%s,%s)',
-      [ACalculo.DocumentId,
-       ACalculo.ItemId,
-       QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
-       CurrToSql(ACalculo.BaseCalculo),
-       FloatToSql(ACalculo.Aliquota),
-       CurrToSql(ACalculo.ValorImposto),
+      [ACalculo.DocumentId, ACalculo.ItemId, QuotedStrSafe(ImpostoToStr(ACalculo.TipoImposto)),
+       CurrToSql(ACalculo.BaseCalculo), FloatToSql(ACalculo.Aliquota), CurrToSql(ACalculo.ValorImposto),
        QuotedStrSafe('Internal')]);
     Qry.ExecSQL;
   finally
@@ -306,12 +319,8 @@ begin
     Qry.SQL.Text := Format(
       'INSERT INTO AIAnalysisLog (DocumentId, Model, Prompt, Response, AnomaliesFound, ConfidenceScore) ' +
       'VALUES (%d,%s,%s,%s,%d,%s)',
-      [ADocId,
-       QuotedStrSafe(AModelo),
-       QuotedStrSafe(APrompt),
-       QuotedStrSafe(AResposta),
-       AAnomalias,
-       FloatToSql(AConfianca)]);
+      [ADocId, QuotedStrSafe(AModelo), QuotedStrSafe(APrompt), QuotedStrSafe(AResposta),
+       AAnomalias, FloatToSql(AConfianca)]);
     Qry.ExecSQL;
   finally
     Qry.Connection.Free;

@@ -15,6 +15,7 @@ type
     function BuscarPorFiltro(const ATipo: TTipoDocumento; const AStatus: string): TObjectList<TFiscalDocument>;
     procedure Inserir(const ADocument: TFiscalDocument);
     procedure AtualizarStatus(const AId: Integer; const AStatus: TStatusDocumento);
+    procedure Excluir(const AId: Integer);
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
@@ -59,6 +60,8 @@ type
     procedure CalcularImpostos(const AId: Integer);
     procedure AnalisarComIA(const AId: Integer);
     procedure ImportarXml(const AArquivo: string);
+    procedure ImportarMultiplosXmls(const AArquivos: TArray<string>);
+    procedure ExcluirDocumento(const AId: Integer);
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
     procedure SetOnStatus(const AProc: TStatusCallback);
