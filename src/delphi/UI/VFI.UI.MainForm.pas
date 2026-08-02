@@ -47,6 +47,7 @@ type
     procedure btnDelRegraClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
     procedure lvRegrasColumnClick(Sender: TObject; Column: TListColumn);
+    procedure lvRegrasCompare(Sender: TObject; Item1, Item2: TListItem; Data: Integer; var Compare: Integer);
     procedure edtBuscarRegraChange(Sender: TObject);
     procedure FiltrarRegras;
   private
@@ -104,6 +105,7 @@ begin
   lvRegras.ViewStyle:=vsReport; lvRegras.RowSelect:=True; lvRegras.GridLines:=True;
   lvRegras.Columns[2].AutoSize := True;
   lvRegras.OnColumnClick := lvRegrasColumnClick;
+  lvRegras.OnCompare := lvRegrasCompare;
   FColunaOrdenacao := -1; FOrdemAscendente := True;
   edtBuscarRegra.TextHint := 'Buscar regra...';
   pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
@@ -507,6 +509,27 @@ begin
   finally
     lvRegras.Items.EndUpdate;
   end;
+end;
+
+procedure TfrmMain.lvRegrasCompare(Sender: TObject; Item1, Item2: TListItem;
+  Data: Integer; var Compare: Integer);
+var
+  S1, S2: string;
+  N1, N2: Integer;
+begin
+  if FColunaOrdenacao = 0 then
+  begin
+    N1 := StrToIntDef(Item1.Caption, 0);
+    N2 := StrToIntDef(Item2.Caption, 0);
+    if N1 < N2 then Compare := -1 else if N1 > N2 then Compare := 1 else Compare := 0;
+  end
+  else
+  begin
+    S1 := Item1.SubItems[FColunaOrdenacao - 1];
+    S2 := Item2.SubItems[FColunaOrdenacao - 1];
+    Compare := CompareText(S1, S2);
+  end;
+  if not FOrdemAscendente then Compare := -Compare;
 end;
 
 end.
