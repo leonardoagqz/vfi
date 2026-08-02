@@ -48,6 +48,7 @@ type
     procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
     procedure CarregarRegrasPadrao;
+    procedure SalvarRegrasFiscais;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
     function ObterRegrasFiscais: string;
   public
@@ -107,7 +108,10 @@ end;
 procedure TfrmMain.memRegrasFiscaisChange(Sender: TObject);
 begin
   if Assigned(FController) then
+  begin
     FController.SetRegrasFiscais(memRegrasFiscais.Lines.Text);
+    AtualizarStatus('Regras fiscais atualizadas. A IA usara as novas regras na proxima analise.');
+  end;
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
@@ -115,7 +119,8 @@ procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
 procedure TfrmMain.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 begin
   if Shift=[ssCtrl] then case Key of
-    Ord('I'): btnImportarClick(Self); Ord('A'): btnAnalisarIAClick(Self); end
+    Ord('I'): btnImportarClick(Self); Ord('A'): btnAnalisarIAClick(Self);
+    Ord('S'): SalvarRegrasFiscais; end
   else if Key=VK_DELETE then miExcluirSelecionadoClick(Self);
 end;
 
@@ -464,6 +469,21 @@ begin
   except
     on E: Exception do
       AtualizarStatus('ERRO ao configurar API: ' + E.Message);
+  end;
+end;
+
+procedure TfrmMain.SalvarRegrasFiscais;
+var
+  Caminho: string;
+begin
+  try
+    Caminho := ExtractFilePath(ParamStr(0)) + '..\..\Resources\' + ARQ_REGRAS_FISCAIS;
+    ForceDirectories(ExtractFilePath(Caminho));
+    memRegrasFiscais.Lines.SaveToFile(Caminho);
+    AtualizarStatus(Format('Regras fiscais salvas em disco (%d linhas). A IA usara as regras atualizadas.', [memRegrasFiscais.Lines.Count]));
+  except
+    on E: Exception do
+      AtualizarStatus('ERRO ao salvar regras: ' + E.Message);
   end;
 end;
 
