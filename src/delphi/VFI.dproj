@@ -96,8 +96,9 @@
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
         <DCCReference Include="UI\VFI.UI.MainForm.pas">
-            <Form>frmMain</Form>
+            <Form>TfrmMain</Form>
         </DCCReference>
+        <DCCReference Include="UI\VFI.UI.Constantes.pas"/>
         <DCCReference Include="UI\VFI.UI.MainController.pas"/>
         <DCCReference Include="Services\VFI.AppModule.pas"/>
         <DCCReference Include="Domain\VFI.Domain.Entities.pas"/>
@@ -107,9 +108,8 @@
         <DCCReference Include="Data\VFI.Data.Connection.pas"/>
         <DCCReference Include="Data\VFI.Data.Repository.pas"/>
         <DCCReference Include="Services\VFI.Services.FiscalValidator.pas"/>
-        <DCCReference Include="Services\VFI.Services.TaxCalculator.pas"/>
         <DCCReference Include="Services\VFI.Services.AIAnalyzer.pas"/>
-        <DCCReference Include="Services\VFI.Services.VB6Bridge.pas"/>
+        <DCCReference Include="Services\VFI.Services.XmlImporter.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>

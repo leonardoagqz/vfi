@@ -73,7 +73,6 @@ object frmMain: TfrmMain
     Height = 32
     Hint = 'Importar XML fiscal [Ctrl+I]'
       Caption = 'Importar'
-    Flat = True
     ParentShowHint = False
     ShowHint = True
     OnClick = btnImportarClick
@@ -85,7 +84,6 @@ object frmMain: TfrmMain
     Height = 32
     Hint = 'Excluir documento [Del]'
       Caption = 'Excluir'
-    Flat = True
     ParentShowHint = False
     ShowHint = True
     OnClick = btnExcluirClick
@@ -97,7 +95,6 @@ object frmMain: TfrmMain
     Height = 32
     Hint = 'Analisar com IA [Ctrl+A]'
       Caption = 'Analisar com IA'
-    Flat = True
     ParentShowHint = False
     ShowHint = True
     OnClick = btnAnalisarIAClick
@@ -109,7 +106,6 @@ object frmMain: TfrmMain
     Height = 32
     Hint = 'Configurar chave API DeepSeek'
       Caption = 'Configurar API'
-    Flat = True
     ParentShowHint = False
     ShowHint = True
     OnClick = btnConfigurarClick
