@@ -31,6 +31,7 @@ type
 function TipoDocumentoToStr(const ATipo: TTipoDocumento): string;
 function StrToTipoDocumento(const AStr: string): TTipoDocumento;
 function StatusToStr(const AStatus: TStatusDocumento): string;
+function StrToStatus(const AStr: string): TStatusDocumento;
 function ImpostoToStr(const AImposto: TTipoImposto): string;
 function StrToImposto(const AStr: string): TTipoImposto;
 
@@ -66,6 +67,16 @@ begin
     stRejeitado: Result := 'REJEITADO';
     stErro:      Result := 'ERRO';
   end;
+end;
+
+function StrToStatus(const AStr: string): TStatusDocumento;
+var S: string;
+begin
+  S := UpperCase(Trim(AStr));
+  if S = 'VALIDADO' then Result := stValidado
+  else if S = 'REJEITADO' then Result := stRejeitado
+  else if S = 'ERRO' then Result := stErro
+  else Result := stPendente;
 end;
 
 function ImpostoToStr(const AImposto: TTipoImposto): string;

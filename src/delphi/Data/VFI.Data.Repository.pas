@@ -65,7 +65,7 @@ begin
   ADoc.NomeDestinatario := AQuery.FieldByName('RecipientName').AsString;
   ADoc.ValorTotal := AQuery.FieldByName('TotalValue').AsCurrency;
   ADoc.XmlContent := AQuery.FieldByName('XMLContent').AsString;
-  ADoc.Status := stPendente;
+  ADoc.Status := StrToStatus(AQuery.FieldByName('Status').AsString);
 end;
 
 procedure TFiscalDocumentRepository.PopularItem(const AQuery: TADOQuery; const AItem: TDocumentItem);
@@ -215,15 +215,21 @@ begin
 end;
 
 procedure TFiscalDocumentRepository.Excluir(const AId: Integer);
-var Qry: TADOQuery;
+var Consulta: TADOQuery;
 begin
-  Qry := CriarConsulta;
+  Consulta := CriarConsulta;
   try
-    Qry.SQL.Text := 'DELETE FROM AIAnalysisLog WHERE DocumentId = :id'; AdicionarParametro(Qry,'id',ftInteger,AId); Qry.ExecSQL;
-    Qry.SQL.Text := 'DELETE FROM TaxCalculation WHERE DocumentId = :id'; AdicionarParametro(Qry,'id',ftInteger,AId); Qry.ExecSQL;
-    Qry.SQL.Text := 'DELETE FROM DocumentItem WHERE DocumentId = :id'; AdicionarParametro(Qry,'id',ftInteger,AId); Qry.ExecSQL;
-    Qry.SQL.Text := 'DELETE FROM FiscalDocument WHERE Id = :id'; AdicionarParametro(Qry,'id',ftInteger,AId); Qry.ExecSQL;
-  finally Qry.Connection.Free; Qry.Free; end;
+    Consulta.Connection.BeginTrans;
+    Consulta.SQL.Text := 'DELETE FROM AIAnalysisLog WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM TaxCalculation WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM DocumentItem WHERE DocumentId = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
+    Consulta.SQL.Text := 'DELETE FROM FiscalDocument WHERE Id = :id'; AdicionarParametro(Consulta,'id',ftInteger,AId); Consulta.ExecSQL;
+    Consulta.Connection.CommitTrans;
+  except
+    Consulta.Connection.RollbackTrans;
+    raise;
+  end;
+  Consulta.Connection.Free; Consulta.Free;
 end;
 
 procedure TFiscalDocumentRepository.InserirCalculo(const ACalculo: TTaxCalculation);
