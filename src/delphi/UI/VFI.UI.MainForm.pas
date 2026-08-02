@@ -47,6 +47,7 @@ type
   private
     FController: IMainController;
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
+    procedure LimparLogs;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
     function ObterRegrasFiscais: string;
