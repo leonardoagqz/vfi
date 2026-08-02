@@ -123,10 +123,12 @@ object frmMain: TfrmMain
     end
   end
   object Splitter2: TSplitter
-    Left = 0; Top = 486; Width = 1100; Height = 4; Align = alBottom; Cursor = crVSplit
-  end
-  object pnlCenter: TPanel
-    Left = 0; Top = 84; Width = 684; Height = 402; TabOrder = 5
+    Left = 0
+    Top = 486
+    Width = 1100
+    Height = 4
+    Align = alBottom
+    Cursor = crVSplit
   end
   object pnlBottom: TPanel
     Left = 0; Top = 490; Width = 1100; Height = 208; Align = alBottom; BevelOuter = bvNone
