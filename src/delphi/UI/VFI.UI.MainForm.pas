@@ -303,6 +303,7 @@ var
   Regras: TArrayOfAiRule;
   i: Integer;
   LI: TListItem;
+  RegrasTexto: string;
 begin
   if not Assigned(FController) then Exit;
   Regras := FController.ListarRegrasIA;
@@ -310,6 +311,7 @@ begin
   lvRegras.Items.BeginUpdate;
   try
     lvRegras.Items.Clear;
+    RegrasTexto := '';
     if Length(Regras) > 0 then
     begin
       for i := 0 to High(Regras) do
@@ -318,16 +320,19 @@ begin
         LI.Caption := IntToStr(Regras[i].Id);
         LI.SubItems.Add(Regras[i].Description);
         LI.SubItems.Add(Regras[i].Severity);
+        RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
+          [i + 1, Regras[i].Severity, Regras[i].Description]);
       end;
-      AtualizarStatus(Format('Regras carregadas da API: %d ativas.', [Length(Regras)]));
+      FController.SetRegrasFiscais(RegrasTexto);
+      AtualizarStatus(Format('Regras carregadas e enviadas para IA: %d ativas.', [Length(Regras)]));
     end
     else
     begin
       LI := lvRegras.Items.Add;
       LI.Caption := '-';
-      LI.SubItems.Add('API offline. Regras serao carregadas quando a API estiver disponivel.');
+      LI.SubItems.Add('API offline. Inicie a API em localhost:5000');
       LI.SubItems.Add('INFO');
-      AtualizarStatus('API nao encontrada. Inicie a API C# .NET em localhost:5000.');
+      AtualizarStatus('API nao encontrada. Regras nao enviadas para IA.');
     end;
   finally
     lvRegras.Items.EndUpdate;
