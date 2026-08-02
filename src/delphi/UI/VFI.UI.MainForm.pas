@@ -28,7 +28,6 @@ type
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
     tsRegras: TTabSheet; memRegrasFiscais: TMemo;
-    Splitter2: TSplitter;
     pcBottom: TPageControl;
     tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
