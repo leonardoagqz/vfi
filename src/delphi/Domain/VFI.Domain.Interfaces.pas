@@ -58,6 +58,7 @@ type
     procedure ValidarDocumento(const AId: Integer);
     procedure CalcularImpostos(const AId: Integer);
     procedure AnalisarComIA(const AId: Integer);
+    procedure ImportarXml(const AArquivo: string);
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
     procedure SetOnStatus(const AProc: TStatusCallback);

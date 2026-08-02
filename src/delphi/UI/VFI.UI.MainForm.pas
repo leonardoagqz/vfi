@@ -5,7 +5,7 @@ interface
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
-  Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Grids, Vcl.Buttons,
+  Vcl.ExtCtrls, Vcl.ComCtrls, Vcl.Grids,   Vcl.Buttons, System.DateUtils,
   VFI.Domain.Interfaces, VFI.Domain.Entities, VFI.Domain.Enums;
 
 type
@@ -184,8 +184,24 @@ begin
 end;
 
 procedure TfrmMain.btnImportarClick(Sender: TObject);
+var
+  Dlg: TOpenDialog;
 begin
-  AtualizarStatus('Importacao XML disponivel via API REST: http://localhost:5000/swagger');
+  if not Assigned(FController) then Exit;
+  Dlg := TOpenDialog.Create(Self);
+  try
+    Dlg.Title := 'Importar XML Fiscal (NFe/CTe)';
+    Dlg.Filter := 'XML Fiscal (*.xml)|*.xml|Todos (*.*)|*.*';
+    Dlg.DefaultExt := 'xml';
+    Dlg.InitialDir := ExtractFilePath(ParamStr(0)) + '..\..\..\..\docs\xml-exemplos';
+    if Dlg.Execute then
+    begin
+      FController.ImportarXml(Dlg.FileName);
+      btnRefreshClick(Self);
+    end;
+  finally
+    Dlg.Free;
+  end;
 end;
 
 procedure TfrmMain.StringGridDocsDblClick(Sender: TObject);

@@ -26,6 +26,7 @@ type
     procedure ValidarDocumento(const AId: Integer);
     procedure CalcularImpostos(const AId: Integer);
     procedure AnalisarComIA(const AId: Integer);
+    procedure ImportarXml(const AArquivo: string);
     function ObterDocumento(const AIndex: Integer): TFiscalDocument;
     function QuantidadeDocumentos: Integer;
     procedure SetOnStatus(const AProc: TStatusCallback);
@@ -37,6 +38,9 @@ type
   end;
 
 implementation
+
+uses
+  VFI.Services.XmlImporter;
 
 constructor TMainController.Create(const ARepository: IFiscalDocumentRepository;
   const AValidator: IFiscalValidator; const ATaxCalc: ITaxCalculator;
@@ -126,7 +130,6 @@ begin
     for Item in Doc.Itens do
     begin
       Res := FTaxCalc.CalcularICMS(Item.ValorTotal, 18, 0, 0, 0, 0, 0, omNacional, rtLucroReal);
-
       Calc := TTaxCalculation.Create;
       Calc.DocumentId := AId;
       Calc.ItemId := Item.Id;
@@ -134,15 +137,13 @@ begin
       Calc.BaseCalculo := Res.BaseCalculo;
       Calc.Aliquota := Res.Aliquota;
       Calc.ValorImposto := Res.ValorImposto;
-      Calc.Engine := Res.Engine;
+      Calc.Engine := ecInternal;
       Calc.CST := Res.CST;
       Calc.CFOP := Res.CFOP;
       FRepository.InserirCalculo(Calc);
       Calc.Free;
     end;
-
-    Status(Format('Impostos calculados para documento #%d (%d itens). Engine: %s.',
-      [AId, Doc.Itens.Count, 'VB6/Internal']));
+    Status(Format('Impostos calculados para doc #%d (%d itens).', [AId, Doc.Itens.Count]));
   finally
     Doc.Free;
   end;
@@ -161,9 +162,7 @@ begin
   end;
   try
     Res := FAIAnalyzer.AnalisarDocumento(Doc);
-
     FRepository.InserirAnaliseIA(AId, Res.Modelo, Res.Prompt, Res.Resposta, Res.AnomaliasEncontradas, Res.Confianca);
-
     Status(Format('Analise IA concluida para doc #%d. Modelo: %s. %d anomalia(s). Confianca: %.0f%%.',
       [AId, Res.Modelo, Res.AnomaliasEncontradas, Res.Confianca * 100]));
   finally
@@ -187,6 +186,40 @@ end;
 procedure TMainController.SetOnStatus(const AProc: TStatusCallback);
 begin
   FOnStatus := AProc;
+end;
+
+procedure TMainController.ImportarXml(const AArquivo: string);
+var
+  Doc: TFiscalDocument;
+  Importer: TXmlImporter;
+begin
+  if not FileExists(AArquivo) then
+  begin
+    Status('ERRO: Arquivo nao encontrado.');
+    Exit;
+  end;
+
+  Importer := TXmlImporter.Create;
+  try
+    Doc := Importer.Importar(AArquivo);
+  finally
+    Importer.Free;
+  end;
+
+  if not Assigned(Doc) then
+  begin
+    Status('ERRO: XML invalido ou formato nao reconhecido.');
+    Exit;
+  end;
+
+  try
+    FRepository.Inserir(Doc);
+    Status(Format('XML importado: %s #%s | %s | %d itens | R$ %.2f',
+      [TipoDocumentoToStr(Doc.Tipo), Doc.Numero, Copy(Doc.NomeEmitente, 1, 20),
+       Doc.Itens.Count, Doc.ValorTotal]));
+  finally
+    Doc.Free;
+  end;
 end;
 
 end.

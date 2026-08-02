@@ -14,7 +14,8 @@ uses
   VFI.Services.FiscalValidator in 'Services\VFI.Services.FiscalValidator.pas',
   VFI.Services.TaxCalculator in 'Services\VFI.Services.TaxCalculator.pas',
   VFI.Services.AIAnalyzer in 'Services\VFI.Services.AIAnalyzer.pas',
-  VFI.Services.VB6Bridge in 'Services\VFI.Services.VB6Bridge.pas';
+  VFI.Services.VB6Bridge in 'Services\VFI.Services.VB6Bridge.pas',
+  VFI.Services.XmlImporter in 'Services\VFI.Services.XmlImporter.pas';
 
 {$R *.res}
 
