@@ -65,13 +65,13 @@ type
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
   private
     FController: IMainController;
-    procedure AtualizarTela;
     procedure MostrarDetalhes(const AIndex: Integer);
     procedure LimparDetalhes;
     function ObterIdSelecionado: Integer;
     function ObterIndexSelecionado: Integer;
   public
     procedure AtualizarStatus(const AMsg: string);
+    procedure AtualizarTela;
     property Controller: IMainController read FController write FController;
   end;
 

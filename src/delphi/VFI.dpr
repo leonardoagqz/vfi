@@ -31,6 +31,7 @@ begin
       TAppModule.AIAnalyzer);
     frmMain.Controller.SetOnStatus(frmMain.AtualizarStatus);
     frmMain.Controller.Inicializar;
+    frmMain.AtualizarTela;
 
     Application.Run;
   except
