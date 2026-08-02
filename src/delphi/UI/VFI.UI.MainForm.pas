@@ -23,10 +23,11 @@ type
     lblValor: TLabel; lblValorVal: TLabel; lblStatus: TLabel; lblStatusVal: TLabel;
     ShapeStatus: TShape;
     pnlValidacao: TPanel; lblValidacaoTitulo: TLabel; memValidacao: TMemo;
-    pcDetalhes: TPageControl; tsImpostos: TTabSheet; lvImpostos: TListView;
+    pcDetalhes: TPageControl;
+    tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
-    pnlBottom: TPanel; pcLog: TPageControl; tsLog: TTabSheet; memLog: TMemo;
-    tsIA: TTabSheet; memIA: TMemo;
+    tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
+    pnlBottom: TPanel; memLog: TMemo;
     pnlStatus: TPanel; lblStatusMsg: TLabel;
     PopupImportar: TPopupMenu; miImportarUm: TMenuItem; miImportarVarios: TMenuItem;
     PopupExcluir: TPopupMenu; miExcluirSelecionado: TMenuItem; miLimparTudo: TMenuItem;
@@ -86,7 +87,8 @@ begin
   lvItens.Columns.Add.Caption:='Vlr Total'; lvItens.Columns[4].Width:=90;
   lvItens.Columns.Add.Caption:='NCM'; lvItens.Columns[5].Width:=70;
   lvItens.Columns.Add.Caption:='CFOP'; lvItens.Columns[6].Width:=55;
-  pcDetalhes.ActivePage:=tsItens; pcLog.ActivePage:=tsLog;
+  memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
+  pcDetalhes.ActivePage:=tsItens;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
 end;
@@ -111,7 +113,7 @@ begin
   ShapeStatus.Brush.Color:=clBtnFace; lblStatusVal.Font.Color:=clWindowText;
   lblValidacaoTitulo.Caption:=''; lblValidacaoTitulo.Font.Color:=clWindowText;
   pnlValidacao.Color:=clBtnFace; memValidacao.Clear;
-  lvImpostos.Items.Clear; lvItens.Items.Clear;
+  lvImpostos.Items.Clear; lvItens.Items.Clear; memResultadoIA.Clear;
   tsImpostos.Caption:='Impostos'; tsItens.Caption:='Itens';
 end;
 
@@ -222,27 +224,35 @@ procedure TfrmMain.miExcluirSelecionadoClick(Sender: TObject);
 var Id:Integer;
 begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um documento.'); Exit; end;
   if MessageDlg(Format('Excluir documento #%d?',[Id]),mtConfirmation,[mbYes,mbNo],0)=mrYes then begin
-    FController.ExcluirDocumento(Id); AtualizarTela; memLog.Clear; memIA.Clear;
+    FController.ExcluirDocumento(Id); AtualizarTela; memLog.Clear; memResultadoIA.Clear;
     AtualizarStatus(Format('Documento #%d excluido.',[Id])); end;
 end;
 
 procedure TfrmMain.miLimparTudoClick(Sender: TObject);
 begin if MessageDlg('Excluir TODOS os documentos?',mtWarning,[mbYes,mbNo],0)=mrYes then begin
     while FController.QuantidadeDocumentos>0 do FController.ExcluirDocumento(FController.ObterDocumento(0).Id);
-    AtualizarTela; memLog.Clear; memIA.Clear; AtualizarStatus('Todos os documentos excluidos.'); end;
+    AtualizarTela; memLog.Clear; memResultadoIA.Clear; AtualizarStatus('Todos os documentos excluidos.'); end;
 end;
 
 procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
 var Id,Idx:Integer; Doc:TFiscalDocument; R:TResultadoIA;
 begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um documento.'); Exit; end;
   Idx:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(Idx); if not Assigned(Doc) then Exit;
-  memIA.Clear; memIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
+
+  memResultadoIA.Clear;
+  memResultadoIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
     [TipoDocumentoToStr(Doc.Tipo),Doc.Numero,FmtValor(Doc.ValorTotal),Doc.Itens.Count,Doc.Calculos.Count]));
-  memIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)])); memIA.Lines.Add('');
-  pcLog.ActivePage:=tsIA; Application.ProcessMessages;
+  memResultadoIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));
+  memResultadoIA.Lines.Add('');
+
+  pcDetalhes.ActivePage:=tsAnaliseIA;
+  Application.ProcessMessages;
+
   FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
-  memIA.Lines.Add(Format('Modelo: %s | Anomalias: %d | Confianca: %.0f%%',[R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));
-  memIA.Lines.Add(''); if R.Resposta<>'' then memIA.Lines.Add(R.Resposta) else memIA.Lines.Add('[Chave API nao configurada]');
+
+  memResultadoIA.Lines.Add(Format('Modelo: %s | Anomalias: %d | Confianca: %.0f%%',[R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));
+  memResultadoIA.Lines.Add('');
+  if R.Resposta<>'' then memResultadoIA.Lines.Add(R.Resposta) else memResultadoIA.Lines.Add('[Chave API nao configurada - usando analise local]');
 end;
 
 end.
