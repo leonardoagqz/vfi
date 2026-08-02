@@ -304,6 +304,7 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   memResultadoIA.Lines.Add(Format('Emitente: %s %s',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));
   pcDetalhes.ActivePage:=tsAnaliseIA; Application.ProcessMessages;
 
+  MostrarProgresso(2); AtualizarProgresso(1);
   FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
 
   memResultadoIA.Lines.Add(Format('Modelo: %s | Padroes suspeitos: %d | Confianca: %.0f%%',
