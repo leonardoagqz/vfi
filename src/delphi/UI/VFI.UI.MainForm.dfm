@@ -500,6 +500,10 @@ object frmMain: TfrmMain
             item
               Caption = 'Atualizacao'
               Width = 120
+            end
+            item
+              Caption = 'Embasamento Legal'
+              Width = 200
             end>
           GridLines = True
           ReadOnly = True

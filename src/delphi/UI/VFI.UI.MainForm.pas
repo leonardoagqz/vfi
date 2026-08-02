@@ -335,6 +335,7 @@ begin
           LI.SubItems.Add(FormatDateTime('dd/mm/yyyy hh:nn:ss', ISO8601ToDate(Regras[i].UpdatedAt)))
         else
           LI.SubItems.Add('-');
+        LI.SubItems.Add(Regras[i].Referencia);
         RegrasTexto := RegrasTexto + Format('%d. [%s] %s' + sLineBreak,
           [i + 1, Regras[i].Severity, Regras[i].Description]);
       end;
@@ -504,6 +505,7 @@ begin
           LI.SubItems.Add(FormatDateTime('dd/mm/yyyy hh:nn:ss', ISO8601ToDate(Regras[i].UpdatedAt)))
         else
           LI.SubItems.Add('-');
+        LI.SubItems.Add(Regras[i].Referencia);
       end;
     end;
   finally
