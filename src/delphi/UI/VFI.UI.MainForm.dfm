@@ -450,56 +450,63 @@ object frmMain: TfrmMain
       end
       object tsRegras: TTabSheet
         Caption = 'Regras Fiscais'
+        object lblInfoRegras: TLabel
+          Left = 0
+          Top = 46
+          Width = 394
+          Height = 26
+          Align = alBottom
+          Alignment = taCenter
+          Caption = 
+            'Estas regras sao enviadas como contexto para IA. Ao clicar Anali' +
+            'sar com IA, o sistema monta um prompt com o documento + regras e' +
+            ' envia ao DeepSeek.'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clGray
+          Font.Height = -11
+          Font.Name = 'Segoe UI'
+          Font.Style = []
+          ParentFont = False
+          WordWrap = True
+        end
         object edtBuscarRegra: TEdit
-            Left = 0
-            Top = 0
-            Width = 396
-            Height = 23
-            Align = alTop
-            TabOrder = 0
-            OnChange = edtBuscarRegraChange
-          end
-          object lblInfoRegras: TLabel
-            Left = 0
-            Top = 46
-            Width = 396
-            Height = 26
-            Align = alBottom
-            Alignment = taCenter
-            Caption = 'Estas regras sao enviadas como contexto para IA. Ao clicar Analisar com IA, o sistema monta um prompt com o documento + regras e envia ao DeepSeek.'
-            Font.Color = clGray
-            Font.Size = 8
-            WordWrap = True
-          end
-          object lvRegras: TListView
-            Left = 0
-            Top = 23
-            Width = 396
-            Height = 378
-            Align = alClient
-            Columns = <
-              item
-                Caption = 'ID'
-                Width = 40
-              end
-              item
-                Caption = 'Descricao'
-                Width = 270
-              end
-              item
-                Caption = 'Severidade'
-                Width = 70
-              end
-              item
-                Caption = 'Atualizacao'
-                Width = 120
-              end>
-            GridLines = True
-            ReadOnly = True
-            RowSelect = True
-            TabOrder = 1
-            ViewStyle = vsReport
-          end
+          Left = 0
+          Top = 0
+          Width = 396
+          Height = 23
+          Align = alTop
+          TabOrder = 0
+          OnChange = edtBuscarRegraChange
+        end
+        object lvRegras: TListView
+          Left = 0
+          Top = 23
+          Width = 396
+          Height = 378
+          Align = alClient
+          Columns = <
+            item
+              Caption = 'ID'
+              Width = 40
+            end
+            item
+              Caption = 'Descricao'
+              Width = 270
+            end
+            item
+              Caption = 'Severidade'
+              Width = 70
+            end
+            item
+              Caption = 'Atualizacao'
+              Width = 120
+            end>
+          GridLines = True
+          ReadOnly = True
+          RowSelect = True
+          TabOrder = 2
+          ViewStyle = vsReport
+        end
         object pnlRegrasBotoes: TPanel
           Left = 0
           Top = 453

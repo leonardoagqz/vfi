@@ -266,6 +266,16 @@ begin
     SB.AppendLine('');
     SB.AppendLine(Format('Total: %d padrao(oes) suspeito(s) | Confianca: %.0f%%', [Count, Result.Confianca * 100]));
     SB.AppendLine('');
+    SB.AppendLine('Regras fiscais de referencia utilizadas na analise:');
+    if FRegrasFiscais <> '' then
+    begin
+      SB.AppendLine('---');
+      SB.AppendLine(Copy(FRegrasFiscais, 1, 1000));
+      SB.AppendLine('---');
+    end
+    else
+      SB.AppendLine('(Nenhuma regra fiscal configurada)');
+    SB.AppendLine('');
     SB.AppendLine('Nota: esta analise complementa a validacao automatica (CNPJ/NCM/CFOP).');
     SB.AppendLine('Foca em padroes de negocio, divergencias financeiras e riscos fiscais.');
 
