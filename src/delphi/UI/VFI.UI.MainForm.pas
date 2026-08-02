@@ -26,7 +26,11 @@ type
     tsImpostos: TTabSheet; lvImpostos: TListView;
     tsItens: TTabSheet; lvItens: TListView;
     tsAnaliseIA: TTabSheet; memResultadoIA: TMemo;
-    pnlBottom: TPanel; pcBottom: TPageControl; tsLog: TTabSheet; memLog: TMemo;
+    tsRegras: TTabSheet; memRegrasFiscais: TMemo;
+    Splitter2: TSplitter;
+    pnlCenter: TPanel;
+    pnlBottom: TPanel; pcBottom: TPageControl;
+    tsLog: TTabSheet; memLog: TMemo;
     tsValidacoes: TTabSheet; memValidacoes: TMemo;
     pnlStatus: TPanel; lblStatusMsg: TLabel;
     PopupImportar: TPopupMenu; miImportarUm: TMenuItem; miImportarVarios: TMenuItem;
@@ -39,12 +43,13 @@ type
     procedure miExcluirSelecionadoClick(Sender: TObject); procedure miLimparTudoClick(Sender: TObject);
     procedure btnAnalisarIAClick(Sender: TObject);
     procedure lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: Boolean);
+    procedure memRegrasFiscaisChange(Sender: TObject);
   private
     FController: IMainController;
     procedure MostrarDetalhes(const AIndex: Integer); procedure LimparDetalhes;
     procedure AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
-    procedure AtualizarResumoValidacoes;
     function ObterIdSelecionado: Integer; function ObterIndexSelecionado: Integer;
+    function ObterRegrasFiscais: string;
   public
     procedure AtualizarStatus(const AMsg: string); procedure AtualizarTela;
     property Controller: IMainController read FController write FController;
@@ -90,9 +95,30 @@ begin
   lvItens.Columns.Add.Caption:='NCM'; lvItens.Columns[5].Width:=70;
   lvItens.Columns.Add.Caption:='CFOP'; lvItens.Columns[6].Width:=55;
   memResultadoIA.Font.Name:='Consolas'; memResultadoIA.Font.Size:=10;
-  pcDetalhes.ActivePage:=tsItens;
+  memRegrasFiscais.Font.Name:='Consolas'; memRegrasFiscais.Font.Size:=10;
+  memRegrasFiscais.Lines.Add('--- REGRAS FISCAIS DE REFERENCIA ---');
+  memRegrasFiscais.Lines.Add('Adicione aqui regras fiscais que a IA deve considerar na analise.');
+  memRegrasFiscais.Lines.Add('');
+  memRegrasFiscais.Lines.Add('Exemplo:');
+  memRegrasFiscais.Lines.Add('- NCM 8528 (monitores): ST obrigatoria para SP');
+  memRegrasFiscais.Lines.Add('- CFOP 5101/6101: venda/aquisicao interestadual');
+  memRegrasFiscais.Lines.Add('- NF-e acima de R$ 100.000: obrigatorio MDF-e');
+  memRegrasFiscais.Lines.Add('- CTe sem ICMS destacado: verificar regime do transportador');
+  memRegrasFiscais.Lines.Add('');
+  pcDetalhes.ActivePage:=tsItens; pcBottom.ActivePage:=tsLog;
   LimparDetalhes;
   AtualizarStatus('Pronto. Use Importar para carregar XMLs fiscais.');
+end;
+
+function TfrmMain.ObterRegrasFiscais: string;
+begin
+  Result := memRegrasFiscais.Lines.Text;
+end;
+
+procedure TfrmMain.memRegrasFiscaisChange(Sender: TObject);
+begin
+  if Assigned(FController) then
+    FController.SetRegrasFiscais(memRegrasFiscais.Lines.Text);
 end;
 
 procedure TfrmMain.FormDestroy(Sender: TObject); begin FController:=nil; end;
@@ -104,7 +130,7 @@ begin
   else if Key=VK_DELETE then miExcluirSelecionadoClick(Self);
 end;
 
-procedure TfrmMain.AtualizarStatus(const AMsg: string);
+procedure TfrmMain.AtualizarStatus(const AMsg: string); 
 begin lblStatusMsg.Caption:=AMsg; memLog.Lines.Add(FormatDateTime('hh:nn:ss',Now)+'  '+AMsg); end;
 
 procedure TfrmMain.LimparDetalhes;
@@ -115,6 +141,11 @@ begin
   ShapeStatus.Brush.Color:=clBtnFace; lblStatusVal.Font.Color:=clWindowText;
   lvImpostos.Items.Clear; lvItens.Items.Clear; memResultadoIA.Clear;
   tsImpostos.Caption:='Impostos'; tsItens.Caption:='Itens';
+end;
+
+procedure TfrmMain.LimparLogs;
+begin
+  memLog.Clear; memValidacoes.Clear; memResultadoIA.Clear;
 end;
 
 procedure TfrmMain.AtualizarTela;
@@ -155,8 +186,7 @@ begin
 
   tsImpostos.Caption:=Format('Impostos (%d)',[Doc.Calculos.Count]);
   lvImpostos.Items.BeginUpdate;
-  try
-    lvImpostos.Items.Clear;
+  try lvImpostos.Items.Clear;
     for i:=0 to Doc.Calculos.Count-1 do begin
       Calc:=Doc.Calculos[i]; LI:=lvImpostos.Items.Add; LI.Caption:=ImpostoToStr(Calc.TipoImposto);
       LI.SubItems.Add(FmtValor(Calc.BaseCalculo)); LI.SubItems.Add(FormatFloat('0.##',Calc.Aliquota)+'%');
@@ -166,8 +196,7 @@ begin
 
   tsItens.Caption:=Format('Itens (%d)',[Doc.Itens.Count]);
   lvItens.Items.BeginUpdate;
-  try
-    lvItens.Items.Clear;
+  try lvItens.Items.Clear;
     for i:=0 to Doc.Itens.Count-1 do begin
       Item:=Doc.Itens[i]; LI:=lvItens.Items.Add; LI.Caption:=Item.CodigoProduto;
       LI.SubItems.Add(Item.NomeProduto); LI.SubItems.Add(FormatFloat('0.####',Item.Quantidade));
@@ -180,8 +209,7 @@ begin
 end;
 
 procedure TfrmMain.AtualizarValidacaoSelecionada(const ADoc: TFiscalDocument);
-var
-  Val: TResultadoValidacao;
+var Val: TResultadoValidacao; Resumo: string;
 begin
   Val := TAppModule.Validator.ValidarDocumento(ADoc);
   memValidacoes.Clear;
@@ -189,41 +217,22 @@ begin
   memValidacoes.Lines.Add(Format('#%d  %s  %s  %s  R$ %s',
     [ADoc.Id, TipoDocumentoToStr(ADoc.Tipo), ADoc.Numero, ADoc.NomeEmitente, FmtValor(ADoc.ValorTotal)]));
   memValidacoes.Lines.Add('');
-
-  memValidacoes.Lines.Add('--- REGRAS DO SISTEMA (obrigatorias) ---');
+  memValidacoes.Lines.Add('--- REGRAS DO SISTEMA (obrigatorias - bloqueiam o fluxo) ---');
   if Val.IsValid then
-    memValidacoes.Lines.Add('[OK] CNPJ, NCM, CFOP e chave fiscal corretos.')
+    memValidacoes.Lines.Add('[APROVADO] CNPJ, NCM, CFOP e chave fiscal corretos.')
   else
     for var j := 0 to Val.Erros.Count - 1 do
       memValidacoes.Lines.Add('[ERRO] ' + Val.Erros[j]);
 
+  if ADoc.Itens.Count = 0 then
+    Resumo := 'sem itens'
+  else
+    Resumo := Format('%d itens', [ADoc.Itens.Count]);
+  memValidacoes.Lines.Add(Format('[INFO] Tipo: %s | Valor: R$ %s | Itens: %s | Impostos extraidos: %d',
+    [TipoDocumentoToStr(ADoc.Tipo), FmtValor(ADoc.ValorTotal), Resumo, ADoc.Calculos.Count]));
   memValidacoes.Lines.Add('');
-  memValidacoes.Lines.Add('--- RESUMO DE TODOS OS DOCUMENTOS ---');
-  memValidacoes.Lines.Add('');
-  AtualizarResumoValidacoes;
-end;
-
-procedure TfrmMain.AtualizarResumoValidacoes;
-var
-  i, Qtd, Aprovados, Reprovados: Integer;
-  Doc: TFiscalDocument; Val: TResultadoValidacao;
-begin
-  Aprovados := 0; Reprovados := 0;
-  for i := 0 to FController.QuantidadeDocumentos - 1 do
-  begin
-    Doc := FController.ObterDocumento(i);
-    if not Assigned(Doc) then Continue;
-    Val := TAppModule.Validator.ValidarDocumento(Doc);
-    if Val.IsValid then
-      Inc(Aprovados)
-    else
-      Inc(Reprovados);
-  end;
-  Qtd := FController.QuantidadeDocumentos;
-  memValidacoes.Lines.Add(Format('APROVADOS: %d  |  REPROVADOS: %d  |  TOTAL: %d', [Aprovados, Reprovados, Qtd]));
-  memValidacoes.Lines.Add('');
-  memValidacoes.Lines.Add('[REGRA] Validacao automatica = regras fiscais obrigatorias (CNPJ, NCM, CFOP, chave)');
-  memValidacoes.Lines.Add('[IA]    Analise IA = sugestoes baseadas em padroes (nao bloqueiam o fluxo)');
+  memValidacoes.Lines.Add('[REGRA] Validacao automatica = regras fiscais obrigatorias');
+  memValidacoes.Lines.Add('[IA]    Analise IA = sugestoes baseadas em padroes e regras de referencia (nao bloqueiam)');
 end;
 
 function TfrmMain.ObterIdSelecionado: Integer; begin if Assigned(lvDocs.Selected) then Result:=StrToIntDef(lvDocs.Selected.Caption,0) else Result:=0; end;
@@ -235,7 +244,7 @@ procedure TfrmMain.miImportarUmClick(Sender: TObject);
 var Dlg:TOpenDialog;
 begin if not Assigned(FController) then Exit;
   Dlg:=TOpenDialog.Create(Self);
-  try Dlg.Title:='Importar XML Fiscal (NFe/CTe)'; Dlg.Filter:='XML (*.xml)|*.xml';
+  try Dlg.Title:='Importar XML Fiscal'; Dlg.Filter:='XML (*.xml)|*.xml';
     Dlg.InitialDir:=ExtractFilePath(ParamStr(0))+'..\..\..\..\docs\xml-exemplos';
     if Dlg.Execute then begin FController.ImportarXml(Dlg.FileName); AtualizarTela; end;
   finally Dlg.Free; end;
@@ -258,46 +267,26 @@ end;
 procedure TfrmMain.btnExcluirClick(Sender: TObject); var Pt:TPoint; begin Pt:=btnExcluir.ClientToScreen(Point(0,btnExcluir.Height)); PopupExcluir.Popup(Pt.X,Pt.Y); end;
 
 procedure TfrmMain.miExcluirSelecionadoClick(Sender: TObject);
-var
-  i, Count: Integer;
-  Id: Integer;
+var i,Count,Id:Integer;
 begin
-  Count := lvDocs.SelCount;
-  if Count = 0 then
-  begin
-    AtualizarStatus('Selecione pelo menos um documento.');
-    Exit;
-  end;
-
-  if Count = 1 then
-  begin
-    Id := StrToIntDef(lvDocs.Selected.Caption, 0);
-    if MessageDlg(Format('Excluir documento #%d?', [Id]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
-      Exit;
-  end
-  else if MessageDlg(Format('Excluir %d documentos selecionados?', [Count]), mtConfirmation, [mbYes, mbNo], 0) <> mrYes then
-    Exit;
-
-  for i := lvDocs.Items.Count - 1 downto 0 do
-  begin
-    if lvDocs.Items[i].Selected then
-    begin
-      Id := StrToIntDef(lvDocs.Items[i].Caption, 0);
-      if Id > 0 then
-        FController.ExcluirDocumento(Id);
+  Count:=lvDocs.SelCount; if Count=0 then begin AtualizarStatus('Selecione pelo menos um documento.'); Exit; end;
+  if Count=1 then begin
+    Id:=StrToIntDef(lvDocs.Selected.Caption,0);
+    if MessageDlg(Format('Excluir documento #%d?',[Id]),mtConfirmation,[mbYes,mbNo],0)<>mrYes then Exit;
+  end else if MessageDlg(Format('Excluir %d documentos?',[Count]),mtConfirmation,[mbYes,mbNo],0)<>mrYes then Exit;
+  for i:=lvDocs.Items.Count-1 downto 0 do
+    if lvDocs.Items[i].Selected then begin
+      Id:=StrToIntDef(lvDocs.Items[i].Caption,0);
+      if Id>0 then FController.ExcluirDocumento(Id);
     end;
-  end;
-
-  AtualizarTela;
-  memLog.Clear;
-  memResultadoIA.Clear;
-  AtualizarStatus(Format('%d documento(s) excluido(s).', [Count]));
+  AtualizarTela; LimparLogs;
+  AtualizarStatus(Format('%d documento(s) excluido(s).',[Count]));
 end;
 
 procedure TfrmMain.miLimparTudoClick(Sender: TObject);
 begin if MessageDlg('Excluir TODOS os documentos?',mtWarning,[mbYes,mbNo],0)=mrYes then begin
     while FController.QuantidadeDocumentos>0 do FController.ExcluirDocumento(FController.ObterDocumento(0).Id);
-    AtualizarTela; memLog.Clear; memResultadoIA.Clear; AtualizarStatus('Todos os documentos excluidos.'); end;
+    AtualizarTela; LimparLogs; AtualizarStatus('Todos os documentos excluidos.'); end;
 end;
 
 procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
@@ -306,21 +295,25 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   Idx:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(Idx); if not Assigned(Doc) then Exit;
 
   memResultadoIA.Clear;
-  memResultadoIA.Lines.Add('=== ANALISE IA (sugestoes informativas - nao bloqueiam o fluxo) ===');
+  memResultadoIA.Lines.Add('=== ANALISE IA (sugestoes - nao bloqueiam o fluxo) ===');
   memResultadoIA.Lines.Add('');
   memResultadoIA.Lines.Add(Format('Documento: %s #%s | R$ %s | %d itens | %d impostos',
     [TipoDocumentoToStr(Doc.Tipo),Doc.Numero,FmtValor(Doc.ValorTotal),Doc.Itens.Count,Doc.Calculos.Count]));
-  memResultadoIA.Lines.Add(Format('Emitente: %s (CNPJ: %s)',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));
+  memResultadoIA.Lines.Add(Format('Emitente: %s %s',[Doc.NomeEmitente,FormatarCNPJ(Doc.CnpjEmitente)]));
+  if memRegrasFiscais.Lines.Count > 0 then
+    memResultadoIA.Lines.Add(Format('Regras de referencia: %d linha(s) carregada(s)', [memRegrasFiscais.Lines.Count]));
   memResultadoIA.Lines.Add('');
 
-  pcDetalhes.ActivePage:=tsAnaliseIA;
-  Application.ProcessMessages;
+  pcDetalhes.ActivePage:=tsAnaliseIA; Application.ProcessMessages;
 
+  FController.SetRegrasFiscais(ObterRegrasFiscais);
   FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
 
-  memResultadoIA.Lines.Add(Format('Modelo: %s | Anomalias: %d | Confianca: %.0f%%',[R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));
+  memResultadoIA.Lines.Add(Format('Modelo: %s | Padroes suspeitos: %d | Confianca: %.0f%%',
+    [R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));
   memResultadoIA.Lines.Add('');
-  if R.Resposta<>'' then memResultadoIA.Lines.Add(R.Resposta) else memResultadoIA.Lines.Add('[Chave API nao configurada - usando analise local]');
+  if R.Resposta<>'' then memResultadoIA.Lines.Add(R.Resposta)
+  else memResultadoIA.Lines.Add('[Chave API nao configurada - usando analise local]');
 end;
 
 end.

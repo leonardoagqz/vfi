@@ -158,7 +158,7 @@ var
   SB: TStringBuilder;
   Item: TDocumentItem;
   Count: Integer;
-  TotalItens: Currency;
+  TotalItens, Diferenca: Currency;
 begin
   FillChar(Result, SizeOf(Result), 0);
   Result.Sucesso := True;
@@ -167,106 +167,98 @@ begin
   TotalItens := 0;
   SB := TStringBuilder.Create;
   try
-    Result.Prompt := BuildPrompt(ADocument);
     SB.AppendLine(Format('Documento: %s #%s | %s | R$ %.2f',
       [TipoDocumentoToStr(ADocument.Tipo), ADocument.Numero, ADocument.NomeEmitente, ADocument.ValorTotal]));
     SB.AppendLine('');
 
-    if ADocument.Itens.Count = 0 then
-    begin
-      SB.AppendLine('[ALERTA] Documento sem itens cadastrados.');
-      Inc(Count);
-    end;
+    for Item in ADocument.Itens do
+      TotalItens := TotalItens + Item.ValorTotal;
 
-    if ADocument.ValorTotal <= 0 then
+    if (ADocument.Itens.Count > 0) and (Abs(TotalItens - ADocument.ValorTotal) > 0.01) then
     begin
-      SB.AppendLine('[CRITICO] Valor total zerado - possivel erro de emissao ou XML incompleto.');
+      Diferenca := Abs(TotalItens - ADocument.ValorTotal);
+      SB.AppendLine(Format('[CRITICO] Divergencia financeira: soma dos itens = R$ %.2f, total declarado = R$ %.2f (diferenca: R$ %.2f).',
+        [TotalItens, ADocument.ValorTotal, Diferenca]));
       Inc(Count);
     end;
 
     for Item in ADocument.Itens do
     begin
-      TotalItens := TotalItens + Item.ValorTotal;
-
-      if (Item.NCM = '') or (Item.NCM = '00000000') then
+      if Copy(Item.CFOP, 1, 1) = '6' then
       begin
-        SB.AppendLine(Format('[CRITICO] Item "%s": NCM nao informado ou invalido (%s).', [Item.NomeProduto, Item.NCM]));
+        SB.AppendLine(Format('[ATENCAO] CFOP %s (%s): operacao de ENTRADA/aquisicao - nao gera credito de ICMS proprio.',
+          [Item.CFOP, Item.NomeProduto]));
         Inc(Count);
-      end;
-
-      if (Item.CFOP = '') or (StrToIntDef(Item.CFOP, 0) < 1000) or (StrToIntDef(Item.CFOP, 0) > 7999) then
-      begin
-        SB.AppendLine(Format('[CRITICO] Item "%s": CFOP invalido (%s). Deve estar entre 1000 e 7999.', [Item.NomeProduto, Item.CFOP]));
-        Inc(Count);
-      end
-      else
-      begin
-        if Copy(Item.CFOP, 1, 1) = '6' then
-          SB.AppendLine(Format('[INFO] CFOP %s (%s): operacao de entrada/aquisicao.', [Item.CFOP, Item.NomeProduto]));
       end;
 
       if Item.ValorUnitario > 10000 then
       begin
-        SB.AppendLine(Format('[ATENCAO] Item "%s": valor unitario elevado (R$ %.2f).', [Item.NomeProduto, Item.ValorUnitario]));
+        SB.AppendLine(Format('[ATENCAO] Item "%s": valor unitario R$ %.2f acima do padrao de mercado para NCM %s.',
+          [Item.NomeProduto, Item.ValorUnitario, Item.NCM]));
         Inc(Count);
       end;
 
-      if Item.ValorUnitario <= 0 then
+      if (Copy(Item.NCM, 1, 2) = '85') and (Copy(Item.CFOP, 1, 1) = '5') then
       begin
-        SB.AppendLine(Format('[CRITICO] Item "%s": valor unitario zerado.', [Item.NomeProduto]));
+        SB.AppendLine(Format('[INFO] NCM %s (eletronicos) com CFOP %s: verificar necessidade de ST e recolhimento antecipado.',
+          [Item.NCM, Item.CFOP]));
         Inc(Count);
       end;
     end;
 
-    if (ADocument.Itens.Count > 0) and (Abs(TotalItens - ADocument.ValorTotal) > 0.01) then
+    if (ADocument.Tipo = tdNFe) and (ADocument.ValorTotal > 50000) then
     begin
-      SB.AppendLine(Format('[CRITICO] Divergencia: soma dos itens = R$ %.2f, valor total do documento = R$ %.2f.',
-        [TotalItens, ADocument.ValorTotal]));
+      SB.AppendLine('[ATENCAO] NF-e acima de R$ 50.000: verificar se ha MDF-e vinculado para transporte.');
       Inc(Count);
     end;
 
-    if ADocument.ValorTotal > 50000 then
+    if ADocument.Itens.Count = 0 then
     begin
-      SB.AppendLine('[ATENCAO] Valor total acima de R$ 50.000,00. Verificar ST e obrigacoes acessorias.');
-      Inc(Count);
-    end;
-
-    if (ADocument.CnpjEmitente = '') or (Length(ADocument.CnpjEmitente) < 14) then
-    begin
-      SB.AppendLine('[CRITICO] CNPJ do emitente nao informado ou incompleto.');
-      Inc(Count);
-    end;
-
-    if (ADocument.CnpjDestinatario = '') or (Length(ADocument.CnpjDestinatario) < 14) then
-    begin
-      SB.AppendLine('[CRITICO] CNPJ do destinatario nao informado ou incompleto.');
-      Inc(Count);
-    end;
-
-    if (ADocument.CnpjEmitente <> '') and (ADocument.CnpjEmitente = ADocument.CnpjDestinatario) then
-    begin
-      SB.AppendLine('[ALERTA] Emitente e destinatario com o mesmo CNPJ.');
-      Inc(Count);
+      if ADocument.Tipo = tdCTe then
+        SB.AppendLine('[INFO] CTe sem itens detalhados - normal para conhecimento de transporte.')
+      else
+      begin
+        SB.AppendLine('[CRITICO] NF-e sem itens cadastrados - documento incompleto ou XML mal formado.');
+        Inc(Count);
+      end;
     end;
 
     if ADocument.DataEmissao < Now - 365 then
     begin
-      SB.AppendLine('[ATENCAO] Documento com mais de 1 ano. Verificar prescricao fiscal.');
+      SB.AppendLine('[ATENCAO] Documento emitido ha mais de 1 ano: verificar prescricao fiscal (5 anos para creditos).');
       Inc(Count);
+    end;
+
+    if ADocument.Tipo = tdNFe then
+    begin
+      if ADocument.Calculos.Count = 0 then
+      begin
+        SB.AppendLine('[ALERTA] NF-e sem impostos extraidos do XML - verificar se o XML contem a tag <imposto>.');
+        Inc(Count);
+      end
+      else if ADocument.Calculos.Count < 2 then
+      begin
+        SB.AppendLine(Format('[INFO] Apenas %d imposto(s) extraido(s) - NF-e tipica tem ICMS+IPI+PIS+COFINS.',
+          [ADocument.Calculos.Count]));
+        Inc(Count);
+      end;
     end;
 
     if Count = 0 then
     begin
-      SB.AppendLine('[OK] Nenhuma anomalia fiscal detectada na analise automatica.');
+      SB.AppendLine('[OK] Nenhum padrao suspeito detectado na analise de negocios.');
       Result.Confianca := 0.95;
     end
     else if Count <= 2 then
       Result.Confianca := 0.80
     else
-      Result.Confianca := 0.65;
+      Result.Confianca := 0.60;
 
     SB.AppendLine('');
-    SB.AppendLine(Format('Total: %d anomalia(s) | Confianca: %.0f%%', [Count, Result.Confianca * 100]));
+    SB.AppendLine(Format('Total: %d padrao(oes) suspeito(s) | Confianca: %.0f%%', [Count, Result.Confianca * 100]));
+    SB.AppendLine('');
+    SB.AppendLine('Nota: esta analise complementa a validacao automatica (CNPJ/NCM/CFOP).');
+    SB.AppendLine('Foca em padroes de negocio, divergencias financeiras e riscos fiscais.');
 
     Result.AnomaliasEncontradas := Count;
     Result.Resposta := SB.ToString;

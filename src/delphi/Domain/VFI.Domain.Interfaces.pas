@@ -48,6 +48,7 @@ type
     procedure SetOnStatus(const AProc: TStatusCallback);
     function ObterUltimoResultadoIA: TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
+    procedure SetRegrasFiscais(const ARegras: string);
   end;
 
 implementation

@@ -16,6 +16,7 @@ type
     FDocumentos: TObjectList<TFiscalDocument>;
     FUltimoResultadoIA: TResultadoIA;
     FUltimaValidacao: TResultadoValidacao;
+    FRegrasFiscais: string;
   public
     constructor Create(const ARepository: IFiscalDocumentRepository;
       const AValidator: IFiscalValidator; const AAIAnalyzer: IAIAnalyzer);
@@ -207,6 +208,11 @@ end;
 function TMainController.ObterUltimaValidacao: TResultadoValidacao;
 begin
   Result := FUltimaValidacao;
+end;
+
+procedure TMainController.SetRegrasFiscais(const ARegras: string);
+begin
+  FRegrasFiscais := ARegras;
 end;
 
 end.
