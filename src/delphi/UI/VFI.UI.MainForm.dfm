@@ -570,11 +570,18 @@ object frmMain: TfrmMain
     TabOrder = 4
     ExplicitTop = 690
     ExplicitWidth = 1098
-    object lblStatusMsg: TLabel
+    object pbProgresso: TProgressBar
       Left = 8
       Top = 3
-      Width = 35
-      Height = 13
+      Width = 200
+      Height = 16
+      Smooth = True
+      TabOrder = 0
+      Visible = False
+    end
+    object lblStatusMsg: TLabel
+      Left = 216
+      Top = 3
       Caption = 'Pronto'
     end
   end
