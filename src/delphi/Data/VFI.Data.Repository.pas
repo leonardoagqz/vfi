@@ -250,14 +250,18 @@ begin
 end;
 
 procedure TFiscalDocumentRepository.InserirCalculo(const ACalculo: TTaxCalculation);
-var Consulta: TADOQuery;
+var Consulta: TADOQuery; ItemIdStr: string;
 begin
   Consulta := CriarConsulta;
   try
+    if ACalculo.ItemId > 0 then
+      ItemIdStr := IntToStr(ACalculo.ItemId)
+    else
+      ItemIdStr := 'NULL';
     Consulta.SQL.Text := Format(
       'INSERT INTO TaxCalculation (DocumentId, ItemId, TaxType, TaxBase, TaxRate, TaxValue, CalculationEngine) ' +
-      'VALUES (%d,%d,%s,%s,%s,%s,%s)',
-      [ACalculo.DocumentId, ACalculo.ItemId, EscaparSql(ImpostoToStr(ACalculo.TipoImposto)),
+      'VALUES (%d,%s,%s,%s,%s,%s,%s)',
+      [ACalculo.DocumentId, ItemIdStr, EscaparSql(ImpostoToStr(ACalculo.TipoImposto)),
        MoedaParaSql(ACalculo.BaseCalculo), FloatParaSql(ACalculo.Aliquota),
        MoedaParaSql(ACalculo.ValorImposto), EscaparSql('Internal')]);
     Consulta.ExecSQL;
