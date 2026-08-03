@@ -43,3 +43,6 @@ $RECYCLE.BIN/
 *.env.local
 appsettings.*.json
 !appsettings.json
+
+vfi.ini
+*.ini

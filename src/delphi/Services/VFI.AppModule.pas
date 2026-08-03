@@ -1,4 +1,4 @@
-unit VFI.AppModule;
+﻿unit VFI.AppModule;
 
 interface
 
@@ -34,7 +34,7 @@ begin
 
   TConnectionFactory.Configure(
     FConfig.LeString('Database', 'User', 'vfi_app'),
-    FConfig.LeString('Database', 'Password', 'Vfi@2024#Dev'));
+    FConfig.LeString('Database', 'Password', FConfig.LeString('Database', 'Password', '')));
 
   FRepository := TFiscalDocumentRepository.Create;
   FValidator := TFiscalValidator.Create;

@@ -1,0 +1,10 @@
+[Database]
+Server=localhost
+Database=VFI_DB
+User=seu_usuario
+Password=sua_senha
+
+[AI]
+ApiKey=
+Endpoint=https://api.deepseek.com/v1/chat/completions
+Model=deepseek-chat
