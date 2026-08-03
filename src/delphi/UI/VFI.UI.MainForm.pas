@@ -1,4 +1,4 @@
-unit VFI.UI.MainForm;
+﻿unit VFI.UI.MainForm;
 
 interface
 
