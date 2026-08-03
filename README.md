@@ -41,6 +41,48 @@ O resultado: o analista ve instantaneamente o que esta errado, por que esta erra
 
 ---
 
+## Diagrama de Interoperabilidade
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                   Delphi 12 VCL (Desktop)                 │
+│   Interface grafica: ListView, PageControl, ProgressBar  │
+│   MVP Pattern: TfrmMain (View) + TMainController         │
+└──────────┬──────────────────────────┬────────────────────┘
+           │ COM Interop              │ HTTP REST
+           ▼                          ▼
+┌──────────────────────┐   ┌──────────────────────────────┐
+│   VB6 ActiveX DLL    │   │     C# .NET 9 Web API        │
+│  Calculo ICMS/ST/IPI │   │  CRUD Documentos + Regras    │
+│  PIS/COFINS/DIFAL    │   │  Swagger / EF Core           │
+│  (Strategy Pattern)  │   │  Endpoints REST documentados │
+└──────────────────────┘   └──────────┬───────────────────┘
+                                      │
+                           ┌──────────▼───────────────────┐
+                           │        SQL Server            │
+                           │  VFI_DB: 6 tabelas           │
+                           │  FiscalDocument, AiRule...   │
+                           └──────────┬───────────────────┘
+                                      │
+                           ┌──────────▼───────────────────┐
+                           │     Integracao IA            │
+                           │  DeepSeek API (nuvem)        │
+                           │  + Motor local (offline)     │
+                           │  55 regras fiscais           │
+                           └──────────────────────────────┘
+```
+
+**Como as stacks se comunicam:**
+
+1. **Delphi → VB6**: `CreateOleObject('FiscalEngine.FiscalCalculator')` — COM Interop nativo
+2. **Delphi → C# API**: `THTTPClient.Get/Post/Put/Delete` — REST em `localhost:5000`
+3. **C# API → SQL Server**: Entity Framework Core com migrations
+4. **Delphi → SQL Server**: ADO direto via ODBC DSN (para performance)
+5. **Delphi → DeepSeek**: `THTTPClient.Post` com JSON — mesmo padrao da API OpenAI
+6. **C# API → DeepSeek**: `HttpClient` com prompt incluindo regras do banco
+
+---
+
 ## Arquitetura (Clean Architecture)
 
 O codigo e organizado em 4 camadas com dependencias unidirecionais. Cada camada so conhece a camada abaixo dela. Isso permite testar, manter e evoluir cada parte isoladamente.
