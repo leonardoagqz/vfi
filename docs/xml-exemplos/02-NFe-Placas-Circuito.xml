@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<nfeProc xmlns="http://www.portalfiscal.inf.br/nfe" versao="4.00">
+  <NFe>
+    <infNFe Id="NFe35240199888777000155550010000002021000002020" versao="4.00">
+      <ide>
+        <cUF>35</cUF>
+        <cNF>00000202</cNF>
+        <natOp>VENDA DE INSUMOS</natOp>
+        <mod>55</mod>
+        <serie>1</serie>
+        <nNF>202</nNF>
+        <dhEmi>2024-03-20T14:00:00-03:00</dhEmi>
+        <tpNF>1</tpNF>
+        <idDest>1</idDest>
+        <cMunFG>3304557</cMunFG>
+        <tpImp>1</tpImp>
+        <tpEmis>1</tpEmis>
+        <cDV>0</cDV>
+        <tpAmb>2</tpAmb>
+        <finNFe>1</finNFe>
+        <indFinal>1</indFinal>
+        <indPres>1</indPres>
+        <procEmi>0</procEmi>
+        <verProc>VFI-1.0</verProc>
+      </ide>
+      <emit>
+        <CNPJ>99888777000155</CNPJ>
+        <xNome>INDUSTRIA DELTA LTDA</xNome>
+        <xFant>DELTA INDUSTRIA</xFant>
+        <enderEmit>
+          <xLgr>RUA DO OURO</xLgr>
+          <nro>2500</nro>
+          <xBairro>VILA DA PENHA</xBairro>
+          <cMun>3304557</cMun>
+          <xMun>RIO DE JANEIRO</xMun>
+          <UF>RJ</UF>
+          <CEP>21941000</CEP>
+          <cPais>1058</cPais>
+          <xPais>BRASIL</xPais>
+        </enderEmit>
+        <IE>998877665544</IE>
+        <CRT>3</CRT>
+      </emit>
+      <dest>
+        <CNPJ>33344455000166</CNPJ>
+        <xNome>VAREJISTA GAMA LTDA</xNome>
+        <enderDest>
+          <xLgr>AV BRASIL</xLgr>
+          <nro>3000</nro>
+          <xBairro>JARDIM AMERICA</xBairro>
+          <cMun>3550308</cMun>
+          <xMun>SAO PAULO</xMun>
+          <UF>SP</UF>
+          <CEP>01452000</CEP>
+          <cPais>1058</cPais>
+          <xPais>BRASIL</xPais>
+        </enderDest>
+        <indIEDest>1</indIEDest>
+        <IE>777888999000</IE>
+      </dest>
+      <det nItem="1">
+        <prod>
+          <cProd>PEC-001</cProd>
+          <cEAN>7891112223334</cEAN>
+          <xProd>PLACA DE CIRCUITO IMPRESSO PCI-400</xProd>
+          <NCM>85340000</NCM>
+          <CFOP>6102</CFOP>
+          <uCom>UN</uCom>
+          <qCom>200.0000</qCom>
+          <vUnCom>45.00</vUnCom>
+          <vProd>9000.00</vProd>
+          <cEANTrib>7891112223334</cEANTrib>
+          <uTrib>UN</uTrib>
+          <qTrib>200.0000</qTrib>
+          <vUnTrib>45.00</vUnTrib>
+          <indTot>1</indTot>
+        </prod>
+        <imposto>
+          <ICMS>
+            <ICMS00>
+              <orig>0</orig>
+              <CST>00</CST>
+              <modBC>0</modBC>
+              <vBC>9000.00</vBC>
+              <pICMS>12.00</pICMS>
+              <vICMS>1080.00</vICMS>
+            </ICMS00>
+          </ICMS>
+          <IPI>
+            <cEnq>999</cEnq>
+            <IPITrib>
+              <CST>50</CST>
+              <vBC>9000.00</vBC>
+              <pIPI>5.00</pIPI>
+              <vIPI>450.00</vIPI>
+            </IPITrib>
+          </IPI>
+          <PIS>
+            <PISAliq>
+              <CST>01</CST>
+              <vBC>9000.00</vBC>
+              <pPIS>1.65</pPIS>
+              <vPIS>148.50</vPIS>
+            </PISAliq>
+          </PIS>
+          <COFINS>
+            <COFINSAliq>
+              <CST>01</CST>
+              <vBC>9000.00</vBC>
+              <pCOFINS>7.60</pCOFINS>
+              <vCOFINS>684.00</vCOFINS>
+            </COFINSAliq>
+          </COFINS>
+        </imposto>
+      </det>
+      <total>
+        <ICMSTot>
+          <vBC>9000.00</vBC>
+          <vICMS>1080.00</vICMS>
+          <vProd>9000.00</vProd>
+          <vIPI>450.00</vIPI>
+          <vPIS>148.50</vPIS>
+          <vCOFINS>684.00</vCOFINS>
+          <vNF>9450.00</vNF>
+          <vTotTrib>2362.50</vTotTrib>
+        </ICMSTot>
+      </total>
+    </infNFe>
+  </NFe>
+</nfeProc>
