@@ -441,14 +441,17 @@ end;
 
 procedure TfrmMain.btnAddRegraClick(Sender: TObject);
 var
-  Descricao: string;
+  Descricao, Severidade, Referencia: string;
 begin
   if not Assigned(FController) then Exit;
-  Descricao := InputBox('Nova Regra', 'Descricao da regra fiscal:', '');
+  Descricao := InputBox('Nova Regra (1/3)', 'Descricao:', '');
   if Descricao = '' then Exit;
+  Severidade := InputBox('Nova Regra (2/3)', 'Severidade (CRITICO, ALERTA, INFO):', 'INFO');
+  if Severidade = '' then Severidade := 'INFO';
+  Referencia := InputBox('Nova Regra (3/3)', 'Embasamento Legal:', '');
   
   FController.AdicionarRegraIA(Descricao, 'INFO', '');
-  CarregarRegrasPadrao;
+  FController.AdicionarRegraIA(Descricao, Severidade, Referencia);
 end;
 
 procedure TfrmMain.btnDelRegraClick(Sender: TObject);
@@ -473,7 +476,7 @@ end;
 procedure TfrmMain.btnEditRegraClick(Sender: TObject);
 var
   Id: Integer;
-  NovaDesc: string;
+  Descricao, Severidade, Referencia: string;
 begin
   if not Assigned(FController) then Exit;
   if not Assigned(lvRegras.Selected) then
@@ -484,10 +487,13 @@ begin
   Id := StrToIntDef(lvRegras.Selected.Caption, 0);
   if Id = 0 then Exit;
   
-  NovaDesc := InputBox('Editar Regra #' + IntToStr(Id), 'Descricao:', lvRegras.Selected.SubItems[0]);
-  if NovaDesc = '' then Exit;
+  Descricao := InputBox('Editar Regra #' + IntToStr(Id), 'Descricao:', lvRegras.Selected.SubItems[0]);
+  Severidade := InputBox('Editar Regra #' + IntToStr(Id), 'Severidade:', lvRegras.Selected.SubItems[1]);
+  if Severidade = '' then Severidade := 'INFO';
+  Referencia := InputBox('Editar Regra #' + IntToStr(Id), 'Embasamento:', IfThen(lvRegras.Selected.SubItems.Count > 3, lvRegras.Selected.SubItems[3], ''));
+  if Descricao = '' then Exit;
   
-  FController.AtualizarRegraIA(Id, NovaDesc, 'INFO', '');
+  FController.AtualizarRegraIA(Id, Descricao, Severidade, Referencia);
   CarregarRegrasPadrao;
   AtualizarStatus(Format('Regra #%d atualizada.', [Id]));
 end;
