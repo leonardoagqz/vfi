@@ -1,4 +1,4 @@
-unit VFI.UI.MainForm;
+﻿unit VFI.UI.MainForm;
 
 interface
 
@@ -82,6 +82,7 @@ function FmtValor(const V: Currency): string; begin Result:=FormatFloat('#,##0.0
 
 procedure TfrmMain.FormCreate(Sender: TObject);
 begin
+  pbProgresso := TProgressBar.Create(Self); pbProgresso.Parent := pnlStatus; pbProgresso.Left := 8; pbProgresso.Top := 3; pbProgresso.Width := 200; pbProgresso.Height := 16; pbProgresso.Smooth := True; pbProgresso.Visible := False;
   KeyPreview:=True; DoubleBuffered:=True;
   lvDocs.ViewStyle:=vsReport; lvDocs.RowSelect:=True; lvDocs.GridLines:=True; lvDocs.MultiSelect:=True;
   lvDocs.Columns.Add.Caption:='ID'; lvDocs.Columns[0].Width:=38;
