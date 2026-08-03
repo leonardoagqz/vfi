@@ -1,4 +1,4 @@
-﻿unit VFI.UI.MainForm;
+unit VFI.UI.MainForm;
 
 interface
 
@@ -239,27 +239,31 @@ procedure TfrmMain.lvDocsSelectItem(Sender: TObject; Item: TListItem; Selected: 
 procedure TfrmMain.btnImportarClick(Sender: TObject);
 var
   Dlg: TOpenDialog;
-  i: Integer;
-  Arquivos: TArray<string>;
+  i, Ok: Integer;
 begin
   if not Assigned(FController) then Exit;
-  Dlg := TOpenDialog.Create(Self);
+  Dlg := TOpenDialog.Create(nil);
   try
-    Dlg.Title := 'Importar XML Fiscal (NFe/CTe) - selecione 1 ou varios';
-    Dlg.Filter := 'XML (*.xml)|*.xml';
+    Dlg.Filter := 'Arquivos XML (*.xml)|*.xml';
     Dlg.Options := [ofAllowMultiSelect, ofFileMustExist];
     Dlg.InitialDir := ExtractFilePath(ParamStr(0)) + '..\..\..\..\' + DIR_XML_EXEMPLOS;
     if Dlg.Execute then
     begin
-      if Dlg.Files.Count = 1 then
-        FController.ImportarXml(Dlg.Files[0])
-      else
+      MostrarProgresso(Dlg.Files.Count);
+      Ok := 0;
+      for i := 0 to Dlg.Files.Count - 1 do
       begin
-        SetLength(Arquivos, Dlg.Files.Count);
-        for i := 0 to Dlg.Files.Count - 1 do
-          Arquivos[i] := Dlg.Files[i];
-        FController.ImportarMultiplosXmls(Arquivos);
+        AtualizarProgresso(i + 1);
+        try
+          FController.ImportarXml(Dlg.Files[i]);
+          Inc(Ok);
+        except
+          on E: Exception do
+            AtualizarStatus('FALHA: ' + ExtractFileName(Dlg.Files[i]) + ' - ' + E.Message);
+        end;
       end;
+      OcultarProgresso;
+      AtualizarStatus(Format('%d de %d importados com sucesso.', [Ok, Dlg.Files.Count]));
       AtualizarTela;
     end;
   finally
@@ -270,26 +274,45 @@ end;
 procedure TfrmMain.btnExcluirClick(Sender: TObject); var Pt:TPoint; begin Pt:=btnExcluir.ClientToScreen(Point(0,btnExcluir.Height)); PopupExcluir.Popup(Pt.X,Pt.Y); end;
 
 procedure TfrmMain.miExcluirSelecionadoClick(Sender: TObject);
-var i,Count,Id:Integer;
+var i,Count,Id,Apagados:Integer;
 begin
   Count:=lvDocs.SelCount; if Count=0 then begin AtualizarStatus('Selecione pelo menos um documento.'); Exit; end;
   if Count=1 then begin
     Id:=StrToIntDef(lvDocs.Selected.Caption,0);
     if MessageDlg(Format('Excluir documento #%d?',[Id]),mtConfirmation,[mbYes,mbNo],0)<>mrYes then Exit;
   end else if MessageDlg(Format('Excluir %d documentos?',[Count]),mtConfirmation,[mbYes,mbNo],0)<>mrYes then Exit;
+  
+  MostrarProgresso(Count);
+  Apagados := 0;
   for i:=lvDocs.Items.Count-1 downto 0 do
     if lvDocs.Items[i].Selected then begin
       Id:=StrToIntDef(lvDocs.Items[i].Caption,0);
       if Id>0 then FController.ExcluirDocumento(Id);
+      Inc(Apagados);
+      AtualizarProgresso(Apagados);
     end;
+  OcultarProgresso;
   AtualizarTela; LimparLogs;
-  AtualizarStatus(Format('%d documento(s) excluido(s).',[Count]));
+  AtualizarStatus(Format('%d documento(s) excluido(s).',[Apagados]));
 end;
 
 procedure TfrmMain.miLimparTudoClick(Sender: TObject);
-begin if MessageDlg('Excluir TODOS os documentos?',mtWarning,[mbYes,mbNo],0)=mrYes then begin
-    while FController.QuantidadeDocumentos>0 do FController.ExcluirDocumento(FController.ObterDocumento(0).Id);
-    AtualizarTela; LimparLogs; AtualizarStatus('Todos os documentos excluidos.'); end;
+var Total, i: Integer;
+begin 
+  if MessageDlg('Excluir TODOS os documentos?',mtWarning,[mbYes,mbNo],0)=mrYes then 
+  begin
+    Total := FController.QuantidadeDocumentos;
+    MostrarProgresso(Total);
+    i := 0;
+    while FController.QuantidadeDocumentos>0 do 
+    begin
+      FController.ExcluirDocumento(FController.ObterDocumento(0).Id);
+      Inc(i);
+      AtualizarProgresso(i);
+    end;
+    OcultarProgresso;
+    AtualizarTela; LimparLogs; AtualizarStatus('Todos os documentos excluidos.'); 
+  end;
 end;
 
 procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
@@ -307,6 +330,7 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
 
   MostrarProgresso(2); AtualizarProgresso(1);
   FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
+  OcultarProgresso;
 
   memResultadoIA.Lines.Add(Format('Modelo: %s | Padroes suspeitos: %d | Confianca: %.0f%%',
     [R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));

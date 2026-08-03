@@ -575,6 +575,14 @@ object frmMain: TfrmMain
       Top = 3
       Caption = 'Pronto'
     end
+    object pbProgresso: TProgressBar
+      Left = 4
+      Top = 4
+      Width = 200
+      Height = 14
+      TabOrder = 0
+      Visible = False
+    end
   end
   object PopupExcluir: TPopupMenu
     Left = 128
