@@ -1,210 +1,162 @@
 # VFI - Validador Fiscal Inteligente
 
-[![CI/CD Pipeline](https://github.com/leonardoagqz/vfi/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardoagqz/vfi/actions/workflows/ci.yml)
-![.NET Version](https://img.shields.io/badge/.NET-9.0-blue)
-![Delphi](https://img.shields.io/badge/Delphi-Alexandria%2036.0-red)
-![VB6](https://img.shields.io/badge/VB6-ActiveX%20DLL-purple)
-![Tests](https://img.shields.io/badge/tests-10%2F10-brightgreen)
-![Cobertura](https://img.shields.io/badge/cobertura%20linhas-18.2%25-yellow)
+[![CI/CD](https://github.com/leonardoagqz/vfi/actions/workflows/ci.yml/badge.svg)](https://github.com/leonardoagqz/vfi/actions)
+![Delphi 12](https://img.shields.io/badge/Delphi-12-red)
+![.NET 9](https://img.shields.io/badge/.NET-9-blue)
+![VB6](https://img.shields.io/badge/VB6-COM%20DLL-purple)
+![Tests](https://img.shields.io/badge/testes-10%2F10-brightgreen)
+![DeepSeek](https://img.shields.io/badge/IA-DeepSeek-green)
 
-**Sistema de validacao fiscal multi-tecnologia com DLL VB6, API C# .NET, app Delphi VCL e IA integrada.**
+**Sistema desktop de validacao fiscal com Clean Architecture, 55 regras fiscais com embasamento legal, IA (DeepSeek) e interoperabilidade VB6 COM.**
 
 ---
 
-## Arquitetura
+## Funcionalidades
+
+| Funcionalidade | Descricao |
+|---|---|
+| **Importar XML** | Importa 1 ou varios NF-e/CT-e. Extrai emitente, destinatario, itens e impostos (ICMS, IPI, PIS, COFINS) direto do XML |
+| **Validacao automatica** | CNPJ (14 digitos + DV), NCM (8 digitos), CFOP (1000-7999), chave fiscal (44 digitos + DV) |
+| **Analise IA** | DeepSeek (ou motor local) analisa o documento contra regras fiscais do banco. Detecta padroes suspeitos com severidade |
+| **55 regras fiscais** | Armazenadas no banco (AiRule) com severidade (CRITICO/ALERTA/INFO) e embasamento legal real (leis, decretos, convenios) |
+| **CRUD de regras** | Adicionar, editar e excluir regras via API REST. Grid com busca e ordenacao por coluna |
+| **Grade multisselecao** | Ctrl+Click/Shift+Click para selecionar varios documentos. Exclusao em lote |
+| **Painel de detalhes** | Dados completos do documento, impostos extraidos por tipo com base/aliquota/valor/CST, lista de itens |
+| **VB6 COM Interop** | Strategy Pattern: tenta carregar DLL VB6 via COM. Se nao registrada, usa fallback Pascal transparente |
+| **Barra de progresso** | Feedback visual durante importacao e analise IA |
+
+## Arquitetura (Clean Architecture)
 
 ```
-┌──────────────────────────────────────────────────────┐
-│                 Delphi VCL (Desktop)                  │
-│   Interface grafica + chamadas COM para DLL VB6      │
-└──────────┬──────────────────────────┬────────────────┘
-           │ COM Interop              │ HTTP REST
-           ▼                          ▼
-┌──────────────────────┐   ┌──────────────────────────┐
-│   VB6 ActiveX DLL    │   │   C# .NET 9 Web API      │
-│  Calculo ICMS/ST/IPI │   │  CRUD + Validacao + IA   │
-│  PIS/COFINS/DIFAL    │   │  Swagger / EF Core       │
-└──────────────────────┘   └──────────┬───────────────┘
-                                      │
-                           ┌──────────▼───────────────┐
-                           │     SQL Server           │
-                           │   VFI_DB (Fiscal)        │
-                           └──────────────────────────┘
-                                      │
-                           ┌──────────▼───────────────┐
-                           │   Integracao IA          │
-                           │  OpenAI / Azure / Sim.   │
-                           └──────────────────────────┘
+Domain/          ← Entities, Enums, Interfaces (0 dependencias)
+Data/            ← Config (.ini), ConnectionFactory, Repository Pattern
+Services/        ← FiscalValidator, AIAnalyzer (DeepSeek), XmlImporter, VB6Bridge, TaxCalculator
+UI/              ← MainForm (View fina) + MainController (Presenter MVP) + Constantes
+AppModule        ← DI Container / Bootstrap
 ```
+
+### Fluxo principal
+
+```
+Importar XML → TXmlImporter (parse DOM)
+  → IFiscalDocumentRepository.Inserir() → SQL Server
+  → IFiscalValidator.ValidarDocumento() → CNPJ/NCM/CFOP
+  → AtualizarStatus() → VALIDO/REJEITADO
+
+Analisar IA  → IAIAnalyzer.AnalisarDocumento()
+  → BuildPrompt(Doc + 55 regras fiscais)
+  → DeepSeek API ou analise local
+  → Resultado: anomalias, confianca, recomendacoes
+```
+
+### Padroes de Projeto
+
+| Padrao | Aplicacao |
+|--------|----------|
+| **Repository** | `IFiscalDocumentRepository` abstrai acesso a dados |
+| **Dependency Injection** | `TMainController.Create(Repo, Validator, AI)` |
+| **MVP** | Form (View) → Controller (Presenter) → Services |
+| **Strategy** | `TVB6Bridge`: VB6 COM vs Pascal (fallback transparente) |
+| **Factory** | `TConnectionFactory` centraliza criacao de conexoes ADO |
+| **SOLID** | Cada classe = 1 responsabilidade |
 
 ## Tecnologias
 
-| Camada | Tecnologia |
-|--------|-----------|
-| **Desktop** | Delphi VCL + FireDAC |
-| **Legado Fiscal** | Visual Basic 6 (ActiveX DLL COM) |
-| **API Backend** | C# .NET 9 + ASP.NET Core |
-| **Banco de Dados** | SQL Server + Entity Framework Core |
-| **Testes** | xUnit (.NET) + DUnit (Delphi) + VB6 Test Module |
-| **IA** | OpenAI API / Azure OpenAI / Modo Simulacao |
-| **CI/CD** | GitHub Actions |
-| **Docs API** | Swagger / OpenAPI |
+| Camada | Stack |
+|--------|-------|
+| Desktop | Delphi 12 VCL + ADO + TListView + PageControl |
+| Banco | SQL Server (ADO via ODBC DSN) |
+| API | C# .NET 9 + EF Core + Swagger |
+| IA | DeepSeek API + motor de analise local |
+| XML | Delphi XML DOM (Xml.XMLDoc) |
+| Legado | VB6 ActiveX DLL COM |
+| Testes | xUnit 10/10 + DUnit + VB6 test module |
+| CI/CD | GitHub Actions |
 
-## Estrutura do Projeto
+## Estrutura
 
 ```
 vfi/
 ├── src/
-│   ├── delphi/              # App Desktop Delphi VCL
-│   │   ├── VFI.dpr          # Project file
-│   │   ├── forms/           # Formularios (frmMain)
-│   │   ├── modules/         # DataModules + servicos
-│   │   └── tests/           # DUnit tests
-│   ├── vb6/                 # DLL VB6 (COM)
-│   │   ├── dll/             # Codigo fonte da DLL
-│   │   │   ├── FiscalEngine.vbp
-│   │   │   ├── FiscalCalculator.cls
-│   │   │   └── modValidators.bas
-│   │   └── tests/           # Teste unitario VB6
-│   ├── api/                 # API C# .NET 9
-│   │   ├── Controllers/     # Endpoints REST
-│   │   ├── Models/          # Entity Framework
-│   │   ├── Services/        # Logica de negocio
-│   │   ├── DTOs/            # Objetos de transferencia
-│   │   └── Data/            # DbContext
-│   └── ia/                  # Integracao IA (Python)
-├── tests/                   # Testes xUnit (.NET)
-├── sql/
-│   ├── migrations/          # Scripts SQL Server
-│   └── seeds/               # Dados de exemplo
-├── docs/                    # Documentacao
-├── .github/workflows/       # CI/CD
+│   ├── delphi/
+│   │   ├── Domain/        ← Entities, Enums, Interfaces
+│   │   ├── Data/           ← Config, Connection, Repository
+│   │   ├── Services/       ← Validator, AIAnalyzer, XmlImporter, VB6Bridge, AppModule
+│   │   ├── UI/             ← MainForm, MainController, Constantes
+│   │   └── Resources/      ← vfi.ini, regras_fiscais.txt
+│   ├── api/                ← C# .NET 9 Web API
+│   │   ├── Controllers/    ← FiscalDocuments, AiRules
+│   │   ├── Models/         ← AiRule, FiscalDocument, TaxCalculation
+│   │   └── Services/       ← IAIntegrationService
+│   ├── vb6/                ← VB6 ActiveX DLL fonte
+│   ├── ia/                 ← Python IA (DeepSeek)
+│   └── web/                ← Cliente web HTML
+├── tests/                  ← xUnit (.NET)
+├── sql/migrations/         ← Scripts SQL Server
+├── .github/workflows/      ← CI/CD
+├── iniciar-api.bat         ← Inicia API com 1 clique
+├── parar-api.bat           ← Para API
 └── README.md
 ```
-
-## Funcionalidades
-
-### Modulo Fiscal (VB6 DLL)
-- **ICMS**: calculo com reducao de base, frete, seguro, despesas e desconto
-- **ICMS-ST**: substituicao tributaria com MVA (Margem de Valor Agregado)
-- **IPI**: imposto sobre produtos industrializados
-- **PIS/COFINS**: regime lucro real, presumido e simples nacional
-- **DIFAL**: diferencial de aliquota interestadual com partilha
-- **Carga Total**: somatorio de todos os impostos sobre um item
-- **Validacao**: CNPJ, chave NFe, CFOP, NCM
-
-### API REST (C# .NET)
-- `GET    /api/FiscalDocuments` - Listar documentos (com filtros e paginacao)
-- `GET    /api/FiscalDocuments/{id}` - Detalhes do documento
-- `POST   /api/FiscalDocuments` - Criar documento fiscal
-- `POST   /api/FiscalDocuments/{id}/validate` - Validar documento
-- `POST   /api/FiscalDocuments/{id}/analyze-ai` - Analisar com IA
-- `POST   /api/FiscalDocuments/{id}/calculate-tax` - Calcular impostos
-
-### App Desktop (Delphi VCL)
-- Grid de documentos fiscais com filtros
-- Importacao de XML (NF-e, CT-e, MDF-e)
-- Validacao fiscal com log de eventos
-- Calculo de impostos via DLL VB6 (COM Interop)
-- Analise IA integrada com OpenAI/Azure
-- Dashboard de status e alertas
-
-### IA Integration
-- Analise fiscal automatizada com LLMs
-- Suporte a OpenAI API e Azure OpenAI Service
-- Modo simulacao offline para desenvolvimento
-- Identificacao de anomalias: CFOP x NCM, valores suspeitos, prazos
-- Script Python standalone (`src/ia/vfi_ai.py`)
 
 ## Como Executar
 
 ### Pre-requisitos
-- SQL Server (LocalDB ou instancia completa)
+- SQL Server (LocalDB ou Express)
 - .NET 9 SDK
-- Delphi (RAD Studio) com FireDAC
-- Visual Basic 6 (para compilar a DLL)
-- Python 3.10+ (para modulo IA)
+- Delphi 12 (Alexandria)
+- ODBC Driver 17 for SQL Server
 
 ### 1. Banco de Dados
 
-```sql
--- Executar no SQL Server Management Studio
-sql/migrations/001_create_database.sql
-sql/seeds/seed_data.sql
+```powershell
+sqlcmd -S localhost -E -i sql/migrations/001_create_database.sql
 ```
 
-### 2. API C#
+### 2. API C# (porta 5000)
 
-```bash
+```powershell
+# Windows: duplo clique em iniciar-api.bat
+# Ou terminal:
 cd src/api
-cp appsettings.json appsettings.Development.json
-# Ajustar connection string em appsettings.Development.json
 dotnet run
-# Acessar Swagger: http://localhost:5000/swagger
+# Swagger: http://localhost:5000/swagger
 ```
 
-### 3. DLL VB6
+### 3. Delphi 12
 
 ```
-1. Abrir src/vb6/dll/FiscalEngine.vbp no VB6 IDE
-2. Compilar (File > Make FiscalEngine.dll)
-3. Registrar: regsvr32 FiscalEngine.dll
+File → Open → src/delphi/VFI.dpr → Build All → F9
 ```
 
-### 4. App Delphi
+### 4. Testes
 
-```
-1. Abrir src/delphi/VFI.dpr no Delphi IDE
-2. Configurar FireDAC connection (dmVFI.pas)
-3. Compilar e executar
-```
-
-### 5. IA (Python)
-
-```bash
-# Modo simulacao (nao requer API key)
-python src/ia/vfi_ai.py --document-id 1 --simulate
-
-# Com OpenAI
-set VFI_AI_API_KEY=sk-...
-python src/ia/vfi_ai.py --document-id 1 --provider openai
-
-# Com Azure
-set VFI_AI_API_KEY=...
-set VFI_AZURE_ENDPOINT=https://seu-recurso.openai.azure.com
-python src/ia/vfi_ai.py --document-id 1 --provider azure --model gpt-4
-```
-
-### 6. Testes
-
-```bash
-# .NET xUnit
+```powershell
 dotnet test tests/VfiApi.Tests.csproj
-
-# VB6: Abrir TestFiscalCalculator.bas no VB6 e executar TestAll()
-# Delphi: Executar DUnit via IDE
+# Resultado: 10/10 passando
 ```
 
-## CI/CD
+## API REST
 
-O pipeline GitHub Actions executa:
+| Metodo | Rota | Descricao |
+|--------|------|-----------|
+| GET | `/api/FiscalDocuments` | Listar documentos |
+| POST | `/api/FiscalDocuments` | Criar documento |
+| GET | `/api/AiRules?activeOnly=true` | Regras fiscais ativas |
+| POST | `/api/AiRules` | Criar regra |
+| PUT | `/api/AiRules/{id}` | Atualizar regra |
+| DELETE | `/api/AiRules/{id}` | Excluir regra |
 
-1. **Build & Test**: compila API .NET e roda xUnit
-2. **VB6 Validation**: verifica sintaxe dos arquivos VB6
-3. **SQL Validation**: valida scripts SQL
-4. **Code Analysis**: cobertura de codigo com Coverlet + ReportGenerator
+## Regras Fiscais com Embasamento Legal
 
-## Diferenciais para a Vaga
+55 regras armazenadas no banco (tabela `AiRule`) com:
+- **Severidade**: CRITICO (bloqueante), ALERTA (risco moderado), INFO (informativo)
+- **Embasamento Legal**: referencia a legislacao real (LC 87/96, Ajuste SINIEF, Convenios ICMS, STF)
 
-Este projeto demonstra dominio pratico em:
-
-- **Delphi VCL** com FireDAC, COM Interop, VCL Forms, DataModules
-- **Visual Basic 6** ActiveX DLL com calculos fiscais reais (ICMS, ST, IPI, PIS, COFINS, DIFAL)
-- **C# .NET** Web API com Entity Framework Core, Swagger, arquitetura em camadas
-- **SQL Server** com migrations, indices, foreign keys e seeds
-- **IA/LLMs** integrados ao fluxo de validacao fiscal (OpenAI + Azure)
-- **CI/CD** com GitHub Actions e cobertura de testes automatizada
-- **Interoperabilidade** Delphi ↔ VB6 (COM) ↔ C# (REST) ↔ IA (API)
+Exemplos:
+- `CRITICO` - Soma dos itens deve coincidir com valor total (Ajuste SINIEF 07/2005)
+- `ALERTA` - NCM 8528 (monitores): ST obrigatoria em SP (Protocolo ICMS 191/2009)
+- `INFO` - Lucro Real: PIS 1.65%, COFINS 7.6% (Lei 10.637/2002)
 
 ---
 
