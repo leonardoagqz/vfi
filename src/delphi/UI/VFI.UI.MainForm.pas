@@ -316,9 +316,9 @@ begin
 end;
 
 procedure TfrmMain.btnAnalisarIAClick(Sender: TObject);
-var Id,Idx:Integer; Doc:TFiscalDocument; R:TResultadoIA;
+var Id,IndiceSelecionado:Integer; Doc:TFiscalDocument; ResultadoAnalise:TResultadoIA;
 begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um documento.'); Exit; end;
-  Idx:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(Idx); if not Assigned(Doc) then Exit;
+  IndiceSelecionado:=ObterIndexSelecionado; Doc:=FController.ObterDocumento(IndiceSelecionado); if not Assigned(Doc) then Exit;
 
   memResultadoIA.Clear;
   memResultadoIA.Lines.Add('=== ANALISE IA (sugestoes - nao bloqueiam o fluxo) ===');
@@ -329,13 +329,13 @@ begin Id:=ObterIdSelecionado; if Id=0 then begin AtualizarStatus('Selecione um d
   pcDetalhes.ActivePage:=tsAnaliseIA; Application.ProcessMessages;
 
   MostrarProgresso(2); AtualizarProgresso(1);
-  FController.AnalisarComIA(Id); R:=FController.ObterUltimoResultadoIA;
+  FController.AnalisarComIA(Id); ResultadoAnalise:=FController.ObterUltimoResultadoIA;
   OcultarProgresso;
 
   memResultadoIA.Lines.Add(Format('Modelo: %s | Padroes suspeitos: %d | Confianca: %.0f%%',
-    [R.Modelo,R.AnomaliasEncontradas,R.Confianca*100]));
+    [ResultadoAnalise.Modelo,ResultadoAnalise.AnomaliasEncontradas,ResultadoAnalise.Confianca*100]));
   memResultadoIA.Lines.Add('');
-  if R.Resposta<>'' then memResultadoIA.Lines.Add(R.Resposta)
+  if ResultadoAnalise.Resposta<>'' then memResultadoIA.Lines.Add(ResultadoAnalise.Resposta)
   else memResultadoIA.Lines.Add('[Chave API nao configurada - usando analise local]');
 end;
 

@@ -3,7 +3,7 @@ unit VFI.Data.Repository;
 interface
 
 uses
-  System.SysUtils, System.Generics.Collections, System.StrUtils,
+  System.SysUtils, System.Generics.Collections, System.StrUtils, System.Variants,
   Data.DB, Data.Win.ADODB,
   VFI.Domain.Entities, VFI.Domain.Enums, VFI.Domain.Interfaces;
 
@@ -26,6 +26,7 @@ type
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
+    function BuscarUltimaAnaliseIA(const ADocId: Integer): TResultadoIA;
   end;
 
 implementation
@@ -72,6 +73,19 @@ begin
   ADoc.NomeDestinatario := AConsulta.FieldByName('RecipientName').AsString;
   ADoc.ValorTotal := AConsulta.FieldByName('TotalValue').AsCurrency;
   ADoc.XmlContent := AConsulta.FieldByName('XMLContent').AsString;
+  ADoc.Status := StrToStatus(AConsulta.FieldByName('Status').AsString);
+  
+  ADoc.ParecerIA := '';
+  if AConsulta.FindField('AnomaliesFound') <> nil then
+  begin
+    if not AConsulta.FieldByName('AnomaliesFound').IsNull then
+    begin
+      if AConsulta.FieldByName('AnomaliesFound').AsInteger > 0 then
+        ADoc.ParecerIA := 'ALERTA'
+      else
+        ADoc.ParecerIA := 'OK';
+    end;
+  end;
 end;
 
 procedure TFiscalDocumentRepository.PreencherItem(const AConsulta: TADOQuery; const AItem: TDocumentItem);
@@ -127,9 +141,10 @@ var Consulta: TADOQuery; Doc: TFiscalDocument;
 begin
   Result := TObjectList<TFiscalDocument>.Create(True); Consulta := CriarConsulta;
   try
-    Consulta.SQL.Text := 'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
-      'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status ' +
-      'FROM FiscalDocument ORDER BY IssueDate DESC';
+    Consulta.SQL.Text := 'SELECT d.Id, d.DocumentType, d.DocumentKey, d.DocumentNumber, d.IssueDate, ' +
+      'd.IssuerCNPJ, d.IssuerName, d.RecipientCNPJ, d.RecipientName, d.TotalValue, d.XMLContent, d.Status, ' +
+      '(SELECT TOP 1 a.AnomaliesFound FROM AIAnalysisLog a WHERE a.DocumentId = d.Id ORDER BY a.CreatedAt DESC) as AnomaliesFound ' +
+      'FROM FiscalDocument d ORDER BY d.IssueDate DESC';
     Consulta.Open;
     while not Consulta.Eof do begin
       Doc := TFiscalDocument.Create; PreencherDocumento(Consulta, Doc);
@@ -143,9 +158,10 @@ var Consulta: TADOQuery;
 begin
   Result := nil; Consulta := CriarConsulta;
   try
-    Consulta.SQL.Text := 'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
-      'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status ' +
-      'FROM FiscalDocument WHERE Id = ' + IntToStr(AIdentificador);
+    Consulta.SQL.Text := 'SELECT d.Id, d.DocumentType, d.DocumentKey, d.DocumentNumber, d.IssueDate, ' +
+      'd.IssuerCNPJ, d.IssuerName, d.RecipientCNPJ, d.RecipientName, d.TotalValue, d.XMLContent, d.Status, ' +
+      '(SELECT TOP 1 a.AnomaliesFound FROM AIAnalysisLog a WHERE a.DocumentId = d.Id ORDER BY a.CreatedAt DESC) as AnomaliesFound ' +
+      'FROM FiscalDocument d WHERE d.Id = ' + IntToStr(AIdentificador);
     Consulta.Open;
     if not Consulta.IsEmpty then begin
       Result := TFiscalDocument.Create; PreencherDocumento(Consulta, Result);
@@ -165,9 +181,10 @@ begin
       WhereStr := WhereStr + ' AND DocumentType = ' + EscaparSql(TipoDocumentoToStr(ATipo));
     if AStatus <> '' then
       WhereStr := WhereStr + ' AND Status = ' + EscaparSql(AStatus);
-    Consulta.SQL.Text := 'SELECT Id, DocumentType, DocumentKey, DocumentNumber, IssueDate, ' +
-      'IssuerCNPJ, IssuerName, RecipientCNPJ, RecipientName, TotalValue, XMLContent, Status ' +
-      'FROM FiscalDocument WHERE 1=1' + WhereStr + ' ORDER BY IssueDate DESC';
+    Consulta.SQL.Text := 'SELECT d.Id, d.DocumentType, d.DocumentKey, d.DocumentNumber, d.IssueDate, ' +
+      'd.IssuerCNPJ, d.IssuerName, d.RecipientCNPJ, d.RecipientName, d.TotalValue, d.XMLContent, d.Status, ' +
+      '(SELECT TOP 1 a.AnomaliesFound FROM AIAnalysisLog a WHERE a.DocumentId = d.Id ORDER BY a.CreatedAt DESC) as AnomaliesFound ' +
+      'FROM FiscalDocument d WHERE 1=1' + WhereStr + ' ORDER BY d.IssueDate DESC';
     Consulta.Open;
     while not Consulta.Eof do begin
       Doc := TFiscalDocument.Create; PreencherDocumento(Consulta, Doc);
@@ -280,6 +297,29 @@ begin
       [ADocId, EscaparSql(AModelo), EscaparSql(APrompt), EscaparSql(AResposta),
        AAnomalias, FloatParaSql(AConfianca)]);
     Consulta.ExecSQL;
+  finally Consulta.Connection.Free; Consulta.Free; end;
+end;
+
+function TFiscalDocumentRepository.BuscarUltimaAnaliseIA(const ADocId: Integer): TResultadoIA;
+var Consulta: TADOQuery;
+begin
+  Result.Confianca := 0;
+  Result.Modelo := '';
+  Result.Prompt := '';
+  Result.Resposta := '';
+  Result.AnomaliasEncontradas := 0;
+  
+  Consulta := CriarConsulta;
+  try
+    Consulta.SQL.Text := 'SELECT TOP 1 Model, Response, AnomaliesFound, ConfidenceScore FROM AIAnalysisLog WHERE DocumentId = ' + IntToStr(ADocId) + ' ORDER BY CreatedAt DESC';
+    Consulta.Open;
+    if not Consulta.IsEmpty then begin
+      Result.Modelo := VarToStr(Consulta.FieldByName('Model').Value);
+      Result.Resposta := VarToStr(Consulta.FieldByName('Response').Value);
+      Result.AnomaliasEncontradas := Consulta.FieldByName('AnomaliesFound').AsInteger;
+      if not Consulta.FieldByName('ConfidenceScore').IsNull then
+        Result.Confianca := Consulta.FieldByName('ConfidenceScore').AsFloat;
+    end;
   finally Consulta.Connection.Free; Consulta.Free; end;
 end;
 

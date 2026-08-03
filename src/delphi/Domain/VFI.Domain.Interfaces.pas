@@ -21,6 +21,7 @@ type
     procedure InserirCalculo(const ACalculo: TTaxCalculation);
     procedure InserirAnaliseIA(const ADocId: Integer; const AModelo, APrompt, AResposta: string;
       const AAnomalias: Integer; const AConfianca: Double);
+    function BuscarUltimaAnaliseIA(const ADocId: Integer): TResultadoIA;
   end;
 
   IFiscalValidator = interface
@@ -60,6 +61,7 @@ type
     procedure SetOnStatus(const AProc: TStatusCallback);
     function ObterUltimoResultadoIA: TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
+    function ObterUltimaAnaliseIABanco(const ADocId: Integer): TResultadoIA;
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
     function ValidarDocumentoAtual(const ADoc: TFiscalDocument): TResultadoValidacao;

@@ -21,9 +21,14 @@ type
     FNomeEmitente: string;
     FCnpjDestinatario: string;
     FNomeDestinatario: string;
+    FUFEmitente: string;
+    FMunicipioEmitente: string;
+    FUFDestinatario: string;
+    FMunicipioDestinatario: string;
     FValorTotal: Currency;
     FXmlContent: string;
     FStatus: TStatusDocumento;
+    FParecerIA: string;
     FItens: TObjectList<TDocumentItem>;
     FCalculos: TObjectList<TTaxCalculation>;
   public
@@ -38,9 +43,14 @@ type
     property NomeEmitente: string read FNomeEmitente write FNomeEmitente;
     property CnpjDestinatario: string read FCnpjDestinatario write FCnpjDestinatario;
     property NomeDestinatario: string read FNomeDestinatario write FNomeDestinatario;
+    property UFEmitente: string read FUFEmitente write FUFEmitente;
+    property MunicipioEmitente: string read FMunicipioEmitente write FMunicipioEmitente;
+    property UFDestinatario: string read FUFDestinatario write FUFDestinatario;
+    property MunicipioDestinatario: string read FMunicipioDestinatario write FMunicipioDestinatario;
     property ValorTotal: Currency read FValorTotal write FValorTotal;
     property XmlContent: string read FXmlContent write FXmlContent;
     property Status: TStatusDocumento read FStatus write FStatus;
+    property ParecerIA: string read FParecerIA write FParecerIA;
     property Itens: TObjectList<TDocumentItem> read FItens;
     property Calculos: TObjectList<TTaxCalculation> read FCalculos;
   end;

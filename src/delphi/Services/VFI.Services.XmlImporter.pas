@@ -193,12 +193,29 @@ begin
   begin
     Result.CnpjEmitente := SafeXmlStr(Emit, 'CNPJ');
     Result.NomeEmitente := SafeXmlStr(Emit, 'xNome');
+    
+    var EnderEmit: IXmlNode;
+    EnderEmit := Emit.ChildNodes.FindNode('enderEmit', '');
+    if EnderEmit = nil then EnderEmit := Emit.ChildNodes.FindNode('enderReme', ''); // CTe
+    if EnderEmit <> nil then
+    begin
+      Result.MunicipioEmitente := SafeXmlStr(EnderEmit, 'xMun');
+      Result.UFEmitente := SafeXmlStr(EnderEmit, 'UF');
+    end;
   end;
 
   if Dest <> nil then
   begin
     Result.CnpjDestinatario := SafeXmlStr(Dest, 'CNPJ');
     Result.NomeDestinatario := SafeXmlStr(Dest, 'xNome');
+
+    var EnderDest: IXmlNode;
+    EnderDest := Dest.ChildNodes.FindNode('enderDest', '');
+    if EnderDest <> nil then
+    begin
+      Result.MunicipioDestinatario := SafeXmlStr(EnderDest, 'xMun');
+      Result.UFDestinatario := SafeXmlStr(EnderDest, 'UF');
+    end;
   end;
 
   if Tipo = 'CTe' then

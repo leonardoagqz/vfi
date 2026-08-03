@@ -33,6 +33,7 @@ type
     procedure SetOnStatus(const AProc: TStatusCallback);
 
     function ObterUltimoResultadoIA: TResultadoIA;
+    function ObterUltimaAnaliseIABanco(const ADocId: Integer): TResultadoIA;
     function ObterUltimaValidacao: TResultadoValidacao;
     procedure SetRegrasFiscais(const ARegras: string);
     procedure ConfigurarAPI(const AApiKey, AEndpoint, AModel: string);
@@ -217,6 +218,11 @@ begin
   Result := FUltimaValidacao;
 end;
 
+function TMainController.ObterUltimaAnaliseIABanco(const ADocId: Integer): TResultadoIA;
+begin
+  Result := FRepository.BuscarUltimaAnaliseIA(ADocId);
+end;
+
 procedure TMainController.SetRegrasFiscais(const ARegras: string);
 begin
   FRegrasFiscais := ARegras;
@@ -292,7 +298,7 @@ begin
       Http.Post('http://localhost:5000/api/AiRules', StringStream);
     finally StringStream.Free; end;
   except
-    on E: Exception do Status('Erro ao adicionar: ' + E.Message);
+    on E: Exception do Status('ERRO API (AdicionarRegra): ' + E.Message);
   end;
   JsonObj.Free; Http.Free;
 end;
@@ -317,7 +323,7 @@ begin
       Http.Put('http://localhost:5000/api/AiRules/' + AId.ToString, StringStream);
     finally StringStream.Free; end;
   except
-    on E: Exception do Status('Erro ao atualizar: ' + E.Message);
+    on E: Exception do Status('ERRO API (AtualizarRegra): ' + E.Message);
   end;
   JsonObj.Free; Http.Free;
 end;
